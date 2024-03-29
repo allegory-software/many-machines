@@ -1,0 +1,17 @@
+#!/bin/bash
+. ./die
+. ./fs
+. ./ssh
+. ./db
+
+machine=$1
+hostkey="$2"
+ip=`ip_of $machine`
+checkvars ip hostkey-
+
+say "Updating SSH host fingerprint for machine $machine (/etc/ssh) ... (*)"
+kh=/etc/ssh/ssh_known_hosts
+ssh_to $machine bash -s <(
+    ssh_hostkey_update
+say "(*) SSH host fingerprint updated."
+)

@@ -1,0 +1,2 @@
+. "$(dirname "$0")/lib/.all"
+CMD="$1" [ "$CMD" ] || exit 0; shift; c-mma/$CMD "$@"

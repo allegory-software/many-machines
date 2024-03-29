@@ -1,0 +1,2 @@
+. "$(dirname "$0")/lib/.all" || exit 1
+ssh_to "$@"

@@ -1,0 +1,2 @@
+cd "$(dirname "$BASH_SOURCE")/.." || exit 1
+for f in ./lib/*.sh; do . $f; done
