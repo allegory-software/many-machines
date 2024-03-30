@@ -1,5 +1,5 @@
 #!/bin/bash
-. "$(dirname "$0")/../lib/all"
+. /opt/mm/lib/all
 
 FMT="%-10s %-10s\n"
 printf "$FMT" "DEPLOY" "MACHINE"

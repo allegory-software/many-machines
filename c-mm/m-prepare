@@ -1,11 +1,13 @@
 #!/bin/bash
-. "$(dirname "$0")/../lib/all"
+. /opt/mm/lib/all
 
 MACHINE="$1"; checkvar MACHINE
 machine_vars "$MACHINE"; VARS="$R1"
 
 say "Uploading env vars to /root/.mm/vars ..."
 echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
+
+#SRC_DIR=var/.acme.sh.etc/ca DST_MACHINE=$MACHINE DST_DIR=/root/.acme.sh.etc/ca rsync_dir
 
 ssh_to "$MACHINE" bash -s << EOF
 
@@ -33,6 +35,6 @@ fi
 
 must ln -sf /opt/mm/mma /usr/bin/mma
 
-./mma prepare
+must mma prepare
 
 EOF

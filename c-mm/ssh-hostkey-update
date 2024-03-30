@@ -1,8 +1,5 @@
 #!/bin/bash
-. ./die
-. ./fs
-. ./ssh
-. ./db
+. /opt/mm/lib/all
 
 machine=$1
 hostkey="$2"

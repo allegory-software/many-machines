@@ -1,4 +1,5 @@
-cd "$(dirname "$BASH_SOURCE")/.." || exit 1
+#!/bin/bash
+cd /opt/mm || exit 1
 
 shopt -s nullglob
 IFS=$'\n\b'

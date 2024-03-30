@@ -1,3 +1,5 @@
-. "$(dirname "$0")/../lib/all"
+#!/bin/bash
+. /opt/mm/lib/all
+
 machine_vars "$@"
 echo "$R1"

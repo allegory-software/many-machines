@@ -1,2 +1,4 @@
-. "$(dirname "$0")/../lib/all" || exit 1
+#!/bin/bash
+. /opt/mm/lib/all || exit 1
+
 ssh_to "$@"

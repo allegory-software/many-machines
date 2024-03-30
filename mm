@@ -1,5 +1,5 @@
 #!/bin/bash
-cd "$(dirname "$0")" || exit 1
+cd /opt/mm || exit 1
 CMD_DIR=c-mm
 CMD="$1"
 [ "$CMD" ] || {

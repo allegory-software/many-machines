@@ -1,4 +1,5 @@
 #!/bin/bash
-. "$(dirname "$0")/../lib/all"
+. /opt/mm/lib/all
+
 deploy_vars "$@"
 echo "$R1"

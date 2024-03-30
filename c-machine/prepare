@@ -1,5 +1,5 @@
 #!/bin/bash
-. "$(dirname "$0")/../lib/all"
+. /opt/mm/lib/all
 
 checkvars MACHINE MYSQL_ROOT_PASS DHPARAM-
 
@@ -27,12 +27,6 @@ save "$DHPARAM" /etc/nginx/dhparam.pem
 # remove nginx placeholder vhost.
 must rm -f /etc/nginx/sites-enabled/default
 nginx -s reload
-
-# install acme.sh to auto-renew SSL certs.
-curl https://get.acme.sh | sh -s email=my@example.com --nocron --config-home /root/.acme.sh.etc
-
-# ZeroSSL is default but it's very slow, so we're switching back to LE.
-acme_sh --set-default-ca --server letsencrypt
 
 git_install_git_up
 git_config_user "mm@allegory.ro" "Many Machines"
