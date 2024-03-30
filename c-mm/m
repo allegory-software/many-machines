@@ -1,0 +1,11 @@
+#!/bin/bash
+. "$(dirname "$0")/../lib/all"
+
+FMT="%-10s %-11s\n"
+printf "$FMT" "MACHINE" "PUBLIC_IP"
+(cd var/machines; for MACHINE in *; do
+	cd "$MACHINE"
+	IP=`cat public_ip`
+	printf "$FMT" "$MACHINE" "$IP"
+	cd ..
+done)

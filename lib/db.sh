@@ -15,3 +15,43 @@ ip_of() {
 	checkfile var/machines/$R2/public_ip
 	R1=$(cat $R1)
 }
+
+mysql_root_pass() {
+	machine_of "$1"; local MACHINE=$R1
+	checkfile var/machines/$MACHINE/ssh_key; local ssh_key_file=$R1
+	R1="$(sed 1d $ssh_key_file | head -1)"
+	R1="${R1:0:32}"
+}
+
+machine_vars() {
+	machine_of "$1"; local MACHINE=$R1
+	mysql_root_pass "$MACHINE"; local MYSQL_ROOT_PASS="$R1"
+	checkfile var/dhparam.pem; local DHPARAM="$(cat $R1)"
+	checkfile var/machines/$MACHINE/vars; MACHINE_VARS="$(cat $R1)"
+	checkfile var/machines/vars; MM_VARS="$(cat $R1)"
+	local GIT_HOSTS=""
+	local GIT_VARS=""
+	cd var/git_hosting
+	for NAME in *; do
+		checkfile $NAME/host; local HOST=$(cat $R1)
+		checkfile $NAME/ssh_hostkey; local SSH_HOSTKEY="$(cat $R1)"
+		checkfile $NAME/ssh_key; local SSH_KEY="$(cat $R1)"
+		GIT_HOSTS="$GIT_HOSTS
+$NAME"
+		GIT_VARS="$GIT_VARS
+${NAME^^}_HOST=$HOST
+${NAME^^}_SSH_HOSTKEY=\"$SSH_HOSTKEY\"
+${NAME^^}_SSH_KEY=\"$SSH_KEY\"
+"
+	done
+	cd ../..
+	R1="
+MACHINE=$MACHINE
+DHPARAM=\"$DHPARAM\"
+MYSQL_ROOT_PASS=\"$MYSQL_ROOT_PASS\"
+$MACHINE_VARS
+$MM_VARS
+GIT_HOSTS=\"$GIT_HOSTS\"
+$GIT_VARS
+"
+}

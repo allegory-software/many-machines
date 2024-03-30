@@ -1,7 +1,6 @@
 #!/bin/bash
 cd "$(dirname "$0")" || exit 1
-CMD_DIR=c-deploy
-[ "$USER" == root ] && CMD_DIR=c-machine
+CMD_DIR=c-mm
 CMD="$1"
 [ "$CMD" ] || {
 	ls -1 $CMD_DIR

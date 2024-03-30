@@ -1,6 +1,0 @@
-. "$(dirname "$0")"/lib/.all
-
-must ssh_to "$1" bash -c \"mkdir -p /root/.mm/shlib\"
-SRC_DIR=/root/mma/lib DST_DIR=/root/.mm/lib DST_MACHINE=$1 must rsync_dir
-SRC_DIR=/root/mma/c-mm DST_DIR=/root/.mm DST_MACHINE=$1 must rsync_dir
-must ssh_to "$1" bash -c .mm/prepare

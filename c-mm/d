@@ -1,0 +1,11 @@
+#!/bin/bash
+. "$(dirname "$0")/../lib/all"
+
+FMT="%-10s %-10s\n"
+printf "$FMT" "DEPLOY" "MACHINE"
+(cd var/deploys; for DEPLOY in *; do
+	cd "$DEPLOY"
+	IP=`cat machine`
+	printf "$FMT" "$DEPLOY" "$MACHINE"
+	cd ..
+done)

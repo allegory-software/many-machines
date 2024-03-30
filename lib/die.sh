@@ -1,10 +1,17 @@
+# die harder, see https://github.com/capr/die
 
-# die hard, see https://github.com/capr/die
-say()       { echo "$@" >&2; }
-die()       { echo -n "ABORT: " >&2; echo "$@" >&2; exit 1; }
-debug()     { if [ "$DEBUG" ]; then echo "$@" >&2; fi; }
-run()       { debug -n "EXEC: $@ "; "$@"; local ret=$?; debug "[$ret]"; return $ret; }
-must()      { debug -n "MUST: $@ "; "$@"; local ret=$?; debug "[$ret]"; [ $ret == 0 ] || die "$@ [$ret]"; }
+INDENT=
+
+indent()    { INDENT="$INDENT  "; }
+outdent()   { INDENT="${INDENT:0:${#INDENT}-2}"; }
+indent-stdin() { sed "s/^/$INDENT/"; }
+say()       { echo    "${INDENT}$@" >&2; }
+say-n()     { echo -n "${INDENT}$@" >&2; }
+die()       { echo -n "${INDENT}ABORT: " >&2; echo "$@" >&2; exit 1; }
+debug()     { if [ "$DEBUG" ]; then echo    "${INDENT}$@" >&2; fi; }
+debug-n()   { if [ "$DEBUG" ]; then echo -n "${INDENT}$@" >&2; fi; }
+run()       { debug -n "${INDENT}EXEC: $@ "; "$@"; local ret=$?; debug "[$ret]"; return $ret; }
+must()      { debug -n "${INDENT}MUST: $@ "; "$@"; local ret=$?; debug "[$ret]"; [ $ret == 0 ] || die "${INDENT}$@ [$ret]"; }
 
 # enhanced sudo that can:
 #  1. inherit a list of vars.
@@ -57,15 +64,3 @@ checkfile() {
     [ -f "$1" ] || die "File not found: $1"
     R1="$1"
 }
-
-checkcatfile() {
-    checkfile "$1"
-    cat "$1"
-}
-
-# frontend for calling shlib function safely without exiting the shell.
-mm() {
-	cmd="${1//\-/_}"; shift
-	($cmd "$@")
-}
-

@@ -1,0 +1,38 @@
+#!/bin/bash
+. "$(dirname "$0")/../lib/all"
+
+MACHINE="$1"; checkvar MACHINE
+machine_vars "$MACHINE"; VARS="$R1"
+
+say "Uploading env vars to /root/.mm/vars ..."
+echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
+
+ssh_to "$MACHINE" bash -s << EOF
+
+shopt -s nullglob
+IFS=$'\n\b'
+
+DEBUG=$DEBUG
+VERBOSE=$VERBOSE
+$VARS
+
+$(cat lib/die.sh)
+$(cat lib/fs.sh)
+$(cat lib/apt.sh)
+$(cat lib/ssh.sh)
+
+apt_get_install git
+ssh_git_keys_update
+
+if [ ! -d /opt/mm ]; then
+	must git clone git@github.com:allegory-software/many-machines2.git /opt/mm
+else
+	must cd /opt/mm
+	must git pull
+fi
+
+must ln -sf /opt/mm/mma /usr/bin/mma
+
+./mma prepare
+
+EOF

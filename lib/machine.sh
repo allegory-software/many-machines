@@ -1,4 +1,4 @@
-#use mysql
+#use die ssh user mysql git apt
 
 machine_cores() {
 	local      cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
@@ -15,5 +15,48 @@ machine_info() {
 	echo "    cores $(expr $sockets \* $cps)"
 	echo "      ram $(cat /proc/meminfo | awk '/MemTotal/ {$2*=1024; printf "%.0f",$2}')"
 	echo "      hdd $(df -l / | awk '(NR > 1) {$2*=1024; printf "%.0f",$2}')"
+}
+
+machine_set_hostname() { # machine
+	local HOST="$1"
+	checkvars HOST
+	must hostnamectl set-hostname $HOST
+	must sed -i '/^127.0.0.1/d' /etc/hosts
+	append "\
+127.0.0.1 $HOST $HOST
+127.0.0.1 localhost
+" /etc/hosts
+	say "Machine hostname set to: $HOST."
+}
+
+machine_set_timezone() { # tz
+	local TZ="$1"
+	checkvars TZ
+	must timedatectl set-timezone "$TZ" # sets /etc/localtime and /etc/timezone
+	say "Machine timezone set to: $TZ."
+}
+
+acme_sh() {
+	local cmd_args="/root/.acme.sh/acme.sh --config-home /root/.acme.sh.etc"
+	run $cmd_args "$@"
+	local ret=$?; [ $ret == 2 ] && ret=0 # skipping gets exit code 2.
+	[ $ret == 0 ] || die "$cmd_args "$@" [$ret]"
+}
+
+acme_check() {
+	say "Checking SSL certificate with acme.sh ... "
+	acme_sh --cron
+}
+
+tarantool_install() { # tarantool 2.10
+	must curl -L https://tarantool.io/BsbZsuW/release/2/installer.sh | bash
+	apt_get_install tarantool
+}
+
+machine_rename() { # OLD_MACHINE NEW_MACHINE
+	local OLD_MACHINE=$1
+	local NEW_MACHINE=$2
+	checkvars OLD_MACHINE NEW_MACHINE
+	machine_set_hostname "$NEW_MACHINE"
 }
 

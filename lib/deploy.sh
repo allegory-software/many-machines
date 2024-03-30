@@ -1,24 +1,5 @@
 #use die ssh user mysql git apt
 
-machine_set_hostname() { # machine
-	local HOST="$1"
-	checkvars HOST
-	must hostnamectl set-hostname $HOST
-	must sed -i '/^127.0.0.1/d' /etc/hosts
-	append "\
-127.0.0.1 $HOST $HOST
-127.0.0.1 localhost
-" /etc/hosts
-	say "Machine hostname set to: $HOST."
-}
-
-machine_set_timezone() { # tz
-	local TZ="$1"
-	checkvars TZ
-	must timedatectl set-timezone "$TZ" # sets /etc/localtime and /etc/timezone
-	say "Machine timezone set to: $TZ."
-}
-
 acme_sh() {
 	local cmd_args="/root/.acme.sh/acme.sh --config-home /root/.acme.sh.etc"
 	run $cmd_args "$@"
@@ -29,75 +10,6 @@ acme_sh() {
 acme_check() {
 	say "Checking SSL certificate with acme.sh ... "
 	acme_sh --cron
-}
-
-tarantool_install() { # tarantool 2.10
-	must curl -L https://tarantool.io/BsbZsuW/release/2/installer.sh | bash
-	apt_get_install tarantool
-}
-
-machine_prepare() {
-	checkvars MACHINE MYSQL_ROOT_PASS DHPARAM-
-
-	# disable clound-init because it resets our changes on reboot.
-	touch /etc/cloud/cloud-init.disabled
-
-	machine_set_hostname $MACHINE
-	machine_set_timezone UTC
-
-	# remount /proc so we can pass in secrets via cmdline without them leaking.
-	must mount -o remount,rw,nosuid,nodev,noexec,relatime,hidepid=2 /proc
-	# make that permanent...
-	must sed -i '/^proc/d' /etc/fstab
-	append "proc  /proc  proc  defaults,nosuid,nodev,noexec,relatime,hidepid=1  0  0" /etc/fstab
-
-	apt_get_install sudo htop mc git nginx curl
-
-	tarantool_install
-
-	# add dhparam.pem from mm (dhparam is public).
-	save "$DHPARAM" /etc/nginx/dhparam.pem
-
-	# remove nginx placeholder vhost.
-	must rm -f /etc/nginx/sites-enabled/default
-	nginx -s reload
-
-	# install acme.sh to auto-renew SSL certs.
-	curl https://get.acme.sh | sh -s email=my@example.com --nocron --config-home /root/.acme.sh.etc
-
-	# ZeroSSL is default but it's very slow, so we're switching back to LE.
-	acme_sh --set-default-ca --server letsencrypt
-
-	git_install_git_up
-	git_config_user "mm@allegory.ro" "Many Machines"
-	ssh_git_keys_update
-
-	mysql_install
-	mysql_config "\
-# amazing that this is not the default...
-bind-address = 127.0.0.1
-mysqlx-bind-address = 127.0.0.1
-
-# our binlog is row-based, but we still get an error when creating procs.
-log_bin_trust_function_creators = 1
-"
-	must service mysql start
-	mysql_update_pass localhost root $MYSQL_ROOT_PASS
-	mysql_gen_my_cnf  localhost root $MYSQL_ROOT_PASS
-
-	# allow binding to ports < 1024 by any user.
-	save 'net.ipv4.ip_unprivileged_port_start=0' \
-		/etc/sysctl.d/50-unprivileged-ports.conf
-	must sysctl --system
-
-	say "Prepare done."
-}
-
-machine_rename() { # OLD_MACHINE NEW_MACHINE
-	local OLD_MACHINE=$1
-	local NEW_MACHINE=$2
-	checkvars OLD_MACHINE NEW_MACHINE
-	machine_set_hostname "$NEW_MACHINE"
 }
 
 deploy_nginx_config() { # DOMAIN= HTTP_PORT= [ACME=1] $0
