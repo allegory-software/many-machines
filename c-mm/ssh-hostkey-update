@@ -1,5 +1,5 @@
 #!/bin/bash
-. /opt/mm/lib/all
+. mmlib
 
 machine=$1
 hostkey="$2"

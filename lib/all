@@ -6,4 +6,4 @@ IFS=$'\n\b'
 
 [ -f ~/.mm/vars ] && . ~/.mm/vars
 
-for f in ./lib/*.sh; do . $f; done
+for f in lib/*.sh; do . $f; done

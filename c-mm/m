@@ -1,5 +1,5 @@
 #!/bin/bash
-. /opt/mm/lib/all
+. mmlib
 
 FMT="%-10s %-11s\n"
 printf "$FMT" "MACHINE" "PUBLIC_IP"

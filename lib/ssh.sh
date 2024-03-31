@@ -1,5 +1,3 @@
-#use die fs
-
 ssh_cmd_opt() { # MACHINE=
 	R1="ssh
 -oBatchMode=no
@@ -177,7 +175,7 @@ rsync_dir() {
 	[ "$DRY" ] || must rsync --delete --timeout=5 \
 		${PROGRESS:+--info=progress2} \
 		${LINK_DIR:+--link-dest=$LINK_DIR} \
-		-e "$SSH_CMD_OPT" \
+		-e "${SSH_CMD_OPT//$'\n'/ }" \
 		-aHR "$SRC_DIR/./." "$DST_DIR"
 
 	rm -f $p $h

@@ -28,7 +28,7 @@ machine_vars() {
 	mysql_root_pass "$MACHINE"; local MYSQL_ROOT_PASS="$R1"
 	checkfile var/dhparam.pem; local DHPARAM="$(cat $R1)"
 	checkfile var/machines/$MACHINE/vars; MACHINE_VARS="$(cat $R1)"
-	checkfile var/machines/vars; MM_VARS="$(cat $R1)"
+	checkfile var/machine_vars; MM_VARS="$(cat $R1)"
 	local GIT_HOSTS=""
 	local GIT_VARS=""
 	cd var/git_hosting
@@ -54,4 +54,11 @@ $MM_VARS
 GIT_HOSTS=\"$GIT_HOSTS\"
 $GIT_VARS
 "
+}
+
+machine_vars_upload() {
+	MACHINE="$1"; checkvar MACHINE
+	machine_vars "$MACHINE"; VARS="$R1"
+	say "Uploading env vars to /root/.mm/vars ..."
+	echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
 }

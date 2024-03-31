@@ -1,5 +1,3 @@
-#use die ssh user mysql git apt
-
 machine_cores() {
 	local      cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
 	local  sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
@@ -49,8 +47,10 @@ acme_check() {
 }
 
 tarantool_install() { # tarantool 2.10
+	say "Instlaling Tarantool..."
 	must curl -L https://tarantool.io/BsbZsuW/release/2/installer.sh | bash
 	apt_get_install tarantool
+	say "Tarantool install done."
 }
 
 machine_rename() { # OLD_MACHINE NEW_MACHINE

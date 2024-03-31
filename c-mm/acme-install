@@ -1,5 +1,5 @@
 #!/bin/bash
-. /opt/mm/lib/all
+. mmlib
 
 # install acme.sh to auto-renew SSL certs.
 curl https://get.acme.sh | sh -s email=my@example.com --nocron --config-home $PWD/var/.acme.sh.etc

@@ -1,5 +1,3 @@
-#use die ssh user mysql git apt
-
 acme_sh() {
 	local cmd_args="/root/.acme.sh/acme.sh --config-home $PWD/var/.acme.sh.etc"
 	run $cmd_args "$@"

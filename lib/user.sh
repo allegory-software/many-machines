@@ -1,5 +1,3 @@
-#use die fs
-
 user_exists() { # USER
 	local user="$1"
 	checkvars user

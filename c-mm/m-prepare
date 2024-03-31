@@ -1,13 +1,11 @@
 #!/bin/bash
-. /opt/mm/lib/all
+. mmlib
 
 MACHINE="$1"; checkvar MACHINE
-machine_vars "$MACHINE"; VARS="$R1"
 
-say "Uploading env vars to /root/.mm/vars ..."
-echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
+machine_vars_upload "$MACHINE"
 
-#SRC_DIR=var/.acme.sh.etc/ca DST_MACHINE=$MACHINE DST_DIR=/root/.acme.sh.etc/ca rsync_dir
+SRC_DIR=var/.acme.sh.etc/ca DST_MACHINE=$MACHINE DST_DIR=/root/.acme.sh.etc/ca rsync_dir
 
 ssh_to "$MACHINE" bash -s << EOF
 
@@ -23,6 +21,7 @@ $(cat lib/fs.sh)
 $(cat lib/apt.sh)
 $(cat lib/ssh.sh)
 
+apt_get_update
 apt_get_install git
 ssh_git_keys_update
 
@@ -33,7 +32,7 @@ else
 	must git pull
 fi
 
-must ln -sf /opt/mm/mma /usr/bin/mma
+/opt/mm/mm install
 
 must mma prepare
 

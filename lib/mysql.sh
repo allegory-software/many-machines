@@ -1,8 +1,5 @@
-#use die fs
-
-# percona install ------------------------------------------------------------
-
 mysql_install() {
+	say "Installing MySQL..."
 	apt_get_install curl gnupg2 lsb-release
 	must wget -nv https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb -O percona.deb
 	export DEBIAN_FRONTEND=noninteractive
@@ -11,6 +8,7 @@ mysql_install() {
 	must rm percona.deb
 	must percona-release setup -y pxc80
 	apt_get_install percona-xtradb-cluster percona-xtrabackup-80 qpress
+	say "MySQL install done."
 }
 
 mysql_config() {

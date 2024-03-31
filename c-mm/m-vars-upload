@@ -1,0 +1,4 @@
+#!/bin/bash
+. mmlib
+
+machine_vars_upload "$@"

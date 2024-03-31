@@ -1,5 +1,3 @@
-#use die
-
 # make repeated git pulls faster by reusing SSH connections.
 # ...alas, it doesn't work, gives `mux_client_request_session: read from master failed: Broken pipe`
 # export GIT_SSH_COMMAND="ssh -o ControlMaster=auto -o ControlPersist=10 -o ControlPath=~/.ssh/control-%h-%p-%r-git"

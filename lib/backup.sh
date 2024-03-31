@@ -1,5 +1,3 @@
-#use mysql fs
-
 bkp_dir() { # machine|deploy [BKP] [files|mysql]
 	[ "$1" ] || die
 	[ "$2" ] || return

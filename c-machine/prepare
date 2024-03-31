@@ -1,5 +1,5 @@
 #!/bin/bash
-. /opt/mm/lib/all
+. mmlib
 
 checkvars MACHINE MYSQL_ROOT_PASS DHPARAM-
 
@@ -30,7 +30,6 @@ nginx -s reload
 
 git_install_git_up
 git_config_user "mm@allegory.ro" "Many Machines"
-ssh_git_keys_update
 
 mysql_install
 mysql_config "\

@@ -1,4 +1,4 @@
 #!/bin/bash
-. /opt/mm/lib/all || exit 1
+. mmlib
 
 ssh_to "$@"
