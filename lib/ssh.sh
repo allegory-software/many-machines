@@ -17,7 +17,7 @@ ssh_cmd() { # MACHINE= HOST=
 root@$HOST"
 }
 
-ssh_to() { # MACHINE|DEPLOY COMMAND...
+ssh_to() { # MACHINE|DEPLOY COMMAND ...
 	ip_of "$1"; shift
 	MACHINE=$R2 HOST=$R1 ssh_cmd
 	must $R1 "$@" # NOTE: arg expansion only on newlines (but not spaces) due to IFS

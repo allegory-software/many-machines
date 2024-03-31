@@ -35,7 +35,7 @@ machine_vars() {
 	local GIT_VARS=""
 	pushd var/git_hosting
 	local NAME
-	for NAME in */; do
+	for NAME in *; do
 		checkfile $NAME/host; local HOST=$(cat $R1)
 		checkfile $NAME/ssh_hostkey; local SSH_HOSTKEY="$(cat $R1)"
 		checkfile $NAME/ssh_key; local SSH_KEY="$(cat $R1)"
@@ -67,15 +67,15 @@ machine_vars_upload() {
 }
 
 each_machine() { # COMMAND ...
-	pushd var/machines
+	cd var/machines
 	local CMD="$1"; shift
 	local MACHINE
-	for MACHINE in */; do
-		popd
+	for MACHINE in *; do
+		cd ../..
 		"$CMD" "$MACHINE" "$@"
-		pushd var/machines
+		cd var/mahines
 	done
-	popd
+	cd ../..
 }
 
 # deploys --------------------------------------------------------------------
