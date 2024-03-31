@@ -1,3 +1,6 @@
+pushd() { command pushd "$@" > /dev/null; }
+popd()  { command popd  "$@" > /dev/null; }
+
 check_abs_filepath() {
 	[ "${1:0:1}" == "/" ] || die "path not absolute: $1"
 	[ "${1: -1}" == "/" ] && die "path ends in slash: $1"

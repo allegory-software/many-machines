@@ -1,3 +1,5 @@
+# machines -------------------------------------------------------------------
+
 machine_of() {
 	checknosp "$1" "required: machine or deployment name"
 	if [ -d var/deploys/$1 ]; then
@@ -6,7 +8,7 @@ machine_of() {
 	elif [ -d var/machines/$1 ]; then
 		R1=$1
 	else
-		die "No machine or deploy named: $1"
+		die "No machine or deploy named: '$1'"
 	fi
 }
 
@@ -31,8 +33,9 @@ machine_vars() {
 	checkfile var/machine_vars; MM_VARS="$(cat $R1)"
 	local GIT_HOSTS=""
 	local GIT_VARS=""
-	cd var/git_hosting
-	for NAME in *; do
+	pushd var/git_hosting
+	local NAME
+	for NAME in */; do
 		checkfile $NAME/host; local HOST=$(cat $R1)
 		checkfile $NAME/ssh_hostkey; local SSH_HOSTKEY="$(cat $R1)"
 		checkfile $NAME/ssh_key; local SSH_KEY="$(cat $R1)"
@@ -44,7 +47,7 @@ ${NAME^^}_SSH_HOSTKEY=\"$SSH_HOSTKEY\"
 ${NAME^^}_SSH_KEY=\"$SSH_KEY\"
 "
 	done
-	cd ../..
+	popd
 	R1="
 MACHINE=$MACHINE
 DHPARAM=\"$DHPARAM\"
@@ -62,3 +65,18 @@ machine_vars_upload() {
 	say "Uploading env vars to /root/.mm/vars ..."
 	echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
 }
+
+each_machine() { # COMMAND ...
+	pushd var/machines
+	local CMD="$1"; shift
+	local MACHINE
+	for MACHINE in */; do
+		popd
+		"$CMD" "$MACHINE" "$@"
+		pushd var/machines
+	done
+	popd
+}
+
+# deploys --------------------------------------------------------------------
+

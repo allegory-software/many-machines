@@ -1,0 +1,4 @@
+#!/bin/bash
+. mmlib
+
+each_machine ssh_to mma ssh-git-keys-update

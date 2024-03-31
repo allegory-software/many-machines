@@ -126,6 +126,7 @@ ssh_git_keys_update_for_user() { # USER
 ssh_git_keys_update() {
 	checkvars GIT_HOSTS-
 	for NAME in $GIT_HOSTS; do
+		say "Updating git keys for: $NAME"; indent
 		local -n HOST=${NAME^^}_HOST
 		local -n SSH_HOSTKEY=${NAME^^}_SSH_HOSTKEY
 		local -n SSH_KEY=${NAME^^}_SSH_KEY
@@ -134,16 +135,14 @@ ssh_git_keys_update() {
 		ssh_hostkey_update $HOST "$SSH_HOSTKEY"
 		ssh_host_key_update $HOST mm_$NAME "$SSH_KEY" unstable_ip
 
-		(
-		cd /home || exit 1
-		shopt -s nullglob
+		must pushd /home
 		for USER in *; do
 			[ -d /home/$USER/.ssh ] && \
 				HOME=/home/$USER USER=$USER ssh_host_key_update \
 					$HOST mm_$NAME "$SSH_KEY" unstable_ip
 		done
-		exit 0 # for some reason, the for loop sets an exit code...
-		) || exit
+		popd
+		outdent
 	done
 }
 

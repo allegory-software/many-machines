@@ -1,13 +1,13 @@
 #!/bin/bash
 . mmlib
 
-MACHINE="$1"; checkvar MACHINE
+MD="$1"; checkvar MD
 
-machine_vars_upload "$MACHINE"
+machine_vars_upload "$MD"
 
-SRC_DIR=var/.acme.sh.etc/ca DST_MACHINE=$MACHINE DST_DIR=/root/.acme.sh.etc/ca rsync_dir
+SRC_DIR=var/.acme.sh.etc/ca DST_MACHINE=$MD DST_DIR=/root/.acme.sh.etc/ca rsync_dir
 
-ssh_to "$MACHINE" bash -s << EOF
+ssh_to "$MD" bash -s << EOF
 
 shopt -s nullglob
 IFS=$'\n\b'
