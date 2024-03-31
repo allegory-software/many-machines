@@ -24,11 +24,11 @@ ssh_to() { # MACHINE|DEPLOY COMMAND ...
 }
 
 ssh_bash() { # MACHINE COMMANDS ...
-	MACHINE="$1"; shift
+	local MACHINE="$1"; shift
 	ssh_to "$MACHINE" bash -c "\"$@\""
 }
 
-ssh_hostkey_update() { # HOST HOSTKEY
+ssh_hostkey_update_for_user() { # HOST HOSTKEY
 	local host="$1"
 	local fp="$2"
 	checkvars host fp-
@@ -42,10 +42,12 @@ ssh_hostkey_update() { # HOST HOSTKEY
 	outdent
 }
 
-ssh_host_update() { # HOST KEYNAME [unstable_ip]
-	local host="$1"
-	local keyname="$2"
-	checkvars host keyname
+ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
+	local USER="$1"
+	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
+	local host="$2"
+	local keyname="$3"
+	checkvars USER host keyname
 	say "Assigning SSH key '$keyname' to host '$host' $HOME $3 ..."; indent
 	must mkdir -p $HOME/.ssh
 	local CONFIG=$HOME/.ssh/config
@@ -62,21 +64,26 @@ Host $1
 	outdent
 }
 
-ssh_key_update() { # keyname key
-	say "Updating SSH key '$1' ($HOME) ..."; indent
+ssh_key_update_for_user() { # USER keyname key
+	local USER="$1"
+	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
+	local KEYNAME="$2"
+	local KEY="$3"
+	checkvars USER KEYNAME KEY-
+	say "Updating SSH key '$KEYNAME' in $HOME/.ssh ..."; indent
 	must mkdir -p $HOME/.ssh
-	local idf=$HOME/.ssh/${1}.id_rsa
-	save "$2" $idf $USER
+	local KEYFILE=$HOME/.ssh/${KEYNAME}.id_rsa
+	save "$KEY" $KEYFILE $USER
 	must chown $USER:$USER -R $HOME/.ssh
 	outdent
 }
 
-ssh_host_key_update() { # [HOME=] [USER=] HOST KEYNAME KEY [unstable_ip]
-	ssh_key_update "$2" "$3"
-	ssh_host_update "$1" "$2" "$4"
+ssh_host_key_update_for_user() { # USER HOST KEYNAME KEY [unstable_ip]
+	ssh_key_update_for_user "$1" "$3" "$4"
+	ssh_host_update_for_user "$1" "$2" "$3" "$5"
 }
 
-ssh_pubkey_for_user() { # [USER=] USER KEYNAME
+ssh_pubkey_for_user() { # USER KEYNAME
 	local USER="$1"
 	local KEYNAME="$2"
 	checkvars USER KEYNAME
@@ -118,37 +125,20 @@ ssh_pubkey_update() { # KEYNAME KEY
 ssh_git_keys_update_for_user() { # USER
 	local USER="$1"
 	checkvars USER GIT_HOSTS-
+	say "Updating git keys for user: $USER..."; indent
 	for NAME in $GIT_HOSTS; do
 		local -n HOST=${NAME^^}_HOST
 		local -n SSH_KEY=${NAME^^}_SSH_KEY
 		checkvars HOST SSH_KEY-
-
-		HOME=/home/$USER USER=$USER ssh_host_key_update \
-			$HOST mm_$NAME "$SSH_KEY" unstable_ip
+		ssh_host_key_update $USER $HOST mm_$NAME "$SSH_KEY" unstable_ip
 	done
+	outdent
 }
 
 ssh_git_keys_update() {
-	checkvars GIT_HOSTS-
-	for NAME in $GIT_HOSTS; do
-		say "Updating git keys for: $NAME"; indent
-		local -n HOST=${NAME^^}_HOST
-		local -n SSH_HOSTKEY=${NAME^^}_SSH_HOSTKEY
-		local -n SSH_KEY=${NAME^^}_SSH_KEY
-		checkvars HOST SSH_HOSTKEY- SSH_KEY-
-
-		ssh_hostkey_update $HOST "$SSH_HOSTKEY"
-		ssh_host_key_update $HOST mm_$NAME "$SSH_KEY" unstable_ip
-
-		must pushd /home
-		local USER
-		for USER in *; do
-			[ -d /home/$USER/.ssh ] && \
-				HOME=/home/$USER USER=$USER ssh_host_key_update \
-					$HOST mm_$NAME "$SSH_KEY" unstable_ip
-		done
-		popd
-		outdent
+	local USER
+	for USER in $(echo root; machine_deploys); do
+		ssh_git_keys_update_for_user "$USER"
 	done
 }
 
