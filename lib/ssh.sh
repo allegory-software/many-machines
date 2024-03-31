@@ -115,7 +115,7 @@ ssh_git_keys_update_for_user() { # USER
 	checkvars USER GIT_HOSTS-
 	say "Updating git keys for user: $USER ..."; indent
 	for NAME in $GIT_HOSTS; do
-		echo "$NAME"
+		say "Updating key: $NAME ..."
 		local -n HOST=${NAME^^}_HOST
 		local -n SSH_KEY=${NAME^^}_SSH_KEY
 		checkvars HOST SSH_KEY-
