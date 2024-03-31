@@ -73,7 +73,7 @@ each_machine() { # COMMAND ...
 	for MACHINE in *; do
 		cd ../..
 		"$CMD" "$MACHINE" "$@"
-		cd var/mahines
+		cd var/machines
 	done
 	cd ../..
 }

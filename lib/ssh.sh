@@ -1,6 +1,6 @@
 ssh_cmd_opt() { # MACHINE=
 	R1="ssh
--oBatchMode=no
+-oBatchMode=yes
 -oConnectTimeout=3
 -oPreferredAuthentications=publickey
 -oUserKnownHostsFile=var/ssh_host_keys

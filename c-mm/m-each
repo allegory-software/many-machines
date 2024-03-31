@@ -2,4 +2,4 @@
 . mmlib
 
 [ "$1" ] || die "Usage: mm m-each COMMAND ..."
-each_machine ssh_to "$@"
+each_machine "$@"
