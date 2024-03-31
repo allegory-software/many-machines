@@ -1,4 +1,5 @@
 #!/bin/bash
 . mmlib
 
+git reset --hard HEAD
 must git pull
