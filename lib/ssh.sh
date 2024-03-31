@@ -45,19 +45,20 @@ ssh_hostkey_update_for_user() { # HOST HOSTKEY
 ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
 	local USER="$1"
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	local host="$2"
-	local keyname="$3"
-	checkvars USER host keyname
-	say "Assigning SSH key '$keyname' to host '$host' $HOME $3 ..."; indent
+	local HOST="$2"
+	local KEYNAME="$3"
+	local UNSTABLE_IP="$4"
+	checkvars USER HOST KEYNAME
+	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER' ..."; indent
 	must mkdir -p $HOME/.ssh
 	local CONFIG=$HOME/.ssh/config
 	touch "$CONFIG"
-	local s="$(sed 's/^Host/\n&/' $CONFIG | sed '/^Host '"$1"'$/,/^$/d;/^$/d')"
+	local s="$(sed 's/^Host/\n&/' $CONFIG | sed '/^Host '"$HOST"'$/,/^$/d;/^$/d')"
 	s="$s
-Host $1
-  HostName $1
-  IdentityFile $HOME/.ssh/${2}.id_rsa"
-	[ "$3" ] && s="$s
+Host $KEYNAME
+  HostName $HOST
+  IdentityFile $HOME/.ssh/${KEYNAME}.id_rsa"
+	[ "$UNSTABLE_IP" ] && s="$s
   CheckHostIP no"
 	save "$s" $CONFIG
 	must chown $USER:$USER -R $HOME/.ssh
@@ -70,7 +71,7 @@ ssh_key_update_for_user() { # USER keyname key
 	local KEYNAME="$2"
 	local KEY="$3"
 	checkvars USER KEYNAME KEY-
-	say "Updating SSH key '$KEYNAME' in $HOME/.ssh ..."; indent
+	say "Updating SSH key '$KEYNAME' for user '$USER' ..."; indent
 	must mkdir -p $HOME/.ssh
 	local KEYFILE=$HOME/.ssh/${KEYNAME}.id_rsa
 	save "$KEY" $KEYFILE $USER
@@ -125,8 +126,9 @@ ssh_pubkey_update() { # KEYNAME KEY
 ssh_git_keys_update_for_user() { # USER
 	local USER="$1"
 	checkvars USER GIT_HOSTS-
-	say "Updating git keys for user: $USER..."; indent
+	say "Updating git keys for user: $USER ..."; indent
 	for NAME in $GIT_HOSTS; do
+		echo "$NAME"
 		local -n HOST=${NAME^^}_HOST
 		local -n SSH_KEY=${NAME^^}_SSH_KEY
 		checkvars HOST SSH_KEY-
@@ -154,12 +156,12 @@ rsync_dir() {
 	[ "$SRC_MACHINE" ] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
 	[ "$DST_MACHINE" ] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
 
-	say-n "Sync'ing dir
+	say -n "Sync'ing dir
   src: $SRC_DIR
   dst: $DST_DIR "
-	[ "$LINK_DIR" ] && say-n "
+	[ "$LINK_DIR" ] && say -n "
   lnk: $LINK_DIR "
-	say-n "
+	say -n "
   ... "
 	indent
 

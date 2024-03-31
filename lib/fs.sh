@@ -10,7 +10,7 @@ rm_dir() { # DIR
 	local dir="$1"
 	checkvars dir
 	check_abs_filepath "$dir"
-	say-n "Removing dir $dir ... "
+	say -n "Removing dir $dir ... "
 	[ "$DRY" ] || must rm -rf "$dir"
 	say OK
 }
@@ -19,7 +19,7 @@ rm_file() { # FILE
 	local file="$1"
 	checkvars file
 	check_abs_filepath "$file"
-	say-n "Removing file $file ... "
+	say -n "Removing file $file ... "
 	[ "$DRY" ] || must rm -f "$file"
 	say OK
 }
@@ -29,7 +29,7 @@ cp_file() { # SRC DST [USER]
 	local dst="$2"
 	local user="$3"
 	checkvars src dst
-	say-n "Copying file
+	say -n "Copying file
 	src: $src
 	dst: $dst "
 	must mkdir -p `dirname $dst`
@@ -56,7 +56,7 @@ append() { # S FILE
 	local s="$1"
 	local file="$2"
 	checkvars s- file
-	say-n "Appending ${#s} bytes to file $file ... "
+	say -n "Appending ${#s} bytes to file $file ... "
 	debug-n "MUST: append \"$s\" $file "
 	if [ "$DRY" ] || printf "%s" "$s" >> "$file"; then
 		debug "[$?]"
@@ -71,7 +71,7 @@ save() { # S FILE [USER]
 	local file="$2"
 	local user="$3"
 	checkvars s- file
-	say-n "Saving ${#s} bytes to file $file ... "
+	say -n "Saving ${#s} bytes to file $file ... "
 	debug-n "MUST: save \"$s\" $file "
 	if [ "$DRY" ] || printf "%s" "$s" > "$file"; then
 		debug "[$?]"
@@ -86,24 +86,16 @@ save() { # S FILE [USER]
 	say OK
 }
 
-# TODO: finish this
-: '
-replace_lines() { # REGEX FILE
+replace_lines() { # REGEX S FILE
 	local regex="$1"
-	local file="$2"
-	checkvars regex- file
-	say-n "Removing line containing $regex from file $file ..."
+	local s="$2"
+	local file="$3"
+	checkvars regex- s- file
+	say "Replacing line containing $regex to $s in file $file ... "; indent
 	local s="$(cat "$file")" || die "cat $file [$?]"
-	local s1="${s//$regex/}"
-	if [ "$s" == "$s1" ]; then
-		say "No match"
-	else
-		say "Match found"
-		save "$s" "$file"
-		say "OK"
-	fi
+	local s1="${s//$regex/$}"
+	[ "$s1" != "$s" ] && save "$s1" "$file"
 }
-'
 
 sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
 	checkvars SRC_DIR DST_DIR
@@ -112,12 +104,12 @@ sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
 		checkvars LINK_DIR
 	}
 
-	say-n "Sync'ing dir
+	say -n "Sync'ing dir
   src: $src_dir
   dst: $dst_dir "
-	[ "$LINK_DIR" ] && say-n "
+	[ "$LINK_DIR" ] && say -n "
   lnk: $LINK_DIR "
-	say-n "
+	say -n "
   ... "
 
 	# NOTE: the dot syntax cuts out the path before it as a way to make the path relative.

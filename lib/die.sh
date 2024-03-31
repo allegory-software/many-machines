@@ -1,12 +1,12 @@
 # die harder, see https://github.com/capr/die
 
-INDENT=
+export INDENT
+SAY_NL=
 
 indent()    { INDENT="$INDENT  "; }
 outdent()   { INDENT="${INDENT:0:${#INDENT}-2}"; }
 indent-stdin() { sed "s/^/$INDENT/"; }
-say()       { echo    "${INDENT}$@" >&2; }
-say-n()     { echo -n "${INDENT}$@" >&2; }
+say()       { [ "$SAY_NL" ] && echo -n "${INDENT}"; echo "$@" >&2; [ "$1" == "-n" ] && [ "$1" == -n ] && SAY_NL= || SAY_NL=1; }
 die()       { echo -n "${INDENT}ABORT: " >&2; echo "$@" >&2; exit 1; }
 debug()     { if [ "$DEBUG" ]; then echo    "${INDENT}$@" >&2; fi; }
 debug-n()   { if [ "$DEBUG" ]; then echo -n "${INDENT}$@" >&2; fi; }
@@ -58,6 +58,7 @@ checkvars() { # NAME1[-] NAME2 ...
 			[[ "${!var}" =~ ( |\') ]] && die "${FUNCNAME[1]}: \$$var contains spaces"
 		fi
 	done
+	return 0
 }
 
 checkfile() {

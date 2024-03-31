@@ -78,11 +78,12 @@ each_machine() { # [MACHINE] COMMAND ...
 	if [ "$MACHINE" ]; then
 		local CMD="$1"; shift
 		"$CMD" "$MACHINE" "$@"
-		return
 	else
 		local CMD="$1"; shift
 		for MACHINE in `active_machines`; do
+			say "On machine $MACHINE:"; indent
 			"$CMD" "$MACHINE" "$@"
+			outdent
 		done
 	fi
 }
