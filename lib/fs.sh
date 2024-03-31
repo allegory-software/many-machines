@@ -57,7 +57,7 @@ append() { # S FILE
 	local file="$2"
 	checkvars s- file
 	say -n "Appending ${#s} bytes to file $file ... "
-	debug-n "MUST: append \"$s\" $file "
+	debug -n "MUST: append \"$s\" $file "
 	if [ "$DRY" ] || printf "%s" "$s" >> "$file"; then
 		debug "[$?]"
 	else
@@ -72,7 +72,7 @@ save() { # S FILE [USER]
 	local user="$3"
 	checkvars s- file
 	say -n "Saving ${#s} bytes to file $file ... "
-	debug-n "MUST: save \"$s\" $file "
+	debug -n "MUST: save \"$s\" $file "
 	if [ "$DRY" ] || printf "%s" "$s" > "$file"; then
 		debug "[$?]"
 	else

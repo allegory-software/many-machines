@@ -6,10 +6,9 @@ SAY_NL=
 indent()    { INDENT="$INDENT  "; }
 outdent()   { INDENT="${INDENT:0:${#INDENT}-2}"; }
 indent-stdin() { sed "s/^/$INDENT/"; }
-say()       { [ "$SAY_NL" ] && echo -n "${INDENT}"; echo "$@" >&2; [ "$1" == "-n" ] && [ "$1" == -n ] && SAY_NL= || SAY_NL=1; }
+say()       { [ "$SAY_NL" ] && echo -n "${INDENT}" >&2; echo "$@" >&2; [ "$1" == "-n" ] && [ "$1" == -n ] && SAY_NL= || SAY_NL=1; }
 die()       { echo -n "${INDENT}ABORT: " >&2; echo "$@" >&2; exit 1; }
 debug()     { if [ "$DEBUG" ]; then echo    "${INDENT}$@" >&2; fi; }
-debug-n()   { if [ "$DEBUG" ]; then echo -n "${INDENT}$@" >&2; fi; }
 run()       { debug -n "${INDENT}EXEC: $@ "; "$@"; local ret=$?; debug "[$ret]"; return $ret; }
 must()      { debug -n "${INDENT}MUST: $@ "; "$@"; local ret=$?; debug "[$ret]"; [ $ret == 0 ] || die "${INDENT}$@ [$ret]"; }
 
