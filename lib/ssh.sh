@@ -130,7 +130,7 @@ ssh_git_keys_update_for_user() { # USER
 		local -n HOST=${NAME^^}_HOST
 		local -n SSH_KEY=${NAME^^}_SSH_KEY
 		checkvars HOST SSH_KEY-
-		ssh_host_key_update $USER $HOST mm_$NAME "$SSH_KEY" unstable_ip
+		ssh_host_key_update_for_user $USER $HOST mm_$NAME "$SSH_KEY" unstable_ip
 	done
 	outdent
 }
