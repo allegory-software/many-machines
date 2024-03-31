@@ -1,8 +1,4 @@
 #!/bin/bash
 . mmlib
 
-if [ -z "$1" ]; then
-	each_machine machine_vars_upload
-else
-	machine_vars_upload "$1"
-fi
+each_machine "$1" machine_vars_upload

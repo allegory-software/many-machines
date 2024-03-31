@@ -1,0 +1,7 @@
+#!/bin/bash
+. mmlib
+
+must chmod 440 var-secret
+must tar czf var.tar.gz var
+must gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-file var-secret var.tar.gz
+must rm var.tar.gz

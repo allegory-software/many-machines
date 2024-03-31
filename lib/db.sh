@@ -66,16 +66,23 @@ machine_vars_upload() {
 	echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
 }
 
-each_machine() { # COMMAND ...
-	cd var/machines
-	local CMD="$1"; shift
-	local MACHINE
-	for MACHINE in *; do
-		cd ../..
+each_machine() { # [MACHINE] COMMAND ...
+	local MACHINE="$1"; shift
+	if [ "$MACHINE" ]; then
+		local CMD="$1"; shift
 		"$CMD" "$MACHINE" "$@"
+		return
+	else
 		cd var/machines
-	done
-	cd ../..
+		local CMD="$1"; shift
+		for MACHINE in *; do
+			[ -f active ] || continue
+			cd ../..
+			"$CMD" "$MACHINE" "$@"
+			cd var/machines
+		done
+		cd ../..
+	fi
 }
 
 # deploys --------------------------------------------------------------------

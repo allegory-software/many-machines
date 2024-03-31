@@ -23,6 +23,11 @@ ssh_to() { # MACHINE|DEPLOY COMMAND ...
 	must $R1 "$@" # NOTE: arg expansion only on newlines (but not spaces) due to IFS
 }
 
+ssh_bash() { # MACHINE COMMANDS ...
+	MACHINE="$1"; shift
+	ssh_to "$MACHINE" bash -c "\"$@\""
+}
+
 ssh_hostkey_update() { # HOST HOSTKEY
 	local host="$1"
 	local fp="$2"

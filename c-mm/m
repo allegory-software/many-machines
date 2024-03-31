@@ -1,13 +1,14 @@
 #!/bin/bash
 . mmlib
 
-FMT="%-10s %-11s\n"
-printf "$FMT" "MACHINE" "PUBLIC_IP"
+FMT="%-10s %-6s %-11s\n"
+printf "$FMT" "MACHINE" "ACTIVE" "PUBLIC_IP"
 
 cd var/machines
 for MACHINE in *; do
 	cd "$MACHINE"
 	IP=`cat public_ip`
-	printf "$FMT" "$MACHINE" "$IP"
+	[ -f active ] && ACTIVE=Y || ACTIVE=N
+	printf "$FMT" "$MACHINE" "$ACTIVE" "$IP"
 	cd ..
 done
