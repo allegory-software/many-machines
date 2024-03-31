@@ -1,0 +1,9 @@
+#!/bin/bash
+. mmlib
+
+cd /home
+for USER in *; do
+	say "Updating mc for: $USER..."
+	must mkdir -p $USER/.config
+	SRC_DIR=/root/.config/mc DST_DIR=$USER/.config sync_dir
+done

@@ -28,6 +28,12 @@ ssh_bash() { # MACHINE COMMANDS ...
 	ssh_to "$MACHINE" bash -c "\"$@\""
 }
 
+ssh_hostkey() {
+	ip_of "$1"; local MACHINE="$R2"
+	local hkf=var/machines/$MACHINE/ssh_hostkey
+	must catfile $hkf
+}
+
 ssh_hostkey_update() {
 	ip_of "$1"; local MACHINE="$R2"
 	say -n "Updating SSH host fingerprint for: $MACHINE ... "
@@ -84,29 +90,29 @@ ssh_pubkey_for_user() { # USER KEYNAME
 	cat $HOME/.ssh/authorized_keys | grep " $KEYNAME\$"
 }
 
-ssh_pubkey_update_for_user() { # USER KEYNAME KEY
+ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY
 	local USER="$1"
 	local KEYNAME="$2"
-	local KEY="$3"
-	checkvars USER KEYNAME KEY-
+	local PUBKEY="$3"
+	checkvars USER KEYNAME PUBKEY-
 	say "Updating SSH public key '$KEYNAME' for user '$USER' ..."; indent
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
 	local ak=$HOME/.ssh/authorized_keys
 	must mkdir -p $HOME/.ssh
 	[ -f $ak ] && must sed -i "/ $KEYNAME/d" $ak
 	local newline=$'\n'
-	must append "$KEY$newline" $ak
+	must append "$PUBKEY$newline" $ak
 	must chmod 600 $ak
 	must chown $USER:$USER -R $HOME/.ssh
 	outdent
 }
 
-ssh_pubkey_update() { # KEYNAME KEY
+ssh_pubkey_update() { # KEYNAME PUBKEY
 	local KEYNAME="$1"
-	local KEY="$2"
-	checkvars KEYNAME KEY-
+	local PUBKEY="$2"
+	checkvars KEYNAME PUBKEY-
 	for USER in $(echo root; machine_deploys); do
-		ssh_pubkey_update_for_user $USER $KEYNAME "$KEY"
+		ssh_pubkey_update_for_user $USER $KEYNAME "$PUBKEY"
 	done
 }
 

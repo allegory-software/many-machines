@@ -1,0 +1,5 @@
+#!/bin/bash
+. mmlib
+
+catfile var/ssh_key.pub
+each_machine "$1" ssh_pubkey_update_for_user "$2" mm "$R1"

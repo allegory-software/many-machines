@@ -105,15 +105,20 @@ sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
 	}
 
 	say -n "Sync'ing dir
-  src: $src_dir
-  dst: $dst_dir "
+  src: $SRC_DIR
+  dst: $PWD/$DST_DIR "
 	[ "$LINK_DIR" ] && say -n "
   lnk: $LINK_DIR "
 	say -n "
   ... "
 
 	# NOTE: the dot syntax cuts out the path before it as a way to make the path relative.
-	[ "$DRY" ] || must rsync --delete -aHR ${LINK_DIR:+--link-dest=$LINK_DIR} $src_dir/./. $dst_dir
+	[ "$DRY" ] || must rsync --delete -aHR ${LINK_DIR:+--link-dest=$LINK_DIR} $SRC_DIR/./. $DST_DIR
 
 	say "OK. $(dir_lean_size $dst_dir | numfmt --to=iec) bytes in destination."
+}
+
+catfile() {
+	local FILE="$1"; checkvars FILE
+	R1="$(cat "$FILE")"
 }

@@ -1,0 +1,4 @@
+#!/bin/bash
+. mmlib
+
+ssh_pubkey_update "$@"
