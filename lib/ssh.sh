@@ -141,6 +141,7 @@ ssh_git_keys_update() {
 		ssh_host_key_update $HOST mm_$NAME "$SSH_KEY" unstable_ip
 
 		must pushd /home
+		local USER
 		for USER in *; do
 			[ -d /home/$USER/.ssh ] && \
 				HOME=/home/$USER USER=$USER ssh_host_key_update \
