@@ -55,7 +55,7 @@ ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
 	touch "$CONFIG"
 	local s="$(sed 's/^Host/\n&/' $CONFIG | sed '/^Host '"$HOST"'$/,/^$/d;/^$/d')"
 	s="$s
-Host $KEYNAME
+Host $HOST
   HostName $HOST
   IdentityFile $HOME/.ssh/${KEYNAME}.id_rsa"
 	[ "$UNSTABLE_IP" ] && s="$s
