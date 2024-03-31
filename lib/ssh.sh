@@ -3,7 +3,7 @@ ssh_cmd_opt() { # MACHINE=
 -oBatchMode=yes
 -oConnectTimeout=3
 -oPreferredAuthentications=publickey
--oUserKnownHostsFile=var/ssh_host_keys
+-oUserKnownHostsFile=var/machines/$MACHINE/ssh_hostkey
 -oControlMaster=auto
 -oControlPath=~/.ssh/control-%h-%p-%r
 -oControlPersist=10
@@ -28,18 +28,10 @@ ssh_bash() { # MACHINE COMMANDS ...
 	ssh_to "$MACHINE" bash -c "\"$@\""
 }
 
-ssh_hostkey_update_for_user() { # HOST HOSTKEY
-	local host="$1"
-	local fp="$2"
-	checkvars host fp-
-	say "Updating SSH host fingerprint for host $host (/etc/ssh) ..."; indent
-	local kh=/etc/ssh/ssh_known_hosts
-	local s="$(run ssh-keygen -R "$host" -f $kh 2>&1 | indent-stdin)" # remove host line if found
-	echo -n "$s" 1>&2
-	local newline=$'\n'
-	append "$fp$newline" $kh
-	must chmod 644 $kh
-	outdent
+ssh_hostkey_update() {
+	ip_of "$1"; local MACHINE="$R2"
+	say -n "Updating SSH host fingerprint for: $MACHINE ... "
+	must ssh-keyscan -4 -T 2 -t rsa $R1 > var/machines/$MACHINE/ssh_hostkey
 }
 
 ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
@@ -65,7 +57,7 @@ Host $HOST
 	outdent
 }
 
-ssh_key_update_for_user() { # USER keyname key
+ssh_key_update_for_user() { # USER KEYNAME KEY
 	local USER="$1"
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
 	local KEYNAME="$2"
@@ -113,14 +105,9 @@ ssh_pubkey_update() { # KEYNAME KEY
 	local KEYNAME="$1"
 	local KEY="$2"
 	checkvars KEYNAME KEY-
-	(
-	cd /home || exit 1
-	shopt -s nullglob
-	for USER in *; do
+	for USER in $(echo root; machine_deploys); do
 		ssh_pubkey_update_for_user $USER $KEYNAME "$KEY"
 	done
-	ssh_pubkey_update_for_user root $KEYNAME "$KEY"
-	)
 }
 
 ssh_git_keys_update_for_user() { # USER
@@ -140,7 +127,7 @@ ssh_git_keys_update_for_user() { # USER
 ssh_git_keys_update() {
 	local USER
 	for USER in $(echo root; machine_deploys); do
-		ssh_git_keys_update_for_user "$USER"
+		ssh_git_keys_update_for_user $USER
 	done
 }
 

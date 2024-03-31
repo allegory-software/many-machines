@@ -1,20 +1,11 @@
-mysql_install() {
-	say "Installing MySQL..."
-	apt_get_install curl gnupg2 lsb-release
-	must wget -nv https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb -O percona.deb
-	export DEBIAN_FRONTEND=noninteractive
-	must dpkg -i percona.deb
-	apt_get install --fix-broken
-	must rm percona.deb
-	must percona-release setup -y pxc80
-	apt_get_install percona-xtradb-cluster percona-xtrabackup-80 qpress
-	say "MySQL install done."
-}
+# mysql admin ----------------------------------------------------------------
 
-mysql_config() {
-	save "
-[mysqld]
-$1" /etc/mysql/mysql.conf.d/z.cnf
+mysql_config() { # NAME CONFIG
+	local name="$1"
+	local s="$2"
+	checkvars name
+	save "[myqld]
+$s" /etc/mysql/mysql.conf.d/mm-$name
 }
 
 # TODO: install percona's monitoring and management tool and see if it's

@@ -1,0 +1,8 @@
+#!/bin/bash
+. mmlib
+
+mysql_stop
+mysql_config nopass "
+skip-grant-tables
+"
+mysql_start

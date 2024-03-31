@@ -1,0 +1,5 @@
+#!/bin/bash
+. mmlib
+
+echo_mysql_root_pass() { mysql_root_pass "$1"; printf "%-10s %s\n" "$1" "$R1"; }
+QUIET=1 each_machine "$1" echo_mysql_root_pass

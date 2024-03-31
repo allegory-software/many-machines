@@ -1,0 +1,6 @@
+#!/bin/bash
+. mmlib
+
+mysql_stop
+mysql_config nopass ""
+mysql_start

@@ -1,0 +1,4 @@
+#!/bin/bash
+. mmlib
+
+echo $MYSQL_ROOT_PASS

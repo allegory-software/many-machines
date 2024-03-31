@@ -17,36 +17,23 @@ append "proc  /proc  proc  defaults,nosuid,nodev,noexec,relatime,hidepid=1  0  0
 
 apt_get_install sudo htop mc git nginx curl
 
-# tarantool 2.1.0
-must curl -L https://tarantool.io/BsbZsuW/release/2/installer.sh | bash
-apt_get_install tarantool
-
+# configure nginx
 # add dhparam.pem from mm (dhparam is public).
 save "$DHPARAM" /etc/nginx/dhparam.pem
-
 # remove nginx placeholder vhost.
 must rm -f /etc/nginx/sites-enabled/default
 nginx -s reload
 
+# configure git for pushing
 git_install_git_up
 git_config_user "mm@allegory.ro" "Many Machines"
-
-mysql_install
-mysql_config "\
-# amazing that this is not the default...
-bind-address = 127.0.0.1
-mysqlx-bind-address = 127.0.0.1
-
-# our binlog is row-based, but we still get an error when creating procs.
-log_bin_trust_function_creators = 1
-"
-must service mysql start
-mysql_update_pass localhost root $MYSQL_ROOT_PASS
-mysql_gen_my_cnf  localhost root $MYSQL_ROOT_PASS
 
 # allow binding to ports < 1024 by any user.
 save 'net.ipv4.ip_unprivileged_port_start=0' \
 	/etc/sysctl.d/50-unprivileged-ports.conf
 must sysctl --system
+
+must mma mysql-install
+must mma tarantool-install
 
 say "Prepare done."

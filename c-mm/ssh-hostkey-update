@@ -1,0 +1,4 @@
+#!/bin/bash
+. mmlib
+
+each_machine "$1" ssh_hostkey_update
