@@ -1,0 +1,5 @@
+#!/bin/bash
+. mmlib
+
+MD="$1"; shift
+each_machine "$MD" ssh_to "$@"

@@ -74,18 +74,25 @@ active_machines() {
 }
 
 each_machine() { # [MACHINE] COMMAND ...
-	local MACHINE="$1"; shift
-	if [ "$MACHINE" ]; then
-		local CMD="$1"; shift
-		"$CMD" "$MACHINE" "$@"
-	else
-		local CMD="$1"; shift
-		for MACHINE in `active_machines`; do
-			say "On machine $MACHINE:"; indent
-			"$CMD" "$MACHINE" "$@"
-			outdent
+	local MDS="$1"; shift
+	local MACHINES
+	if [ "$MDS" ]; then
+		local MD
+		local IFS0="$IFS"; IFS=$' \n\b'
+		for MD in $MDS; do
+			ip_of $MD
+			MACHINES="$MACHINES"$'\n'"$R2"
 		done
+		IFS="$IFS0"
+	else
+		MACHINES="$(active_machines)"
 	fi
+	local CMD="$1"; shift
+	for MACHINE in $MACHINES; do
+		say "On machine $MACHINE:"; indent
+		"$CMD" "$MACHINE" "$@"
+		outdent
+	done
 }
 
 # deploys --------------------------------------------------------------------
