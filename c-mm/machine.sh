@@ -1,1 +1,0 @@
-/root/._mm/lib/machine.sh
