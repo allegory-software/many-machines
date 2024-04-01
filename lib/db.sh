@@ -69,7 +69,7 @@ machine_vars_upload() {
 active_machines() {
 	local MACHINE
 	for MACHINE in `ls -1 var/machines`; do
-		[ -f "var/machines/$MACHINE/active" ] && echo $MACHINE
+		[ "$INACTIVE" != "" -o -f "var/machines/$MACHINE/active" ] && echo $MACHINE
 	done
 }
 

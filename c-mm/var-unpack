@@ -1,4 +1,5 @@
 #!/bin/bash
+# decrypt and unpack var dir
 . mmlib
 
 must gpg --decrypt --batch --yes --passphrase-file var-secret var.tar.gz.gpg > var.tar.gz

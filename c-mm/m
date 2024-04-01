@@ -3,13 +3,12 @@
 . mmlib
 
 FMT="%-10s %-6s %-11s\n"
+
 printf "$FMT" "MACHINE" "ACTIVE" "PUBLIC_IP"
 
-cd var/machines
-for MACHINE in *; do
-	cd "$MACHINE"
-	IP=`cat public_ip`
-	[ -f active ] && ACTIVE=Y || ACTIVE=N
+print_machine() {
+	IP=`cat var/machines/$1/public_ip`
+	[ -f var/machines/$1/active ] && ACTIVE=Y || ACTIVE=N
 	printf "$FMT" "$MACHINE" "$ACTIVE" "$IP"
-	cd ..
-done
+}
+QUIET=1 INACTIVE=1 each_machine "$1" print_machine

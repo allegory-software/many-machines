@@ -1,4 +1,5 @@
 #!/bin/bash
+# pack and encrypt var dir
 . mmlib
 
 must chmod 440 var-secret
