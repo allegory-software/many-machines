@@ -1,4 +1,4 @@
 #!/bin/bash
 . mmlib
 
-QUIET=1 each_machine "$1" ssh_bash mma start "$2"
+each_machine "$1" ssh_bash mma start "$2"

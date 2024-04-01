@@ -81,11 +81,13 @@ is_running() {
 }
 
 service_start() {
-	say "Starting $1..."
-	must service "$1" start
+	local SERVICE="$1"; checkvars SERVICE
+	say "Starting $SERVICE..."
+	must service "$SERVICE" start
 }
 
 service_stop() {
-	say "Stopping $1..."
-	must service "$1" stop
+	local SERVICE="$1"; checkvars SERVICE
+	say "Stopping $SERVICE..."
+	must service "$SERVICE" stop
 }

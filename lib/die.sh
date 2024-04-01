@@ -44,7 +44,7 @@ checkvar() { # NAME[-] [ERROR...]
 		[ "${!var}" ] && return 0
 	fi
 	local err="$@"; [ "$err" ] || err="required"
-	die "${FUNCNAME[1]}: \$$var: $err"
+	die "${FUNCNAME[1]}: $var: $err"
 }
 
 checkvars() { # NAME1[-] NAME2 ...
@@ -52,10 +52,10 @@ checkvars() { # NAME1[-] NAME2 ...
 	for var in $@; do
 		if [ "${var::-1}-" == "${var}" ]; then # spaces allowed
 			var="${var::-1}"
-			[ "${!var}" ] || die "${FUNCNAME[1]}: \$$var required"
+			[ "${!var}" ] || die "${FUNCNAME[1]}: $var required"
 		else
-			[ "${!var}" ] || die "${FUNCNAME[1]}: \$$var required"
-			[[ "${!var}" =~ ( |\') ]] && die "${FUNCNAME[1]}: \$$var contains spaces"
+			[ "${!var}" ] || die "${FUNCNAME[1]}: $var required"
+			[[ "${!var}" =~ ( |\') ]] && die "${FUNCNAME[1]}: $var contains spaces"
 		fi
 	done
 	return 0

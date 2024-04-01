@@ -45,4 +45,5 @@ must mma prepare
 EOF
 }
 
+[ "$1" ] || die "Refusing to prepare all machines."
 each_machine "$1" machine_prepare
