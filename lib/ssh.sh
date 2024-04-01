@@ -97,6 +97,7 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY
 	checkvars USER KEYNAME PUBKEY-
 	say "Updating SSH public key '$KEYNAME' for user '$USER' ..."; indent
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
+	[ -d $HOME ] || die "No home dir for: $USER"
 	local ak=$HOME/.ssh/authorized_keys
 	must mkdir -p $HOME/.ssh
 	[ -f $ak ] && must sed -i "/ $KEYNAME/d" $ak
