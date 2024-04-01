@@ -1,3 +1,4 @@
+
 machine_cores() {
 	local      cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
 	local  sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
@@ -15,30 +16,38 @@ machine_info() {
 	echo "      hdd $(df -l / | awk '(NR > 1) {$2*=1024; printf "%.0f",$2}')"
 }
 
+machine_vars_upload() {
+	MACHINE="$1"; checkvar MACHINE
+	machine_vars "$MACHINE"; VARS="$R1"
+	say "Uploading env vars to $MACHINE in /root/.mm/vars ..."; indent
+	echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
+	outdent
+}
+
 machine_set_hostname() { # machine
 	local HOST="$1"
 	checkvars HOST
+	say "Setting machine hostname to: $HOST..."
 	must hostnamectl set-hostname $HOST
 	must sed -i '/^127.0.0.1/d' /etc/hosts
 	append "\
 127.0.0.1 $HOST $HOST
 127.0.0.1 localhost
 " /etc/hosts
-	say "Machine hostname set to: $HOST."
 }
 
 machine_set_timezone() { # tz
 	local TZ="$1"
 	checkvars TZ
+	say "Setting machine timezone to: $TZ...."
 	must timedatectl set-timezone "$TZ" # sets /etc/localtime and /etc/timezone
-	say "Machine timezone set to: $TZ."
 }
 
 acme_sh() {
 	local cmd_args="/root/.acme.sh/acme.sh --config-home /root/.acme.sh.etc"
 	run $cmd_args "$@"
 	local ret=$?; [ $ret == 2 ] && ret=0 # skipping gets exit code 2.
-	[ $ret == 0 ] || die "$cmd_args "$@" [$ret]"
+	[ $ret == 0 ] || die "$cmd_args $@ [$ret]"
 }
 
 acme_check() {
@@ -65,4 +74,18 @@ machine_deploys() {
 	for USER in `ls -1 /home`; do
 		[ -f "/home/$USER/.deploy" ] && echo $USER
 	done
+}
+
+is_running() {
+	systemctl -q is-active "$1"
+}
+
+service_start() {
+	say "Starting $1..."
+	must service "$1" start
+}
+
+service_stop() {
+	say "Stopping $1..."
+	must service "$1" stop
 }

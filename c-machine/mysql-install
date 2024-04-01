@@ -3,12 +3,8 @@
 
 checkvars MYSQL_ROOT_PASS
 
-mma mysql-running && {
-	say "MySQL is running. Stop it first."
-	exit
-}
-
 say "Installing MySQL..."
+is_running mysql && { say "MySQL is running. Stop it first."; exit 0; }
 
 apt_get_install gnupg2 lsb-release
 
@@ -19,6 +15,8 @@ apt_get install --fix-broken
 must rm percona.deb
 must percona-release setup -y pxc80
 apt_get_install percona-xtradb-cluster percona-xtrabackup-80 qpress
+
+rm percona.deb
 
 mysql_config default "
 
@@ -31,7 +29,7 @@ log_bin_trust_function_creators = 1
 
 "
 
-mysql_start
+service_start mysql
 
 mysql_update_pass localhost root $MYSQL_ROOT_PASS
 mysql_gen_my_cnf  localhost root $MYSQL_ROOT_PASS

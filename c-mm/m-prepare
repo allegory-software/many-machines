@@ -4,10 +4,15 @@
 
 machine_prepare() {
 	MD="$1"; checkvar MD
-	machine_vars_upload "$MD"
+	machine_vars_upload $MD
 
-	SRC_DIR=var/.acme.sh.etc/ca DST_MACHINE=$MD DST_DIR=/root/.acme.sh.etc/ca rsync_dir
+	say; say "Uploading SSL CA..."; indent
+	ssh_bash $MD mkdir -p /root/.acme.sh.etc
+	SRC_DIR=var/.acme.sh.etc/ca DST_MACHINE=$MD \
+		DST_DIR=/root/.acme.sh.etc/ca rsync_dir
+	outdent
 
+	say; say "SSH into machine..."
 	ssh_to "$MD" bash -s << EOF
 
 shopt -s nullglob
@@ -25,7 +30,7 @@ $(cat lib/ssh.sh)
 
 apt_get_update
 apt_get_install git
-ssh_git_keys_update
+ssh_git_keys_update_for_user root
 
 if [ ! -d /opt/mm ]; then
 	must git clone git@github.com:allegory-software/many-machines2.git /opt/mm

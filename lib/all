@@ -3,7 +3,7 @@ cd /opt/mm || exit 1
 
 shopt -s nullglob
 set -o pipefail
-IFS=$'\n\b'
+IFS=$' \n\b'
 
 [ -f ~/.mm/vars ] && . ~/.mm/vars
 

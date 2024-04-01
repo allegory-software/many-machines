@@ -1,8 +1,12 @@
 #!/bin/bash
 . mmlib
 
+say "Installing acme.sh..."
+
 # install acme.sh to auto-renew SSL certs.
-curl https://get.acme.sh | sh -s email=my@example.com --nocron --config-home $PWD/var/.acme.sh.etc
+must curl -sL https://get.acme.sh | must sh -s email=my@example.com --nocron --config-home $PWD/var/.acme.sh.etc 2>/dev/null
 
 # ZeroSSL is the default but it's very slow, so we're switching back to LE.
 acme_sh --set-default-ca --server letsencrypt
+
+say "acme.sh install done."

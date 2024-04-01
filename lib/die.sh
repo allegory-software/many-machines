@@ -7,6 +7,7 @@ indent()    { INDENT="$INDENT  "; }
 outdent()   { INDENT="${INDENT:0:${#INDENT}-2}"; }
 indent-stdin() { sed "s/^/$INDENT/"; }
 say()       { [ "$SAY_NL" ] && echo -n "${INDENT}" >&2; echo "$@" >&2; [ "$1" == "-n" ] && [ "$1" == -n ] && SAY_NL= || SAY_NL=1; }
+say-line()  { printf '=%.0s\n' {1..72}; }
 die()       { echo -n "${INDENT}ABORT: " >&2; echo "$@" >&2; exit 1; }
 debug()     { if [ "$DEBUG" ]; then echo    "${INDENT}$@" >&2; fi; }
 run()       { debug -n "${INDENT}EXEC: $@ "; "$@"; local ret=$?; debug "[$ret]"; return $ret; }

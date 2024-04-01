@@ -1,0 +1,4 @@
+#!/bin/bash
+. mmlib
+
+service_stop "$1"

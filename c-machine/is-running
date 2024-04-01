@@ -1,0 +1,4 @@
+#!/bin/bash
+. mmlib
+
+is_running "$1"

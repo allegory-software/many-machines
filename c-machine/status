@@ -1,0 +1,14 @@
+#!/bin/bash
+. mmlib
+
+print_service_status() {
+	local SERVICE="$1"
+	is_running "$SERVICE"
+	[ $? == 0 ] && STATUS=RUNNING || STATUS=stopped
+	printf "%-10s %-12s %s\n" "$MACHINE" "$SERVICE" "$STATUS"
+}
+
+[ "$1" ] && SERVICES="$1" || SERVICES="mysql tarantool"
+for SERVICE in $SERVICES; do
+	print_service_status "$SERVICE"
+done

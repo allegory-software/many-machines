@@ -1,13 +1,13 @@
 ssh_cmd_opt() { # MACHINE=
 	R1="ssh
--oBatchMode=yes
--oConnectTimeout=3
--oPreferredAuthentications=publickey
--oUserKnownHostsFile=var/machines/$MACHINE/ssh_hostkey
--oControlMaster=auto
--oControlPath=~/.ssh/control-%h-%p-%r
--oControlPersist=10
--ivar/machines/$MACHINE/ssh_key
+-o BatchMode=yes
+-o ConnectTimeout=3
+-o PreferredAuthentications=publickey
+-o UserKnownHostsFile=var/machines/$MACHINE/ssh_hostkey
+-o ControlMaster=auto
+-o ControlPath=~/.ssh/control-%h-%p-%r
+-o ControlPersist=10
+-i var/machines/$MACHINE/ssh_key
 "
 }
 
@@ -20,7 +20,7 @@ root@$HOST"
 ssh_to() { # MACHINE|DEPLOY COMMAND ...
 	ip_of "$1"; shift
 	MACHINE=$R2 HOST=$R1 ssh_cmd
-	must $R1 "$@" # NOTE: arg expansion only on newlines (but not spaces) due to IFS
+	must $R1 "$@"
 }
 
 ssh_bash() { # MACHINE COMMANDS ...
@@ -36,7 +36,7 @@ ssh_hostkey() {
 
 ssh_hostkey_update() {
 	ip_of "$1"; local MACHINE="$R2"
-	say -n "Updating SSH host fingerprint for: $MACHINE ... "
+	say -n "Updating SSH host fingerprint for machine: $MACHINE... "
 	must ssh-keyscan -4 -T 2 -t rsa $R1 > var/machines/$MACHINE/ssh_hostkey
 }
 
@@ -47,7 +47,7 @@ ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
 	local KEYNAME="$3"
 	local UNSTABLE_IP="$4"
 	checkvars USER HOST KEYNAME
-	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER' ..."; indent
+	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER'..."; indent
 	must mkdir -p $HOME/.ssh
 	local CONFIG=$HOME/.ssh/config
 	touch "$CONFIG"
@@ -69,7 +69,7 @@ ssh_key_update_for_user() { # USER KEYNAME KEY
 	local KEYNAME="$2"
 	local KEY="$3"
 	checkvars USER KEYNAME KEY-
-	say "Updating SSH key '$KEYNAME' for user '$USER' ..."; indent
+	say "Updating SSH key '$KEYNAME' for user '$USER'..."; indent
 	must mkdir -p $HOME/.ssh
 	local KEYFILE=$HOME/.ssh/${KEYNAME}.id_rsa
 	save "$KEY" $KEYFILE $USER
@@ -95,9 +95,9 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY
 	local KEYNAME="$2"
 	local PUBKEY="$3"
 	checkvars USER KEYNAME PUBKEY-
-	say "Updating SSH public key '$KEYNAME' for user '$USER' ..."; indent
+	say "Updating SSH public key '$KEYNAME' for user '$USER'..."; indent
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	[ -d $HOME ] || die "No home dir for: $USER"
+	[ -d $HOME ] || die "No home dir for user '$USER'"
 	local ak=$HOME/.ssh/authorized_keys
 	must mkdir -p $HOME/.ssh
 	[ -f $ak ] && must sed -i "/ $KEYNAME/d" $ak
@@ -122,9 +122,9 @@ ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
 ssh_git_keys_update_for_user() { # USER
 	local USER="$1"
 	checkvars USER GIT_HOSTS-
-	say "Updating git keys for user: $USER ..."; indent
+	say "Updating git keys for user '$USER'..."; indent
 	for NAME in $GIT_HOSTS; do
-		say "Updating key: $NAME ..."
+		say "Updating git key: $NAME..."
 		local -n HOST=${NAME^^}_HOST
 		local -n SSH_KEY=${NAME^^}_SSH_KEY
 		checkvars HOST SSH_KEY-
@@ -152,13 +152,11 @@ rsync_dir() {
 	[ "$SRC_MACHINE" ] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
 	[ "$DST_MACHINE" ] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
 
-	say -n "Sync'ing dir
-  src: $SRC_DIR
-  dst: $DST_DIR "
-	[ "$LINK_DIR" ] && say -n "
-  lnk: $LINK_DIR "
-	say -n "
-  ... "
+	say "Sync'ing dir"
+	say "  src: $SRC_DIR"
+  	say "  dst: $DST_DIR"
+	[ "$LINK_DIR" ] && say "  lnk: $LINK_DIR"
+	say -n " ... "
 	indent
 
 	MACHINE=$DST_MACHINE ssh_cmd_opt

@@ -14,16 +14,6 @@ mysql_set_pool_size() {
 	query "set global innodb_buffer_pool_size = $1"
 }
 
-mysql_stop() {
-	say "Stopping mysql server..."
-	must service mysql stop
-}
-
-mysql_start() {
-	say "Starting mysql server..."
-	must service mysql start
-}
-
 # xtrabackup backups ---------------------------------------------------------
 
 # https://www.percona.com/doc/percona-xtrabackup/8.0/xtrabackup_bin/incremental_backups.html

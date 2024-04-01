@@ -1,0 +1,13 @@
+#!/bin/bash
+. mmlib
+
+say "Installing Tarantool..."
+is_running tarantool && { say "Tarantool is running. Stop it first."; exit 0; }
+
+# tarantool 2.1.0
+must curl -sL https://tarantool.io/BsbZsuW/release/2/installer.sh | must bash
+apt_get_install tarantool
+
+service_start tarantool
+
+say "Tarantool install done."

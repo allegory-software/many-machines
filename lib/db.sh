@@ -59,13 +59,6 @@ $GIT_VARS
 "
 }
 
-machine_vars_upload() {
-	MACHINE="$1"; checkvar MACHINE
-	machine_vars "$MACHINE"; VARS="$R1"
-	say "Uploading env vars to /root/.mm/vars ..."
-	echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
-}
-
 active_machines() {
 	local MACHINE
 	for MACHINE in `ls -1 var/machines`; do
@@ -78,12 +71,10 @@ each_machine() { # [MACHINE] COMMAND ...
 	local MACHINES
 	if [ "$MDS" ]; then
 		local MD
-		local IFS0="$IFS"; IFS=$' \n\b'
 		for MD in $MDS; do
 			ip_of $MD
 			MACHINES="$MACHINES"$'\n'"$R2"
 		done
-		IFS="$IFS0"
 	else
 		MACHINES="$(active_machines)"
 	fi
