@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["MD1 ..."] SERVICE :: stop a service
 . mmlib
 
 each_machine "$1" ssh_bash mma stop "$2"

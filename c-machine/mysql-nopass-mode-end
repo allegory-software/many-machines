@@ -1,4 +1,5 @@
 #!/bin/bash
+# restart MySQL in normal mode
 . mmlib
 
 service_stop mysql

@@ -1,4 +1,5 @@
 #!/bin/bash
+# update MySQL root password
 . mmlib
 
 checkvars MYSQL_ROOT_PASS

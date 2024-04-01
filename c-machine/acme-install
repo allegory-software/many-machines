@@ -1,4 +1,5 @@
 #!/bin/bash
+# install acme.sh
 . mmlib
 
 say "Installing acme.sh..."

@@ -1,0 +1,7 @@
+#!/bin/bash
+# ["MD1 ..."] ["USER1 ..."] :: upload mm's ssh public key into machine(s)
+. mmlib
+
+# TODO: should we do this through machine vars instead ?
+catfile var/mm_ssh_key.pub
+each_machine "$1" ssh_to mma ssh-pubkey-update mm "$R1" "$2"

@@ -1,4 +1,5 @@
 #!/bin/bash
+# install Tarantool
 . mmlib
 
 say "Installing Tarantool..."

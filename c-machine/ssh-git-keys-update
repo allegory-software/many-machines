@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["USER1 ..."] :: update git keys on root and all deploy users
 . mmlib
 
-ssh_git_keys_update
+ssh_git_keys_update "$@"

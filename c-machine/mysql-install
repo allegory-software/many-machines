@@ -1,4 +1,5 @@
 #!/bin/bash
+# install MySQL server
 . mmlib
 
 checkvars MYSQL_ROOT_PASS

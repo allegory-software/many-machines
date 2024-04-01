@@ -1,4 +1,5 @@
 #!/bin/bash
+# SERVICE :: stop a service
 . mmlib
 
 service_stop "$1"

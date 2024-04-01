@@ -42,6 +42,16 @@ cp_file() { # SRC DST [USER]
 	say "OK"
 }
 
+checkfile() {
+    [ -f "$1" ] || die "File not found: $1"
+    R1="$1"
+}
+
+catfile() {
+	local FILE="$1"; checkvars FILE
+	R1="$(cat "$FILE")" || die "Could not read file: $FILE [$?]"
+}
+
 sha_dir() { # DIR
 	local dir="$1"
 	checkvars dir
@@ -116,9 +126,4 @@ sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
 	[ "$DRY" ] || must rsync --delete -aHR ${LINK_DIR:+--link-dest=$LINK_DIR} $SRC_DIR/./. $DST_DIR
 
 	say "OK. $(dir_lean_size $dst_dir | numfmt --to=iec) bytes in destination."
-}
-
-catfile() {
-	local FILE="$1"; checkvars FILE
-	R1="$(cat "$FILE")"
 }

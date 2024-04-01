@@ -7,25 +7,37 @@ ssh_cmd_opt() { # MACHINE=
 -o ControlMaster=auto
 -o ControlPath=~/.ssh/control-%h-%p-%r
 -o ControlPersist=10
--i var/machines/$MACHINE/ssh_key
+-i var/machines/$MACHINE/mm_ssh_key
 "
 }
 
 ssh_cmd() { # MACHINE= HOST=
 	ssh_cmd_opt
-	R1="$R1
-root@$HOST"
+	R1="$R1 root@$HOST"
+}
+
+quote_args() { # OUT_VARNAME ARGS...
+	# must use an array because we need to quote each arg individually,
+	# and not concat and expand them to pass them along, becaue even
+	# when quoted they may contain spaces and would expand incorrectly.
+	local -n _out=$1; shift
+	for arg in "$@"; do
+		_out+=("$(printf "%q" "$arg")")
+	done
 }
 
 ssh_to() { # MACHINE|DEPLOY COMMAND ...
 	ip_of "$1"; shift
 	MACHINE=$R2 HOST=$R1 ssh_cmd
-	must $R1 "$@"
+	local qargs; quote_args qargs "$@"
+	must $R1 "${qargs[@]}"
 }
 
-ssh_bash() { # MACHINE COMMANDS ...
-	local MACHINE="$1"; shift
-	ssh_to "$MACHINE" bash -c "\"$@\""
+ssh_bash() { # MACHINE|DEPLOY COMMANDS ...
+	ip_of "$1"; shift
+	MACHINE=$R2 HOST=$R1 ssh_cmd
+	local qargs; quote_args qargs "$@"
+	must $R1 bash -c "\"${qargs[*]}\""
 }
 
 ssh_hostkey() {
@@ -113,6 +125,8 @@ ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
 	local PUBKEY="$2"
 	checkvars KEYNAME PUBKEY-
 	local USERS="$3"
+	echo "$1,$2,$3"
+	exit
 	[ "$USERS" ] || USERS="$(echo root; machine_deploys)"
 	for USER in $USERS; do
 		ssh_pubkey_update_for_user $USER $KEYNAME "$PUBKEY"
@@ -133,9 +147,10 @@ ssh_git_keys_update_for_user() { # USER
 	outdent
 }
 
-ssh_git_keys_update() {
-	local USER
-	for USER in $(echo root; machine_deploys); do
+ssh_git_keys_update() { # [USERS]
+	local USERS="$1"
+	[ "$USERS" ] || USERS="$(echo root; machine_deploys)"
+	for USER in $USERS; do
 		ssh_git_keys_update_for_user $USER
 	done
 }

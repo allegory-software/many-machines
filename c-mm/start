@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["MD1 ..."] SERVICE :: start a service
 . mmlib
 
 each_machine "$1" ssh_bash mma start "$2"

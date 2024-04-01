@@ -1,4 +1,5 @@
 #!/bin/bash
+# set up machine on a fresh OS install
 . mmlib
 
 checkvars MACHINE MYSQL_ROOT_PASS DHPARAM-

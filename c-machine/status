@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["SERVICE1 ..."] :: print service(s) status
 . mmlib
 
 print_service_status() {

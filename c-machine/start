@@ -1,4 +1,5 @@
 #!/bin/bash
+# SERVICE :: start a service
 . mmlib
 
 service_start "$1"
