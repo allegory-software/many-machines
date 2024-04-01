@@ -7,7 +7,6 @@ machine_prepare() {
 	machine_vars_upload $MD
 
 	say; say "Uploading SSL CA..."; indent
-	#ssh_bash $MD mkdir -p /root/.acme.sh.etc
 	SRC_DIR=var/./.acme.sh.etc/ca DST_MACHINE=$MD \
 		DST_DIR=/root rsync_dir
 	outdent
@@ -45,5 +44,5 @@ must mma prepare
 EOF
 }
 
-[ "$1" ] || die "Refusing to prepare all machines."
+[ "$1" ] || die "MACHINE or DEPLOY required."
 each_machine "$1" machine_prepare

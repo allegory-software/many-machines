@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] \"COMMAND ARGS...\": exec remote commands
+# ["MD1 ..."] COMMAND ARGS... :: exec remote commands
 . mmlib
 
 MD="$1"; shift

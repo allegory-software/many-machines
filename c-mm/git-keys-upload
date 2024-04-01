@@ -2,4 +2,4 @@
 # ["MD1 ..."] :: update git ssh keys on machine(s)
 . mmlib
 
-each_machine "$1" ssh_bash mma ssh-git-keys-update
+each_machine "$1" ssh_to mma ssh-git-keys-update

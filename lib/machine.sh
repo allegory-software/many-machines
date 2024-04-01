@@ -20,7 +20,7 @@ machine_vars_upload() {
 	MACHINE="$1"; checkvar MACHINE
 	machine_vars "$MACHINE"; VARS="$R1"
 	say "Uploading env vars to $MACHINE in /root/.mm/vars ..."; indent
-	echo "$VARS" | ssh_to "$MACHINE" bash -c "\"mkdir -p /root/.mm; cat > /root/.mm/vars\""
+	echo "$VARS" | ssh_to "$MACHINE" bash -c "mkdir -p /root/.mm; cat > /root/.mm/vars"
 	outdent
 }
 

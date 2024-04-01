@@ -33,11 +33,20 @@ ssh_to() { # MACHINE|DEPLOY COMMAND ...
 	must $R1 "${qargs[@]}"
 }
 
-ssh_bash() { # MACHINE|DEPLOY COMMANDS ...
+ssh_bash() { # MACHINE|DEPLOY COMMAND ARGS ...
 	ip_of "$1"; shift
 	MACHINE=$R2 HOST=$R1 ssh_cmd
 	local qargs; quote_args qargs "$@"
 	must $R1 bash -c "\"${qargs[*]}\""
+}
+
+ssh_script() { # MACHINE|DEPLOY "SCRIPT"
+	ssh_to "$1" bash -c "
+shopt -s nullglob
+set -o pipefail
+$(machine_vars "$1")
+$(cat lib/*.sh)
+$2"
 }
 
 ssh_hostkey() {
@@ -125,8 +134,6 @@ ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
 	local PUBKEY="$2"
 	checkvars KEYNAME PUBKEY-
 	local USERS="$3"
-	echo "$1,$2,$3"
-	exit
 	[ "$USERS" ] || USERS="$(echo root; machine_deploys)"
 	for USER in $USERS; do
 		ssh_pubkey_update_for_user $USER $KEYNAME "$PUBKEY"

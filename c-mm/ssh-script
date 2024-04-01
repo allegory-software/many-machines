@@ -1,0 +1,5 @@
+#!/bin/bash
+# ["MD1 ..."] "...SCRIPT...": exec script with mmlib and vars from this host
+. mmlib
+
+each_machine "$1" ssh_script "$2"
