@@ -1,0 +1,6 @@
+#!/bin/bash
+# ["MD1 ..."] \"COMMAND ARGS...\": exec remote commands
+. mmlib
+
+MD="$1"; shift
+each_machine "$MD" ssh_bash "$@"

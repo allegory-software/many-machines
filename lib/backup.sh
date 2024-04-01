@@ -83,7 +83,7 @@ machine_backup_copy() { # MBK [PARENT_MBK]
 	local parent_mbk="$2"
 	checkvars mbk
 
-	SRC_DIR=$(bkp_dir machine $mbk) \
+	SRC_DIR=$(bkp_dir machine $mbk)/./. \
 	LINK_DIR=$(bkp_dir machine $parent_mbk) \
 		rsync_dir
 }
@@ -124,7 +124,7 @@ deploy_backup_copy() { # DBK [PARENT_DBK]
 	local parent_dbk="$2"
 	checkvars dbk
 
-	SRC_DIR=$(bkp_dir deploy $dbk) \
+	SRC_DIR=$(bkp_dir deploy $dbk)/./. \
 	LINK_DIR=$(bkp_dir deploy $parent_dbk) \
 		rsync_dir
 }

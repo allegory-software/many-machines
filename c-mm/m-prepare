@@ -7,16 +7,15 @@ machine_prepare() {
 	machine_vars_upload $MD
 
 	say; say "Uploading SSL CA..."; indent
-	ssh_bash $MD mkdir -p /root/.acme.sh.etc
-	SRC_DIR=var/.acme.sh.etc/ca DST_MACHINE=$MD \
-		DST_DIR=/root/.acme.sh.etc/ca rsync_dir
+	#ssh_bash $MD mkdir -p /root/.acme.sh.etc
+	SRC_DIR=var/./.acme.sh.etc/ca DST_MACHINE=$MD \
+		DST_DIR=/root rsync_dir
 	outdent
-
 	say; say "SSH into machine..."
 	ssh_to "$MD" bash -s << EOF
 
 shopt -s nullglob
-IFS=$'\n\b'
+IFS=$' \n\b'
 
 DEBUG=$DEBUG
 VERBOSE=$VERBOSE

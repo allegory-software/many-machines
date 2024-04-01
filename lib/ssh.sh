@@ -162,14 +162,13 @@ rsync_dir() {
 	MACHINE=$DST_MACHINE ssh_cmd_opt
 	local SSH_CMD_OPT="$R1"
 
-	# NOTE: the dot syntax cuts out the path before it as a way to make the path relative.
+	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
 	[ "$DRY" ] || must rsync --delete --timeout=5 \
 		${PROGRESS:+--info=progress2} \
 		${LINK_DIR:+--link-dest=$LINK_DIR} \
 		-e "${SSH_CMD_OPT//$'\n'/ }" \
-		-aHR "$SRC_DIR/./." "$DST_DIR"
+		-aHR "$SRC_DIR" "$DST_DIR"
 
-	rm -f $p $h
 	say "OK"
 	outdent
 }
