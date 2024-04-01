@@ -3,7 +3,10 @@ cd /opt/mm || exit 1
 CMD_DIR=c-mm
 CMD="$1"
 [ "$CMD" ] || {
-	ls -1 $CMD_DIR
+	for CMD in `ls -1 $CMD_DIR`; do
+		HELP="$(head -2 "$CMD_DIR/$CMD" | tail -1)"
+		printf "mm %-20s %s\n" "$CMD" "$HELP"
+	done
 	exit
 }
 shift

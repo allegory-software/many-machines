@@ -1,4 +1,5 @@
 #!/bin/bash
+# MD :: list machine env vars
 . mmlib
 
 machine_vars "$@"

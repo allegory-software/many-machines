@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["MD1 ..."] :: prepare machine(s)
 . mmlib
 
 machine_prepare() {

@@ -1,4 +1,5 @@
 #!/bin/bash
+# list deployments
 . mmlib
 
 FMT="%-10s %-10s\n"

@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["MD1 ..."] :: print ssh SHA fingerprint(s)
 . mmlib
 
 echo_ssh_hostkey_sha() {

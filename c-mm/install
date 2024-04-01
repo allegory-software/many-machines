@@ -1,4 +1,5 @@
 #!/bin/bash
+# install mm commands
 . /opt/mm/lib/all
 
 must ln -sf /opt/mm/mma     /usr/bin/mma

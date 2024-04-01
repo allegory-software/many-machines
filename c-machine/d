@@ -1,4 +1,5 @@
 #!/bin/bash
+# list deployments
 . mmlib
 
 machine_deploys

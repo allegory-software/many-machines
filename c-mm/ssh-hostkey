@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["MD1 ..."] :: print ssh host fingerprint(s)
 . mmlib
 
 echo_ssh_hostkey() { ssh_hostkey "$1"; printf "%-10s %s\n" "$1" "$R1"; }

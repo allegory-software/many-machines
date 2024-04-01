@@ -1,4 +1,5 @@
 #!/bin/bash
+# list machines
 . mmlib
 
 FMT="%-10s %-6s %-11s\n"

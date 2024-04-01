@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["MD1 ..."] COMMAND ...
 . mmlib
 
 each_machine "$@"

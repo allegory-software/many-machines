@@ -1,4 +1,5 @@
 #!/bin/bash
+# list deploy env vars
 . mmlib
 
 deploy_vars "$@"

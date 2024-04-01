@@ -107,11 +107,13 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY
 	outdent
 }
 
-ssh_pubkey_update() { # KEYNAME PUBKEY
+ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
 	local KEYNAME="$1"
 	local PUBKEY="$2"
 	checkvars KEYNAME PUBKEY-
-	for USER in $(echo root; machine_deploys); do
+	local USERS="$3"
+	[ "$USERS" ] || USERS="$(echo root; machine_deploys)"
+	for USER in $USERS; do
 		ssh_pubkey_update_for_user $USER $KEYNAME "$PUBKEY"
 	done
 }

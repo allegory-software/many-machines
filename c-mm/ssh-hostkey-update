@@ -1,4 +1,5 @@
 #!/bin/bash
+# ["MD1 ..."] :: make machine known to mm
 . mmlib
 
 each_machine "$1" ssh_hostkey_update

@@ -1,4 +1,5 @@
 #!/bin/bash
+# generate a new master ssh key for mm
 . mmlib
 
 say "Generating a new master ssh key in var/ssh_key..."
