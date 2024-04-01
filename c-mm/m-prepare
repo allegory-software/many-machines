@@ -34,7 +34,7 @@ else
 	must git pull
 fi
 
-/opt/mm/mm install
+/opt/mm/mma mm-install
 
 must mma prepare
 
