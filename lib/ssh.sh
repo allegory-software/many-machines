@@ -1,6 +1,5 @@
 ssh_cmd_opt() { # MACHINE=
 	R1="ssh
--o BatchMode=yes
 -o ConnectTimeout=3
 -o PreferredAuthentications=publickey
 -o UserKnownHostsFile=var/machines/$MACHINE/ssh_hostkey
@@ -9,6 +8,7 @@ ssh_cmd_opt() { # MACHINE=
 -o ControlPersist=10
 -i var/machines/$MACHINE/mm_ssh_key
 "
+	[ "$MM_SSH_TTY" ] && R1+=" -t" || R1+=" -o BatchMode=yes"
 }
 
 ssh_cmd() { # MACHINE= HOST=
