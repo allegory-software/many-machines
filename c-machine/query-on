@@ -1,5 +1,5 @@
 #!/bin/bash
-# DB SQL :: query the MySQL database
+# DB "SQL" :: query the MySQL database
 . mmlib
 
 query_on "$@"

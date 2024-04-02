@@ -1,5 +1,4 @@
 
-- query commands
 - ssh tunnels
 - sshfs mounts
 - rsync download, upload, copy in one command

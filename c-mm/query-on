@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] DB "SQL..." :: query MySQL database(s)
+# ["MD1 ..."] DB "SQL" :: query MySQL database(s)
 . mmlib
 
 MD="$1"; shift
