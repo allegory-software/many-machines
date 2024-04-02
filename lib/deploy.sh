@@ -139,26 +139,6 @@ deploy_issue_cert() { # DOMAIN
 	[ -f $keyfile ] || die "SSL certificate was NOT created: $keyfile."
 }
 
-deploy_setup() {
-	checkvars DEPLOY MYSQL_PASS GIT_HOSTS- PUBKEY-
-
-	user_create    $DEPLOY
-	user_lock_pass $DEPLOY
-
-	ssh_pubkey_update_for_user $DEPLOY mm "$PUBKEY"
-	ssh_pubkey_for_user $DEPLOY mm  # print it so we can check it
-
-	ssh_git_keys_update_for_user $DEPLOY
-	git_config_user "mm@allegory.ro" "Many Machines"
-
-	mysql_create_db     $DEPLOY
-	mysql_create_user   localhost $DEPLOY $MYSQL_PASS
-	mysql_grant_user_db localhost $DEPLOY $DEPLOY
-	mysql_gen_my_cnf    localhost $DEPLOY $MYSQL_PASS $DEPLOY
-
-	say "Deploy setup done."
-}
-
 deploy_remove() { # DEPLOY DOMAIN=
 	local DEPLOY="$1"
 	checkvars DEPLOY
@@ -188,8 +168,6 @@ deploy() {
 	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION SDK_VERSION=$SDK_VERSION..."
 
 	[ -d /home/$DEPLOY/$APP ] && app running && must app stop
-
-	deploy_setup
 
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app
 
@@ -223,6 +201,10 @@ deploy() {
 	must app start
 
 	say "Deploy done."
+}
+
+deploy_secret_gen() {
+	must openssl rand 46 | base64 # result is 64 chars
 }
 
 deploy_gen_conf() {

@@ -47,19 +47,34 @@ checkfile() {
     R1="$1"
 }
 
-catfile() {
+catfile() { # FILE [DEFAULT]
 	local FILE="$1"; checkvars FILE
-	R1="$(cat "$FILE")" || die "Could not read file: $FILE [$?]"
+	if [ ! -f "$FILE" -a "$#" -ge 2 ]; then
+		R1="$2"
+	else
+		R1="$(cat "$FILE")"
+		local ret=$?
+		[ $ret == 0 ] || die "Could not read file: $FILE [$ret]"
+	fi
 }
 
 sha_dir() { # DIR
-	local dir="$1"
-	checkvars dir
-	[ -d $dir ] || die "dir not found: $dir"
-	(
-	set -o pipefail
-	find $dir -type f -print0 | LC_ALL=C sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1
-	) || exit $?
+	local DIR="$1"
+	checkvars DIR
+	[ -d $DIR ] || die "Dir not found: $DIR"
+	local sha=$(find $DIR -type f -print0 | LC_ALL=C sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1); local ret=$?
+	[ $ret != 0 ] && die "sha_dir: [$ret]"
+	echo "$sha"
+}
+
+# print dir size in bytes excluding files that have more than one hard-link.
+dir_lean_size() { # DIR
+	local DIR="$1"
+	checkvars DIR
+	local s="$(find $DIR -type f -links 1 -printf "%s\n" | awk '{s=s+$1} END {print s}')"; local ret=$?
+	[ $ret != 0 ] && die "dir_lean_size: [$ret]"
+	[ "$s" ] || s=0
+	echo "$s"
 }
 
 append() { # S FILE

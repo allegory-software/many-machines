@@ -39,4 +39,4 @@ say; must mma mysql-install
 say; must mma tarantool-install
 say; must mma acme-install
 
-say "Prepare done."
+say "Machine prepare done."

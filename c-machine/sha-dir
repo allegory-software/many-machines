@@ -1,0 +1,5 @@
+#!/bin/bash
+# DIR :: start a service
+. mmlib
+
+sha_dir "$1"

@@ -2,11 +2,10 @@
 # list deployments
 . mmlib
 
-FMT="%-10s %-10s\n"
-printf "$FMT" "DEPLOY" "MACHINE"
-(cd var/deploys; for DEPLOY in *; do
-	cd "$DEPLOY"
-	IP=`cat machine`
-	printf "$FMT" "$DEPLOY" "$MACHINE"
-	cd ..
-done)
+FMT="%-10s %-10s %-10s %-10s %-10s\n"
+printf "$FMT" "DEPLOY" "MACHINE" "APP" "VERSION" "SDK"
+for DEPLOY in `ls -1 var/deploys`; do
+	deploy_vars "$DEPLOY"
+	eval "$R1"
+	printf "$FMT" "$DEPLOY" "$MACHINE" "$APP" "$APP_VERSION" "$SDK_VERSION"
+done

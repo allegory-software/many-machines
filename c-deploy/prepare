@@ -1,0 +1,21 @@
+#!/bin/bash
+# prepare the machine for a deployment
+. mmlib
+
+checkvars DEPLOY MYSQL_PASS GIT_HOSTS- MM_SSH_PUBKEY-
+
+user_create    $DEPLOY
+user_lock_pass $DEPLOY
+
+ssh_pubkey_update_for_user $DEPLOY mm "$MM_SSH_PUBKEY"
+ssh_pubkey_for_user $DEPLOY mm  # print it so we can check it
+
+ssh_git_keys_update_for_user $DEPLOY
+git_config_user "mm@allegory.ro" "Many Machines"
+
+mysql_create_db     $DEPLOY
+mysql_create_user   localhost $DEPLOY "$MYSQL_PASS"
+mysql_grant_user_db localhost $DEPLOY $DEPLOY
+mysql_gen_my_cnf    localhost $DEPLOY "$MYSQL_PASS" $DEPLOY
+
+say "Deploy prepare done."

@@ -4,13 +4,6 @@ bkp_dir() { # machine|deploy [BKP] [files|mysql]
 	echo -n "/root/mm-$1-backups/$2${3:+/$3}"
 }
 
-# print dir size in bytes excluding files that have more than one hard-link.
-dir_lean_size() { # DIR
-	local s="$(find $1 -type f -links 1 -printf "%s\n" | awk '{s=s+$1} END {print s}')"
-	[ "$s" ] || s=0
-	echo "$s"
-}
-
 deploy_backup_files() { # DEPLOY BACKUP_DIR [PARENT_BACKUP_DIR]
 	local deploy="$1"
 	local dir="$2"

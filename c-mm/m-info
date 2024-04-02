@@ -3,4 +3,4 @@
 . mmlib
 
 machine_info_header
-QUIET=1 each_machine "$@" ssh_to mma info-line
+QUIET=1 each_machine "$1" ssh_to mma info-line

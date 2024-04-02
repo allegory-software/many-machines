@@ -1,5 +1,5 @@
 #!/bin/bash
-# [DB] :: list MySQL tables
+# list MySQL tables
 . mmlib
 
-mysql_tables "$USER"
+mysql_tables $DEPLOY

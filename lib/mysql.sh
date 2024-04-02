@@ -174,6 +174,10 @@ mysql_pass() { # USER/DB
 	[ -f "$cnf" ] && sed -n 's/password=\(.*\)/\1/p' $cnf
 }
 
+mysql_pass_gen() {
+	must openssl rand 23 | base64 # result is 32 chars
+}
+
 # update ~/.my.cnf for using mysql and mysqldump without a password.
 mysql_gen_my_cnf() { # HOST USER PASS [DB]
 	local host="$1"

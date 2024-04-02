@@ -1,0 +1,6 @@
+#!/bin/bash
+# DIR :: print dir's lean size
+. mmlib
+
+dir_lean_size "$1" | numfmt --to=iec
+
