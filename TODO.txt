@@ -1,0 +1,23 @@
+
+- query commands
+- ssh tunnels
+- sshfs mounts
+- rsync download, upload, copy in one command
+- sha dir
+- machine info: live, from db, update
+- m-rename
+- m-reboot
+- acme-check
+- d-issue-ssl-cert
+- d-vars
+- deploy
+- d-remove
+- d-rename
+- d-start
+- d-stop
+- d-status
+- m-backups: list, backup, restore, copy
+- d-backups: list, backup, restore, copy
+
+
+- mm upgrade to mm2  -- how ??

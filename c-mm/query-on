@@ -1,0 +1,10 @@
+#!/bin/bash
+# ["MD1 ..."] DB "SQL..." :: query MySQL database(s)
+. mmlib
+
+MD="$1"; shift
+DB="$1"; shift
+SQL="$1"; shift
+
+#SQL="$(printf "%q" "$SQL")"
+each_machine "$MD" ssh_to mma query-on "$DB" "$SQL"

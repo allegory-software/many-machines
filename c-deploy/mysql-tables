@@ -1,0 +1,5 @@
+#!/bin/bash
+# [DB] :: list MySQL tables
+. mmlib
+
+mysql_tables "$USER"

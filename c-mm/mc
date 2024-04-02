@@ -1,0 +1,4 @@
+#!/bin/bash
+# ["MD1 ..."] :: run mc on machine(s)
+MD="$1"; shift
+mm ssh-tty "$MD" mc "$@"

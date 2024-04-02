@@ -1,0 +1,6 @@
+#!/bin/bash
+# [USER] :: get MySQL password
+. mmlib
+
+[ "$1" ] && USER="$1"
+mysql_pass "$USER"

@@ -1,0 +1,3 @@
+#!/bin/bash
+# ["MD1 ..."] :: run ssh command that needs tty
+MM_SSH_TTY=1 mm ssh "$@"

@@ -162,11 +162,11 @@ mysql_exec() { # SQL
 }
 
 mysql_my_cnf() {
-	local user="$1"
-	checkvars user
-	local home="/home/$user"
-	[ "$user" == root ] && home=/root
-	echo "$home/.my.cnf"
+	local USER="$1"
+	checkvars USER
+	local HOME="/home/$USER"
+	[ "$USER" == root ] && HOME=/root
+	echo "$HOME/.my.cnf"
 }
 
 mysql_pass() { # USER/DB
