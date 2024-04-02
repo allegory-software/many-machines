@@ -120,12 +120,15 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
 	[ -d $HOME ] || die "No home dir for user '$USER'"
 	local ak=$HOME/.ssh/authorized_keys
-	must mkdir -p $HOME/.ssh
-	[ -f $ak ] && must sed -i "/ $KEYNAME/d" $ak
-	local newline=$'\n'
-	must append "$PUBKEY$newline" $ak
-	must chmod 600 $ak
-	must chown $USER:$USER -R $HOME/.ssh
+	[ "$(cat $ak | grep " $KEYNAME\$")" != "$PUBKEY" ]; local ret=$?
+	[ $ret == 0 ] && {
+		must mkdir -p $HOME/.ssh
+		[ -f $ak ] && must sed -i "/ $KEYNAME\$/d" $ak
+		must append "$PUBKEY"$'\n' $ak
+		must chmod 600 $ak
+		must chown $USER:$USER -R $HOME/.ssh
+	}
+	say "Key is the same."
 	outdent
 }
 

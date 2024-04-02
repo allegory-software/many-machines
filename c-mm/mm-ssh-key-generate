@@ -3,6 +3,6 @@
 . mmlib
 
 say "Generating a new master ssh key in var/ssh_key..."
-must ssh-keygen -f var/ssh_key.new -t rsa -b 2048 -C mm -q -N ""
+must ssh-keygen -f var/mm_ssh_key.new -t rsa -b 2048 -C mm -q -N ""
 must mv -v --backup=numbered var/mm_ssh_key.new     var/mm_ssh_key
 must mv -v --backup=numbered var/mm_ssh_key.new.pub var/mm_ssh_key.pub
