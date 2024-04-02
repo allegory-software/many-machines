@@ -16,6 +16,23 @@ machine_info() {
 	echo "      hdd $(df -l / | awk '(NR > 1) {$2*=1024; printf "%.0f",$2}')"
 }
 
+MI_FMT="%-10s %-30s %-12s %-40s %-6s %-6s %-6s %-6s\n"
+machine_info_header() {
+	printf "$MI_FMT" machine os_ver mysql_ver cpu cpus cores ram hdd
+}
+
+machine_info_line() {
+	local    os_ver="$(lsb_release -sd)"
+	local mysql_ver="$(has_mysql && query 'select version();')"
+	local       cpu="$(lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p')"
+	local       cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
+	local   sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
+	local     cores="$(expr $sockets \* $cps)"
+	local       ram="$(cat /proc/meminfo | awk '/MemTotal/ {$2*=1024; printf "%.0f",$2}')"
+	local       hdd="$(df -l / | awk '(NR > 1) {$2*=1024; printf "%.0f",$2}')"
+	printf "$MI_FMT" "$MACHINE" "$os_ver" "$mysql_ver" "$cpu" "$sockets" "$cores" "$ram" "$hdd"
+}
+
 machine_vars_upload() {
 	MACHINE="$1"; checkvar MACHINE
 	machine_vars "$MACHINE"; VARS="$R1"

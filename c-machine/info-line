@@ -1,0 +1,6 @@
+#!/bin/bash
+# show machine info
+. mmlib
+
+machine_info_line
+

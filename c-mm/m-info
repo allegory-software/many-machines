@@ -2,4 +2,5 @@
 # ["MD1 ..."] show machine info
 . mmlib
 
-each_machine "$@" mma info
+machine_info_header
+QUIET=1 each_machine "$@" ssh_to mma info-line
