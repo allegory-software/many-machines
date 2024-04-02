@@ -1,9 +1,0 @@
-#!/bin/bash
-# ["MD1 ..."] "SQL..." :: query MySQL database(s)
-. mmlib
-
-MD="$1"; shift
-SQL="$2"; shift
-
-SQL="$(printf "%q" "$SQL")"
-each_machine "$MD" ssh_to bash -c "printf '%s;\n' \"$SQL\" | mysql"

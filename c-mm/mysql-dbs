@@ -1,0 +1,5 @@
+#!/bin/bash
+# ["MD1 ..."] :: list MySQL databases
+. mmlib
+
+each_machine "$1" ssh_to mma mysql-dbs

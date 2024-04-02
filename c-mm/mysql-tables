@@ -1,0 +1,5 @@
+#!/bin/bash
+# ["MD1 ..."] DB :: list MySQL tables
+. mmlib
+
+each_machine "$1" ssh_to mma mysql-tables "$2"
