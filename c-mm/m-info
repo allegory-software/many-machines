@@ -1,0 +1,5 @@
+#!/bin/bash
+# ["MD1 ..."] show machine info
+. mmlib
+
+each_machine "$@" mma info
