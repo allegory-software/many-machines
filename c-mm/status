@@ -2,4 +2,4 @@
 # ["MD1 ..."] ["SERVICE1 ..."] :: print service(s) status
 . mmlib
 
-QUIET=1 each_machine "$1" ssh_to mma status "$2"
+QUIET=1 each_machine "$1" ssh_script "services_status \"$2\""
