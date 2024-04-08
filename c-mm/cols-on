@@ -1,0 +1,12 @@
+#!/bin/bash
+# ["MD1 ..."] DB TABLE :: list MySQL columns
+. mmlib
+
+DB="$2"
+TABLE="$3"
+checkvars DB TABLE
+
+list_cols() {
+	ssh_script $1 "MYSQL_PRETTY=1 query_on $DB 'show columns from $TABLE'"
+}
+each_machine "$1" list_cols
