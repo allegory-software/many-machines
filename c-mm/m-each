@@ -1,5 +1,0 @@
-#!/bin/bash
-# ["MD1 ..."] COMMAND ARG2... :: exec COMMAND MACHINE1 ARG2...
-. mmlib
-
-each_machine "$@"

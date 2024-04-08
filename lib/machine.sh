@@ -1,25 +1,13 @@
 # machine lib: programs running as root on a machine administered by mm.
 
-machine_cores() {
-	local      cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
-	local  sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
-	echo "    cores $(expr $sockets \* $cps)"
-}
-
-machine_info() {
-	echo "   os_ver $(lsb_release -sd)"
-	echo "mysql_ver $(has_mysql && query 'select version();')"
-	echo "      cpu $(lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p')"
-	local      cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
-	local  sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
-	echo "    cores $(expr $sockets \* $cps)"
-	echo "      ram $(cat /proc/meminfo | awk '/MemTotal/ {$2*=1024; printf "%.0f",$2}')"
-	echo "      hdd $(df -l / | awk '(NR > 1) {$2*=1024; printf "%.0f",$2}')"
-}
-
-MI_FMT="%-10s %-30s %-12s %-40s %-6s %-6s %-6s %-6s\n"
+MI_FMT="%-10s %-5s %-5s %-7s %-7s %-7s %-7s %-30s %-12s %-40s\n"
+ME_FMT="%-10s %-5s %-5s %-7s %-7s %-7s %-7s %s\n"
 machine_info_header() {
-	printf "$MI_FMT" machine os_ver mysql_ver cpu cpus cores ram hdd
+	printf "$MI_FMT" MACHINE CPUS CORES RAM FREE HDD FREE OS_VER MYSQL_VER CPU
+}
+
+machine_info_line_fail() { # MACHINE ERROR
+	printf "$ME_FMT" $1 - - - - - - "$2"
 }
 
 machine_info_line() {
@@ -29,9 +17,11 @@ machine_info_line() {
 	local       cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
 	local   sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
 	local     cores="$(expr $sockets \* $cps)"
-	local       ram="$(cat /proc/meminfo | awk '/MemTotal/ {$2*=1024; printf "%.0f",$2}')"
-	local       hdd="$(df -l / | awk '(NR > 1) {$2*=1024; printf "%.0f",$2}')"
-	printf "$MI_FMT" "$MACHINE" "$os_ver" "$mysql_ver" "$cpu" "$sockets" "$cores" "$ram" "$hdd"
+	local       ram="$(cat /proc/meminfo | awk '/MemTotal/ { printf "%.1fG", $2/(1024*1024)}')"
+	local  free_ram="$(cat /proc/meminfo | awk '/MemFree/  { printf "%.1fG", $2/(1024*1024)}')"
+	local       hdd="$(df -l / | awk '(NR > 1) { printf "%.1fG", $2/(1024*1024)}')"
+	local  free_hdd="$(df -l / | awk '(NR > 1) { printf "%.1fG", $4/(1024*1024)}')"
+	printf "$MI_FMT" "$MACHINE" "$sockets" "$cores" "$ram" "$free_ram" "$hdd" "$free_hdd" "$os_ver" "$mysql_ver" "$cpu"
 }
 
 machine_set_hostname() { # machine

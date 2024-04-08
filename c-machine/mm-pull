@@ -2,5 +2,5 @@
 # pull mm
 . mmlib
 
-git reset --hard HEAD
+#git reset --hard HEAD
 must git pull

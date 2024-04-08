@@ -2,4 +2,17 @@
 # ["MD1 ..."] :: list MySQL databases
 . mmlib
 
-each_machine "$1" ssh_script "mysql_dbs"
+print_dbs() {
+	ssh_script $1 "MYSQL_PRETTY=1 query \"
+select
+	schema_name as db,
+	default_character_set_name as charset,
+	default_collation_name as collation
+from
+	information_schema.schemata
+where
+	schema_name not in ('mysql', 'information_schema', 'performance_schema', 'sys')
+\"
+"
+}
+each_machine "$1" print_dbs

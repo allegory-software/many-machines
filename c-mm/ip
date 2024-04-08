@@ -1,6 +1,0 @@
-#!/bin/bash
-# ["MD1 ..."] :: print machine(s) IP
-. mmlib
-
-print_ip() { ip_of "$1"; printf "%-20s %-20s\n" "$1" "$R1"; }
-QUIET=1 each_machine "$1" print_ip

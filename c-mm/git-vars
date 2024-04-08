@@ -3,4 +3,4 @@
 . mmlib
 
 git_vars
-printf "%s\n" "${R1[@]}"
+printf "%s" "${R1[@]}"

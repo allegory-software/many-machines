@@ -109,7 +109,8 @@ ssh_key_update_for_user() { # USER KEYNAME KEY HOSTKEY
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
 	local KEYNAME="$2"
 	local KEY="$3"
-	checkvars USER KEYNAME KEY-
+	local HOSTKEY="$4"
+	checkvars USER KEYNAME KEY- HOSTKEY-
 	say "Updating SSH key '$KEYNAME' for user '$USER'..."
 	indent
 

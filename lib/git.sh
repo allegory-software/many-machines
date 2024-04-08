@@ -82,8 +82,7 @@ _git_keys_update_for_user() { # USER
 		local -n SSH_KEY=GIT_${NAME^^}_SSH_KEY
 		local -n SSH_HOSTKEY=GIT_${NAME^^}_SSH_HOSTKEY
 		checkvars HOST SSH_KEY- SSH_HOSTKEY-
-		echo "$USER" "$HOST" "mm_$NAME"
-		#ssh_host_key_update_for_user $USER $HOST mm_$NAME "$SSH_KEY" unstable_ip
+		ssh_host_key_update_for_user $USER $HOST mm_$NAME "$SSH_KEY" "$SSH_HOSTKEY" unstable_ip
 		outdent
 	done
 }
