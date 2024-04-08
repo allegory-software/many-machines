@@ -1,3 +1,4 @@
+# machine lib: programs running as root on a machine administered by mm.
 
 machine_cores() {
 	local      cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
@@ -31,14 +32,6 @@ machine_info_line() {
 	local       ram="$(cat /proc/meminfo | awk '/MemTotal/ {$2*=1024; printf "%.0f",$2}')"
 	local       hdd="$(df -l / | awk '(NR > 1) {$2*=1024; printf "%.0f",$2}')"
 	printf "$MI_FMT" "$MACHINE" "$os_ver" "$mysql_ver" "$cpu" "$sockets" "$cores" "$ram" "$hdd"
-}
-
-machine_vars_upload() {
-	MACHINE="$1"; checkvar MACHINE
-	machine_vars "$MACHINE"; VARS="$R1"
-	say "Uploading env vars to $MACHINE in /root/.mm/vars ..."; indent
-	echo "$VARS" | ssh_to "$MACHINE" bash -c "mkdir -p /root/.mm; cat > /root/.mm/vars"
-	outdent
 }
 
 machine_set_hostname() { # machine

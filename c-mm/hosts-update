@@ -1,0 +1,17 @@
+#!/bin/bash
+# make ssh work directly with machines and deployments by name
+. mmlib
+
+remove_line '# added by mm' /etc/hosts
+
+update_host() {
+	ip_of $1; local IP=$R1; local MACHINE=$R2
+	append "$(printf "%-20s %-20s %s" $IP $1 "# added by mm")"$'\n' /etc/hosts
+	catfile var/machines/$MACHINE/ssh_hostkey
+	#append "$R1"$'\n' ~/.ssh/known_hosts
+}
+each_machine "" update_host
+each_deploy  "" update_host
+
+# NOTE: For hosts that don't have the latest mm ssh pubkey, use `mm ssh` or `mm ssh-pubkey-update`.
+cp_file var/ssh_key-mm-$HOSTNAME   ~/.ssh/id_rsa

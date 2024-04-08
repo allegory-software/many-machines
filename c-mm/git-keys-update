@@ -1,0 +1,13 @@
+#!/bin/bash
+# ["MD1 ..."] ["USER1 ..."] :: update git ssh keys on machine(s)
+. mmlib
+
+USERS="$2"
+update() {
+	git_vars "$1"; local VARS=("${R1[@]}")
+	ssh_script "$1" "
+${VARS[*]}
+git_keys_update \"$USERS\"
+"
+}
+each_machine "$1" update

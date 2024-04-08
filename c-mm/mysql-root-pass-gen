@@ -1,0 +1,8 @@
+#!/bin/bash
+# generate the root mysql password for all machines.
+. mmlib
+
+say "Generating a new MySQL root password ..."
+PASS=`mysql_pass_gen`
+save "$PASS" var/mysql_root_pass
+say "Now run \`mm mysql-root-pass-update\` to make it usable on all machines."

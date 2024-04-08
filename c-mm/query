@@ -1,0 +1,13 @@
+#!/bin/bash
+# ["DEPLOY1 ..."] "SQL" :: query MySQL database(s)
+. mmlib
+
+DEPLOYS="$1"
+SQL="$2"
+checkvars SQL-
+
+do_query() {
+	machine_of_deploy $1; local MACHINE=$R1
+	ssh_script $MACHINE "query_on \"$DEPLOY\" \"$SQL\""
+}
+QUIET=1 each_deploy "$DEPLOYS" do_query

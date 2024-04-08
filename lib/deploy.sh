@@ -1,3 +1,5 @@
+# deploy lib: programs for deployments admin, running as root on a machine administered by mm.
+
 acme_sh() {
 	local cmd_args="/root/.acme.sh/acme.sh --config-home $PWD/var/.acme.sh.etc"
 	run $cmd_args "$@"

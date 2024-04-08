@@ -1,8 +1,0 @@
-#!/bin/bash
-# list deploy env vars
-. mmlib
-
-DEPLOY="$1"
-check_deploy "$DEPLOY"
-
-mysql_pass_gen > var/deploys/$DEPLOY/mysql_pass

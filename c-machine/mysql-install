@@ -4,7 +4,7 @@
 
 checkvars MYSQL_ROOT_PASS
 
-say "Installing MySQL..."
+say "Installing MySQL (Percona latest)..."
 is_running mysql && { say "MySQL is running. Stop it first."; exit 0; }
 
 apt_get_install gnupg2 lsb-release

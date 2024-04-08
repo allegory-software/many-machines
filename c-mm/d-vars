@@ -3,4 +3,4 @@
 . mmlib
 
 deploy_vars "$@"
-echo "$R1"
+printf "%s\n" "${R1[@]}"

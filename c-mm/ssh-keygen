@@ -1,0 +1,12 @@
+#!/bin/bash
+# generate a new ssh key for mm on this host
+. mmlib
+
+KEYNAME="mm-$HOSTNAME"
+
+say "Generating a new ssh key labeled $KEYNAME..."
+ssh-keygen -q -f var/ssh_key.new -t rsa -b 4096 -C "$KEYNAME" -N ""
+must mv -v --backup=numbered var/ssh_key.new     var/ssh_key-$KEYNAME
+must mv -v --backup=numbered var/ssh_key.new.pub var/ssh_key-$KEYNAME.pub
+
+say "Now run `mm ssh-pubkey-update` to make it usable on all machines."

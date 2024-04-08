@@ -1,0 +1,5 @@
+#!/bin/bash
+# ["MD1 ..."] :: sync a machine's var dir
+. mmlib
+
+each_machine "$1" rsync_machine

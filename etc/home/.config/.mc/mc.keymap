@@ -1,0 +1,4 @@
+[editor]
+Store = ctrl-c
+Paste = ctrl-v
+Cut = ctrl-x

@@ -1,9 +1,37 @@
+# filesystem lib: ops are simplified, logged, safer, and crash on error.
+
 pushd() { command pushd "$@" > /dev/null; }
 popd()  { command popd  "$@" > /dev/null; }
 
 check_abs_filepath() {
 	[ "${1:0:1}" == "/" ] || die "path not absolute: $1"
 	[ "${1: -1}" == "/" ] && die "path ends in slash: $1"
+}
+
+checkfile() {
+    [ -f "$1" ] || die "File not found: $1"
+    R1="$1"
+}
+
+# NOTE: trims content!
+catfile() { # FILE
+	local FILE="$1"; checkvars FILE
+	# NOTE: this is faster than "$(cat $FILE)".
+	# it fails if the file contains \0 but we can't store \0
+	# in bash vars anyway so just don't read binary files with this!
+	[ -f "$FILE" ] || die "catfile $FILE [$?]"
+	IFS= read -r -d '' R1 < "$FILE" # read exits with 1 because it hits EOF
+	trim R1
+}
+
+# NOTE: trims content!
+try_catfile() { # FILE [DEFAULT]
+	local FILE="$1"; checkvars FILE
+	if [ ! -f "$FILE" ]; then
+		R1="$2"; trim R1
+	else
+		catfile "$FILE"
+	fi
 }
 
 rm_dir() { # DIR
@@ -42,22 +70,6 @@ cp_file() { # SRC DST [USER]
 	say "OK"
 }
 
-checkfile() {
-    [ -f "$1" ] || die "File not found: $1"
-    R1="$1"
-}
-
-catfile() { # FILE [DEFAULT]
-	local FILE="$1"; checkvars FILE
-	if [ ! -f "$FILE" -a "$#" -ge 2 ]; then
-		R1="$2"
-	else
-		R1="$(cat "$FILE")"
-		local ret=$?
-		[ $ret == 0 ] || die "Could not read file: $FILE [$ret]"
-	fi
-}
-
 sha_dir() { # DIR
 	local DIR="$1"
 	checkvars DIR
@@ -89,6 +101,20 @@ append() { # S FILE
 		die "append $file [$?]"
 	fi
 	say OK
+}
+
+remove_line() { # REGEX FILE
+	local regex="$1"
+	local file="$2"
+	checkvars regex- file
+	say -n "Removing lines containing pattern /$regex/ from $file... "
+	if grep -q "$regex" $file; then
+		grep -v "$regex" $file > $file.temp # exits with 1
+		must mv $file.temp $file
+		say "OK"
+	else
+		say "none found."
+	fi
 }
 
 save() { # S FILE [USER]

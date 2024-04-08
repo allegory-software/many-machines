@@ -1,0 +1,12 @@
+#!/bin/bash
+# DEPLOY :: generate a MySQL password for a deployment
+. mmlib
+
+DEPLOY="$1"
+check_deploy "$DEPLOY"
+
+FILE=var/deploys/$DEPLOY/mysql_pass
+say "Generating MySQL password for $DEPLOY..."
+PASS=`mysql_pass_gen`
+save "$PASS" $FILE
+say "Now run \`mm mysql-pass-update $DEPLOY\` to make it usable."

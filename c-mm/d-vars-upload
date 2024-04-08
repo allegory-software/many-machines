@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: upload machine env vars to machine(s)
+# ["D1 ..."] :: upload deploy env vars to machine(s)
 . mmlib
 
-each_machine "$1" machine_vars_upload
+each_deploy "$1" deploy_vars_upload

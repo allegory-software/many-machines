@@ -1,0 +1,14 @@
+#!/bin/bash
+# ["MD1 ..."] :: update the root MySQL password on (all) machines.
+. mmlib
+
+FILE=var/mysql_root_pass
+catfile $FILE; PASS=$R1
+
+update_root_pass() {
+	ssh_script "$1" "
+		mysql_update_pass localhost root $PASS
+		mysql_gen_my_cnf  localhost root $PASS
+	"
+}
+each_machine "$1" update_root_pass

@@ -1,0 +1,2 @@
+commands to run as root on the mm machine (the one which has the var dir).
+can be run directly or via the mm script which is in PATH.

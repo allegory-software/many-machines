@@ -1,24 +1,34 @@
 #!/bin/bash
-# ["MD1 ..."] :: prepare machine(s)
+# ["D1 ..."] :: prepare deploy(s)
 . mmlib
 
-machine_prepare() {
-	local MD="$1"
-	machine_vars_upload $MD
+deploy_prepare() {
+	local D="$1"
+	deploy_vars_upload "$D"
 
 	say; say "Uploading SSL CA..."; indent
 	SRC_DIR=var/./.acme.sh.etc/ca DST_MACHINE=$MD \
 		DST_DIR=/root rsync_dir
 	outdent
-
 	say; say "SSH into machine..."
-	ssh_script "$MD" "
+	ssh_to "$MD" bash -s << EOF
+
+shopt -s nullglob
+set -o pipefail
+
+DEBUG=$DEBUG
+VERBOSE=$VERBOSE
 
 $VARS
 
+$(cat lib/die.sh)
+$(cat lib/fs.sh)
+$(cat lib/apt.sh)
+$(cat lib/ssh.sh)
+
 apt_get_update
 apt_get_install git
-ssh_git_keys_update root
+ssh_git_keys_update_for_user root
 
 if [ ! -d /opt/mm ]; then
 	must git clone git@github.com:allegory-software/many-machines2.git /opt/mm

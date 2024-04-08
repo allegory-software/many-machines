@@ -2,10 +2,12 @@
 # list deployments
 . mmlib
 
-FMT="%-10s %-10s %-10s %-10s %-10s\n"
-printf "$FMT" "DEPLOY" "MACHINE" "APP" "VERSION" "SDK"
-for DEPLOY in `ls -1 var/deploys`; do
+FMT="%-10s %-7s %-10s %-10s %-10s %-10s\n"
+printf "$FMT" "DEPLOY" "ACTIVE" "MACHINE" "APP" "VERSION" "SDK"
+print_deploy_line() {
+	local DPELOY="$1"
 	deploy_vars "$DEPLOY"
-	eval "$R1"
-	printf "$FMT" "$DEPLOY" "$MACHINE" "$APP" "$APP_VERSION" "$SDK_VERSION"
-done
+	eval "${R1[*]}"
+	printf "$FMT" "$DEPLOY" "$ACTIVE" "$MACHINE" "$APP" "$APP_VERSION" "$SDK_VERSION"
+}
+QUIET=1 INACTIVE=1 each_deploy "$1" print_deploy_line

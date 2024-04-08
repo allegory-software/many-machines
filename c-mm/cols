@@ -1,0 +1,12 @@
+#!/bin/bash
+# ["DEPLOY1 ..."] TABLE :: list MySQL columns
+. mmlib
+
+TABLE="$2"
+checkvars TABLE
+
+list_cols() {
+	machine_of_deploy $1; local MACHINE=$R1
+	ssh_script $MACHINE "MYSQL_PRETTY=1 query_on $1 'show columns from $TABLE'"
+}
+QUIET=1 each_deploy "$1" list_cols

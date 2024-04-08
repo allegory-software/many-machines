@@ -1,4 +1,4 @@
-# die harder, see https://github.com/capr/die
+# die harder, see https://github.com/capr/die which this extends.
 
 export INDENT
 SAY_NL=
@@ -34,20 +34,7 @@ checknosp() { # VAL [ERROR...]
 	[ "${val}" ] || die "${FUNCNAME[1]}: $@"
 }
 
-checkvar() { # NAME[-] [ERROR...]
-	local var="$1"; shift
-	if [ "${var::-1}-" == "${var}" ]; then # spaces allowed
-		var="${var::-1}"
-		[ "${!var}" ] && return 0
-	else
-		[[ "${!var}" =~ ( |\') ]] && die "${FUNCNAME[1]}: \$$var contains spaces"
-		[ "${!var}" ] && return 0
-	fi
-	local err="$@"; [ "$err" ] || err="required"
-	die "${FUNCNAME[1]}: $var: $err"
-}
-
-checkvars() { # NAME1[-] NAME2 ...
+checkvars() { # VARNAME1[-] ...
 	local var
 	for var in $@; do
 		if [ "${var::-1}-" == "${var}" ]; then # spaces allowed
@@ -59,4 +46,8 @@ checkvars() { # NAME1[-] NAME2 ...
 		fi
 	done
 	return 0
+}
+
+trim() { # VARNAME
+	read -rd '' $1 <<<"${!1}"
 }

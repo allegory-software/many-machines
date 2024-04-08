@@ -6,4 +6,7 @@ MD="$1"; shift
 DB="$1"; shift
 SQL="$1"; shift
 
-QUIET=1 each_machine "$MD" ssh_to mma query-on "$DB" "$SQL"
+do_query() {
+	ssh_script $1 "query_on \"$DB\" \"$SQL\""
+}
+QUIET=1 each_machine "$MD" do_query

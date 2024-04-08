@@ -1,6 +1,8 @@
-# make repeated git pulls faster by reusing SSH connections.
+# git lib: git wrappers...
+
+# TODO: make repeated git pulls faster by reusing SSH connections.
 # ...alas, it doesn't work, gives `mux_client_request_session: read from master failed: Broken pipe`
-# export GIT_SSH_COMMAND="ssh -o ControlMaster=auto -o ControlPersist=10 -o ControlPath=~/.ssh/control-%h-%p-%r-git"
+# export GIT_SSH_COMMAND="$(ssh_cmd_opt)"
 
 git_install_git_up() {
 	say "Installing 'git up' command..."
@@ -53,4 +55,42 @@ git_clone_for() { # USER REPO DIR VERSION LABEL
 mgit_install() {
 	git_clone_for root git@github.com:capr/multigit.git /opt/mgit
 	must ln -sf /opt/mgit/mgit /usr/local/bin/mgit
+}
+
+git_vars() { # MACHINE
+	local VARS=()
+	cat_varfiles var/machines/$1 git_hosts; VARS+=("${R1[@]}")
+	cat_varfile var/machines/$1 git_hosts; local GIT_HOSTS="$R1"
+	local gh
+	for gh in $GIT_HOSTS; do
+		cat_varfiles var/machines/$1 \
+			git_${gh}_host \
+			git_${gh}_ssh_hostkey \
+			git_${gh}_ssh_key
+		VARS+=("${R1[@]}")
+	done
+	R1=("${VARS[@]}")
+}
+
+_git_keys_update_for_user() { # USER
+	local USER="$1"
+	checkvars USER GIT_HOSTS-
+	for NAME in $GIT_HOSTS; do
+		say "Updating git key '$NAME' for user '$USER'..."
+		indent
+		local -n HOST=GIT_${NAME^^}_HOST
+		local -n SSH_KEY=GIT_${NAME^^}_SSH_KEY
+		local -n SSH_HOSTKEY=GIT_${NAME^^}_SSH_HOSTKEY
+		checkvars HOST SSH_KEY- SSH_HOSTKEY-
+		echo "$USER" "$HOST" "mm_$NAME"
+		#ssh_host_key_update_for_user $USER $HOST mm_$NAME "$SSH_KEY" unstable_ip
+		outdent
+	done
+}
+git_keys_update() { # [USERS]
+	local USERS="$1"
+	[ "$USERS" ] || USERS="$(echo root; machine_deploys)"
+	for USER in $USERS; do
+		_git_keys_update_for_user $USER
+	done
 }

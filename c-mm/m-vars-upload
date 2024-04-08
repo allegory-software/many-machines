@@ -1,5 +1,0 @@
-#!/bin/bash
-# ["MD1 ..."] :: upload machine env vars to machine(s)
-. mmlib
-
-each_machine "$1" machine_vars_upload

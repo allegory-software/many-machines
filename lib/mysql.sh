@@ -1,3 +1,6 @@
+# mysql lib: mysql wrapper for admin and querying.
+# query works without prompt on both a root shell and a $DPELOY user shell.
+
 # mysql admin ----------------------------------------------------------------
 
 mysql_config() { # NAME CONFIG
@@ -128,38 +131,7 @@ mysql_restore_db() { # DB BACKUP_DIR
 	mysql_grant_user_db localhost $db $db
 }
 
-# mysql queries --------------------------------------------------------------
-
-has_mysql() { which mysql >/dev/null; }
-
-_must_mysql() {
-	if [ -f $HOME/.my.cnf ]; then
-		must mysql -N -B "$@"
-	else
-		# on a fresh mysql install we can login from the `root` system user
-		# as mysql user `root` without a password because the default auth
-		# plugin for `root` (without hostname!) is `unix_socket`.
-		must mysql -N -B -u root "$@"
-	fi
-}
-
-query_on() { # DB SQL
-	_must_mysql "$1" -e "$2"
-}
-
-query() { # SQL
-	_must_mysql -e "$1"
-}
-
-mysql_exec_on() { # DB SQL
-	[ "$DRY" ] && { echo "DRY mysql_exec_on $1 [[$2]]"; return; }
-	query_on "$@"
-}
-
-mysql_exec() { # SQL
-	[ "$DRY" ] && { echo "DRY mysql_exec [[$1]]"; return; }
-	query "$1"
-}
+# mysql password -------------------------------------------------------------
 
 mysql_my_cnf() {
 	local USER="$1"
@@ -195,6 +167,44 @@ password=$pass
 protocol=TCP
 ${db:+database=$db}
 " $cnf $user
+}
+
+# mysql queries --------------------------------------------------------------
+
+has_mysql() { which mysql >/dev/null; }
+
+MYSQL_OPTS_SCRIPT="-N -B"
+MYSQL_OPTS_PRETTY="-G -t"
+_must_mysql() {
+	local opts="$MYSQL_OPTS"
+	[ "$MYSQL_PRETTY" ] && opts+=" $MYSQL_OPTS_PRETTY"
+	[ "$opts" ] || opts="$MYSQL_OPTS_SCRIPT"
+	if [ -f $HOME/.my.cnf ]; then
+		must mysql $opts "$@"
+	else
+		# on a fresh mysql install we can login from the `root` system user
+		# as mysql user `root` without a password because the default auth
+		# plugin for `root` (without hostname!) is `unix_socket`.
+		must mysql $opts -u root "$@"
+	fi
+}
+
+query_on() { # DB SQL
+	_must_mysql "$1" -e "$2"
+}
+
+query() { # SQL
+	_must_mysql -e "$1"
+}
+
+mysql_exec_on() { # DB SQL
+	[ "$DRY" ] && { echo "DRY mysql_exec_on $1 [[$2]]"; return; }
+	query_on "$@"
+}
+
+mysql_exec() { # SQL
+	[ "$DRY" ] && { echo "DRY mysql_exec [[$1]]"; return; }
+	query "$1"
 }
 
 _mysql_create_or_alter_user() { # create|alter HOST USER PASS
@@ -275,21 +285,6 @@ mysql_rename_user() { # OLD_HOST OLD_USER NEW_HOST NEW_USER
 		flush privileges;
 	"
 	say OK
-}
-
-mysql_dbs() {
-	query "show databases where \`database\` not in
-		('mysql', 'information_schema', 'performance_schema', 'sys')"
-}
-
-mysql_tables() { # DB
-	local db="$1"
-	checkvars db
-	query "
-		select table_name from information_schema.tables
-		where table_schema = '$db' and table_type = 'BASE TABLE'
-		order by table_name
-	"
 }
 
 mysql_dump_views() { # DB

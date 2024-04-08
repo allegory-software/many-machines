@@ -1,6 +1,6 @@
 #!/bin/bash
-# MD :: reboot machine
+# ["MD ..."] :: reboot machine
 . mmlib
 
 [ "$1" ] || die "MACHINE or DEPLOY required."
-mm ssh "$1" reboot
+each_machine "$1" ssh_to reboot

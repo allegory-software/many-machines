@@ -1,8 +1,7 @@
 #!/bin/bash
-# ["MD1 ..."] COMMAND ARGS... :: exec remote commands
+# ["MD1 ..."] [COMMAND ARGS...] :: exec remote commands
 . mmlib
 
 MD="$1"; shift
-[[ "${MD//[^[:space:]]/}" ]] || QUIET=1
 [ "$1" ] || MM_SSH_TTY=1
 each_machine "$MD" ssh_to "$@"

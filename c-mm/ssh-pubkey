@@ -1,0 +1,7 @@
+#!/bin/bash
+# ["MD1 ..."] [KEYNAME] [USER] :: print a ssh public key
+. mmlib
+
+KEYNAME="${2:-mm-$HOSTNAME}"
+USER="${3:-root}"
+each_machine "$1" ssh_script "ssh_pubkey $USER $KEYNAME"

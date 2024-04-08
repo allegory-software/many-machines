@@ -1,3 +1,5 @@
+# user admin ops: runs as root on a machine administered by mm.
+
 user_exists() { # USER
 	local user="$1"
 	checkvars user

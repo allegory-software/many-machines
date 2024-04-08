@@ -1,0 +1,7 @@
+#!/bin/bash
+# ["MD1 ..."] "bash commands..." :: exec bash script remotely
+. mmlib
+
+MD="$1"; shift
+[ "$1" ] || die 'Usage: mm script ["MD1 ..."] "bash commands..."'
+each_machine "$MD" ssh_script "$1"

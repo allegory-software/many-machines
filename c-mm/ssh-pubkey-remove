@@ -1,0 +1,7 @@
+#!/bin/bash
+# ["MD1 ..."] [KEYNAME] ["USER1 ..."] :: remove mm's public key on root and all deploy users
+. mmlib
+
+KEYNAME="${2:-mm-$HOSTNAME}"
+USERS="$3"
+each_machine "$1" ssh_script "ssh_pubkey_update $KEYNAME --remove \"$USERS\""
