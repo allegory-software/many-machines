@@ -3,7 +3,7 @@
 . mmlib
 
 FMT="%-10s %-7s %-10s %-10s %-10s %-10s\n"
-printf "$FMT" "DEPLOY" "ACTIVE" "MACHINE" "APP" "VERSION" "SDK"
+printf "$FMT" "DEPLOY" "ACTIVE" "MACHINE" "APP" "APP_VER" "SDK_VER"
 print_deploy_line() {
 	local DPELOY="$1"
 	deploy_vars "$DEPLOY"

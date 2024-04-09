@@ -1,0 +1,18 @@
+#!/bin/bash
+# list deployments
+. mmlib
+
+deploy_info_header
+print_deploy_line() {
+	local DPELOY="$1"
+	deploy_vars "$DEPLOY"
+	eval "${R1[*]}"
+	local line
+	if line=`ssh_script $MACHINE "deploy_info_line" 2>&1`; then
+		printf "%s\n" "$line"
+	else
+		read -r line <<< "$line"
+		deploy_info_line_fail $1 "$line"
+	fi
+}
+QUIET=1 each_deploy "$1" print_deploy_line

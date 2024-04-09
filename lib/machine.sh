@@ -1,9 +1,9 @@
 # machine lib: programs running as root on a machine administered by mm.
 
-MI_FMT="%-10s %-5s %-5s %-7s %-7s %-7s %-7s %-30s %-12s %-40s\n"
+MI_FMT="%-10s %-5s %-5s %-7s %-7s %-7s %-7s %-30s %-40s\n"
 ME_FMT="%-10s %-5s %-5s %-7s %-7s %-7s %-7s %s\n"
 machine_info_header() {
-	printf "$MI_FMT" MACHINE CPUS CORES RAM FREE HDD FREE OS_VER MYSQL_VER CPU
+	printf "$MI_FMT" MACHINE CPUS CORES RAM FREE HDD FREE OS_VER CPU
 }
 
 machine_info_line_fail() { # MACHINE ERROR
@@ -12,7 +12,6 @@ machine_info_line_fail() { # MACHINE ERROR
 
 machine_info_line() {
 	local    os_ver="$(lsb_release -sd)"
-	local mysql_ver="$(has_mysql && query 'select version();')"
 	local       cpu="$(lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p')"
 	local       cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
 	local   sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
@@ -21,7 +20,7 @@ machine_info_line() {
 	local  free_ram="$(cat /proc/meminfo | awk '/MemAvailable/  { printf "%.1fG", $2/(1024*1024)}')"
 	local       hdd="$(df -l / | awk '(NR > 1) { printf "%.1fG", $2/(1024*1024)}')"
 	local  free_hdd="$(df -l / | awk '(NR > 1) { printf "%.1fG", $4/(1024*1024)}')"
-	printf "$MI_FMT" "$MACHINE" "$sockets" "$cores" "$ram" "$free_ram" "$hdd" "$free_hdd" "$os_ver" "$mysql_ver" "$cpu"
+	printf "$MI_FMT" "$MACHINE" "$sockets" "$cores" "$ram" "$free_ram" "$hdd" "$free_hdd" "$os_ver" "$cpu"
 }
 
 machine_set_hostname() { # machine
@@ -92,11 +91,23 @@ service_stop() {
 	must service "$SERVICE" stop
 }
 
-services_status() { # ]SERVICES]
+service_version_mysql() {
+	has_mysql && query 'select version();'
+}
+service_version_tarantool() {
+	tarantool --version | head -1
+}
+
+SS_FMT="%-10s %-12s %-12s %s\n"
+service_status_header() {
+	printf "$SS_FMT" MACHINE SERVICE STATUS VERSION
+}
+service_status() { # ]SERVICES]
 	[ "$1" ] && SERVICES="$1" || SERVICES="mysql tarantool"
 	for SERVICE in $SERVICES; do
 		is_running "$SERVICE"
 		[ $? == 0 ] && STATUS=RUNNING || STATUS=stopped
-		printf "%-10s %-12s %s\n" "$MACHINE" "$SERVICE" "$STATUS"
+		local VERSION=`service_version_$SERVICE 2>/dev/null`
+		printf "$SS_FMT" "$MACHINE" "$SERVICE" "$STATUS" "$VERSION"
 	done
 }

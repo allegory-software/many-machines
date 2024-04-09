@@ -132,7 +132,7 @@ active_deploys() {
 	R1=
 	local DEPLOY
 	for DEPLOY in `ls -1 var/deploys`; do
-		[ "$INACTIVE" != "" -o -f "var/deploys/$DEPLOY/active" ] && R1+=" $DEPLOY"
+		[[ "$INACTIVE" != "" || -f var/deploys/$DEPLOY/active ]] && R1+=" $DEPLOY"
 	done
 }
 

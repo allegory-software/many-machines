@@ -1,5 +1,16 @@
 # deploy lib: programs for deployments admin, running as root on a machine administered by mm.
 
+DI_FMT="%-10s %-7s %-10s %-10s %-10s %-10s\n"
+deploy_info_header() {
+	printf "$DI_FMT" ""
+}
+deploy_info_line() {
+	printf "$DI_FMT" "DEPLOY" "ACTIVE" "MACHINE" "APP" "APP_VER" "SDK_VER"
+}
+deploy_info_line_fail() { # ERR
+	printf "$DI_FMT" 
+}
+
 acme_sh() {
 	local cmd_args="/root/.acme.sh/acme.sh --config-home $PWD/var/.acme.sh.etc"
 	run $cmd_args "$@"
