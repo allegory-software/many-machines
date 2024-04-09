@@ -2,4 +2,5 @@
 # ["MD1 ..."] :: pull mm on machine(s)
 . mmlib
 
-each_machine "$1" ssh_to mma mm-pull
+each_machine "$1" ssh_script "cd /opt/mm && git pull"
+
