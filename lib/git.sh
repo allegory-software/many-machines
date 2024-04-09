@@ -1,5 +1,8 @@
 # git lib: git wrappers...
 
+# make repeated git pulls faster by reusing SSH connections.
+export GIT_SSH_COMMAND="ssh -o ConnectTimeout=3 -o ControlMaster=auto -o ControlPath=~/.ssh/control-%h-%p-%r -o ControlPersist=600"
+
 git_install_git_up() {
 	say "Installing 'git up' command..."
 	local git_up=/usr/lib/git-core/git-up
