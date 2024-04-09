@@ -17,8 +17,8 @@ machine_info_line() {
 	local       cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
 	local   sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
 	local     cores="$(expr $sockets \* $cps)"
-	local       ram="$(cat /proc/meminfo | awk '/MemTotal/ { printf "%.1fG", $2/(1024*1024)}')"
-	local  free_ram="$(cat /proc/meminfo | awk '/MemFree/  { printf "%.1fG", $2/(1024*1024)}')"
+	local       ram="$(cat /proc/meminfo | awk '/MemTotal/      { printf "%.1fG", $2/(1024*1024)}')"
+	local  free_ram="$(cat /proc/meminfo | awk '/MemAvailable/  { printf "%.1fG", $2/(1024*1024)}')"
 	local       hdd="$(df -l / | awk '(NR > 1) { printf "%.1fG", $2/(1024*1024)}')"
 	local  free_hdd="$(df -l / | awk '(NR > 1) { printf "%.1fG", $4/(1024*1024)}')"
 	printf "$MI_FMT" "$MACHINE" "$sockets" "$cores" "$ram" "$free_ram" "$hdd" "$free_hdd" "$os_ver" "$mysql_ver" "$cpu"
@@ -90,4 +90,13 @@ service_stop() {
 	local SERVICE="$1"; checkvars SERVICE
 	say "Stopping $SERVICE..."
 	must service "$SERVICE" stop
+}
+
+services_status() { # ]SERVICES]
+	[ "$1" ] && SERVICES="$1" || SERVICES="mysql tarantool"
+	for SERVICE in $SERVICES; do
+		is_running "$SERVICE"
+		[ $? == 0 ] && STATUS=RUNNING || STATUS=stopped
+		printf "%-10s %-12s %s\n" "$MACHINE" "$SERVICE" "$STATUS"
+	done
 }
