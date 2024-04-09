@@ -1,26 +1,42 @@
 # deploy lib: programs for deployments admin, running as root on a machine administered by mm.
 
-DI_FMT="%-10s %-7s %-10s %-10s %-10s %-10s\n"
+machine_deploys() {
+	local USER
+	for USER in `ls -1 /home`; do
+		[ -L "/home/$USER/app" ] && echo $USER
+	done
+}
+
+deploy_status() {
+	checkvars DEPLOY APP
+	[ -d /home/$DEPLOY                    ] || say "no /home/$DEPLOY dir"
+	[ -d /home/$DEPLOY/$APP               ] || say "no /home/$DEPLOY/$APP dir"
+	[ -d /home/$DEPLOY/$APP/sdk           ] || say "no sdk dir"
+	[ -d /home/$DEPLOY/$APP/sdk/bin/linux ] || say "no sdk/bin/linux dir"
+	[ -f /home/$DEPLOY/$APP/${APP}.conf   ] || say "no ${APP}.conf"
+	app status
+}
+
+DI_FMT="%-10s %-10s %-10s %-10s %-10s %-10s\n"
+DE_FMT="%-10s %s\n"
 deploy_info_header() {
-	printf "$DI_FMT" ""
+	printf "$DI_FMT" "MACHINE" "DEPLOY" "STATUS" "APP" "APP_COM" "SDK_COM"
 }
 deploy_info_line() {
-	printf "$DI_FMT" "DEPLOY" "ACTIVE" "MACHINE" "APP" "APP_VER" "SDK_VER"
+	local APP="$(readlink /home/$DEPLOY/app)"
+	local APP_COMMIT="$(cd /home/$DEPLOY/app     && run_as $DEPLOY git rev-parse --short HEAD)"
+	local SDK_COMMIT="$(cd /home/$DEPLOY/app/sdk && run_as $DEPLOY git rev-parse --short HEAD)"
+	local STATUS; app running && STATUS="RUNNING" || STATUS="-"
+	printf "$DI_FMT" "$MACHINE" "$DEPLOY" "$STATUS" "$APP" "$APP_COMMIT" "$SDK_COMMIT"
 }
-deploy_info_line_fail() { # ERR
-	printf "$DI_FMT" 
+deploy_info_line_fail() { # DEPLOY ERR
+	printf "$DI_FMT" $1 "$2"
 }
-
-acme_sh() {
-	local cmd_args="/root/.acme.sh/acme.sh --config-home $PWD/var/.acme.sh.etc"
-	run $cmd_args "$@"
-	local ret=$?; [ $ret == 2 ] && ret=0 # skipping gets exit code 2.
-	[ $ret == 0 ] || die "$cmd_args "$@" [$ret]"
-}
-
-acme_check() {
-	say "Checking SSL certificate with acme.sh ... "
-	acme_sh --cron
+machine_deploys_info() {
+	local DEPLOY
+	for DEPLOY in `machine_deploys`; do
+		deploy_info_line
+	done
 }
 
 deploy_nginx_config() { # DOMAIN= HTTP_PORT= [ACME=1] $0
@@ -266,16 +282,6 @@ deploy_rename() { # OLD_DEPLOY NEW_DEPLOY [nosql]
 		mysql_gen_my_cnf localhost $NEW_DEPLOY $MYSQL_PASS $NEW_DEPLOY
 
 	deploy_gen_conf
-}
-
-deploy_status() {
-	checkvars DEPLOY APP
-	[ -d /home/$DEPLOY                    ] || say "no /home/$DEPLOY dir"
-	[ -d /home/$DEPLOY/$APP               ] || say "no /home/$DEPLOY/$APP dir"
-	[ -d /home/$DEPLOY/$APP/sdk           ] || say "no sdk dir"
-	[ -d /home/$DEPLOY/$APP/sdk/bin/linux ] || say "no sdk/bin/linux dir"
-	[ -f /home/$DEPLOY/$APP/${APP}.conf   ] || say "no ${APP}.conf"
-	app status
 }
 
 test_task() {

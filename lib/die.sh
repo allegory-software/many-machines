@@ -30,8 +30,8 @@ run_as() { # user cmd
 
 checknosp() { # VAL [ERROR...]
 	local val="$1"; shift
-	[[ "${val}" =~ ( |\') ]] && die "${FUNCNAME[1]}: contains spaces: $val"
-	[ "${val}" ] || die "${FUNCNAME[1]}: $@"
+	[[ "${val}" =~ ( |\') ]] && die "${FUNCNAME[1]}: contains spaces: '$val'"
+	[[ "${val}" ]] || die "${FUNCNAME[1]}: $@"
 }
 
 checkvars() { # VARNAME1[-] ...

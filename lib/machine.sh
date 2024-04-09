@@ -68,12 +68,7 @@ machine_rename() { # OLD_MACHINE NEW_MACHINE
 	machine_set_hostname "$NEW_MACHINE"
 }
 
-machine_deploys() {
-	local USER
-	for USER in `ls -1 /home`; do
-		[ -f "/home/$USER/.deploy" ] && echo $USER
-	done
-}
+# services
 
 is_running() {
 	systemctl -q is-active "$1"
