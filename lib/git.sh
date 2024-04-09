@@ -1,9 +1,5 @@
 # git lib: git wrappers...
 
-# TODO: make repeated git pulls faster by reusing SSH connections.
-# ...alas, it doesn't work, gives `mux_client_request_session: read from master failed: Broken pipe`
-# export GIT_SSH_COMMAND="$(ssh_cmd_opt)"
-
 git_install_git_up() {
 	say "Installing 'git up' command..."
 	local git_up=/usr/lib/git-core/git-up
@@ -92,4 +88,13 @@ git_keys_update() { # [USERS]
 	for USER in $USERS; do
 		_git_keys_update_for_user $USER
 	done
+}
+
+github_commit_sha() { # OWNER/REPO TAG|BRANCH
+	local owner_repo="$1"
+	local tag="$2"
+	local url="https://api.github.com/repos/$owner_repo/git/ref/heads/$tag"
+	local response=$(curl -s "$url")
+	local commit_sha=$(echo "$response" | jq -r '.object.sha')
+	R1=$commit_sha
 }

@@ -2,12 +2,15 @@
 # list deployments
 . mmlib
 
-FMT="%-10s %-7s %-10s %-10s %-10s %-10s\n"
-printf "$FMT" "DEPLOY" "ACTIVE" "MACHINE" "APP" "APP_VER" "SDK_VER"
+github_commit_sha allegory-software/allegory-sdk dev
+SDK_COMMIT=${R1:0:7}
+
+FMT="%-10s %-10s %-7s %-10s %-10s %-10s %-10s\n"
+printf "$FMT" "MACHINE" "DEPLOY" "ACTIVE"  "APP" "APP_VER" "SDK_VER" "SDK_COM"
 print_deploy_line() {
 	local DPELOY="$1"
 	deploy_vars "$DEPLOY"
 	eval "${R1[*]}"
-	printf "$FMT" "$DEPLOY" "$ACTIVE" "$MACHINE" "$APP" "$APP_VERSION" "$SDK_VERSION"
+	printf "$FMT" "$MACHINE" "$DEPLOY" "$ACTIVE" "$APP" "$APP_VERSION" "$SDK_VERSION" "$SDK_COMMIT"
 }
 QUIET=1 INACTIVE=1 each_deploy "$1" print_deploy_line

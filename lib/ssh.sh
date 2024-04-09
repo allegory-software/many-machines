@@ -13,6 +13,10 @@ ssh_cmd_opt() { # MACHINE=
 	[ "$MM_SSH_TTY" ] && R1+=(-t) || R1+=(-o BatchMode=yes)
 }
 
+# TODO: make repeated git pulls faster by reusing SSH connections.
+# ...alas, it doesn't work, gives `mux_client_request_session: read from master failed: Broken pipe`
+ssh_cmd_opt; export GIT_SSH_COMMAND="${R1[*]}"
+
 ssh_cmd() { # MACHINE= HOST=
 	ssh_cmd_opt
 	R1+=(root@$HOST)
