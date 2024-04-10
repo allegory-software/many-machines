@@ -92,23 +92,3 @@ git_keys_update() { # [USERS]
 		_git_keys_update_for_user $USER
 	done
 }
-
-github_commit_sha() { # OWNER/REPO TAG|BRANCH
-	local owner_repo="$1"
-	local tag="$2"
-	local url=https://api.github.com/repos/$owner_repo/git/ref/heads/$tag
-	local opt="-s $url"
-	try_catfile var/github_api_access_token 2>/dev/null
-	[ "$R1" ] && opt+=" -H \"Authorization: token $R1\""
-	printf "%s\n" "$opt"
-	local response="$(curl $opt)"
-	echo "$response"
-	local commit_sha=$(echo "$response" | jq -r '.object.sha')
-	R1=$commit_sha
-}
-
-github_commit_sha() {
-	local owner_repo="$1"
-	#ssh git@github.com "cd /$owner_repo.git && git rev-parse HEAD"
-	R1=$(git ls-remote git@github.com:$owner_repo.git HEAD)
-}
