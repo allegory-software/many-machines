@@ -1,0 +1,12 @@
+#!/bin/bash
+# ["MD1 ..."] :: prepare a machine for deployments
+. mmlib
+
+_prepare() {
+	cat_varfiles var/machines/$1 MYSQL_ROOT_PASS DHPARAM
+	ssh_script $1 "
+		${R1[*]}
+		machine_prepare
+	"
+}
+each_machine "$1" _prepare

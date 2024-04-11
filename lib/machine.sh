@@ -1,5 +1,7 @@
 # machine lib: programs running as root on a machine administered by mm.
 
+# machine info ---------------------------------------------------------------
+
 MI_FMT="%-10s %-5s %-5s %-7s %-7s %-7s %-7s %-30s %-40s\n"
 ME_FMT="%-10s %s\n"
 machine_info_header() {
@@ -23,6 +25,8 @@ machine_info_line() {
 	printf "$MI_FMT" "$MACHINE" "$sockets" "$cores" "$ram" "$free_ram" "$hdd" "$free_hdd" "$os_ver" "$cpu"
 }
 
+# machine prepare ------------------------------------------------------------
+
 machine_set_hostname() { # machine
 	local HOST="$1"
 	checkvars HOST
@@ -42,25 +46,6 @@ machine_set_timezone() { # tz
 	must timedatectl set-timezone "$TZ" # sets /etc/localtime and /etc/timezone
 }
 
-acme_sh() {
-	local cmd_args="/root/.acme.sh/acme.sh --config-home /root/.acme.sh.etc"
-	run $cmd_args "$@"
-	local ret=$?; [ $ret == 2 ] && ret=0 # skipping gets exit code 2.
-	[ $ret == 0 ] || die "$cmd_args $@ [$ret]"
-}
-
-acme_check() {
-	say "Checking SSL certificate with acme.sh ... "
-	acme_sh --cron
-}
-
-tarantool_install() { # tarantool 2.10
-	say "Instlaling Tarantool..."
-	must curl -L https://tarantool.io/BsbZsuW/release/2/installer.sh | bash
-	apt_get_install tarantool
-	say "Tarantool install done."
-}
-
 machine_rename() { # OLD_MACHINE NEW_MACHINE
 	local OLD_MACHINE=$1
 	local NEW_MACHINE=$2
@@ -68,7 +53,7 @@ machine_rename() { # OLD_MACHINE NEW_MACHINE
 	machine_set_hostname "$NEW_MACHINE"
 }
 
-# services
+# services -------------------------------------------------------------------
 
 is_running() {
 	systemctl -q is-active "$1"

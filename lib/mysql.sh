@@ -1,5 +1,46 @@
-# mysql lib: mysql wrapper for admin and querying.
+# mysql lib: mysql wrapper for install, admin and querying.
 # query works without prompt on both a root shell and a $DPELOY user shell.
+
+# mysql install --------------------------------------------------------------
+
+mysql_install() {
+
+checkvars MYSQL_ROOT_PASS
+
+say "Installing MySQL (Percona latest)..."
+is_running mysql && { say "MySQL is running. Stop it first."; return; }
+
+apt_get_install gnupg2 lsb-release
+
+must wget -nv https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb -O percona.deb
+export DEBIAN_FRONTEND=noninteractive
+must dpkg -i percona.deb
+apt_get install --fix-broken
+must rm percona.deb
+must percona-release setup -y pxc80
+apt_get_install percona-xtradb-cluster percona-xtrabackup-80 qpress
+
+rm percona.deb
+
+mysql_config default "
+
+# amazing that this is not the default...
+bind-address = 127.0.0.1
+mysqlx-bind-address = 127.0.0.1
+
+# our binlog is row-based, but we still get an error when creating procs.
+log_bin_trust_function_creators = 1
+
+"
+
+service_start mysql
+
+mysql_update_pass localhost root $MYSQL_ROOT_PASS
+mysql_gen_my_cnf  localhost root $MYSQL_ROOT_PASS
+
+say "MySQL install done."
+
+}
 
 # mysql admin ----------------------------------------------------------------
 

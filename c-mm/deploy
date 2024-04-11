@@ -1,0 +1,14 @@
+#!/bin/bash
+# ["DEPLOY1 ..."] :: deploy an app on its target machine
+. mmlib
+
+machine_deploy_info_header
+_deploy() {
+	deploy_vars $1
+	local s
+	ssh_script $1 "
+		${R1[*]}
+		DEPLOY=$1 deploy
+	"
+}
+each_deploy "$1" _deploy

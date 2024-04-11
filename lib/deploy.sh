@@ -185,8 +185,31 @@ app() {
 	popd
 }
 
+deploy_prepare() {
+	checkvars DEPLOY MYSQL_PASS GIT_HOSTS-
+
+	user_create    $DEPLOY
+	user_lock_pass $DEPLOY
+
+	#ssh_pubkey_update $KEYNAME $DEPLOY mm "$SSH_PUBKEY"
+	#ssh_pubkey_for_user $DEPLOY mm  # print it so we can check it
+
+	git_keys_update $DEPLOY
+	git_config_user "mm@allegory.ro" "Many Machines"
+
+	mysql_create_db     $DEPLOY
+	mysql_create_user   localhost $DEPLOY "$MYSQL_PASS"
+	mysql_grant_user_db localhost $DEPLOY $DEPLOY
+	mysql_gen_my_cnf    localhost $DEPLOY "$MYSQL_PASS" $DEPLOY
+
+	say "Deploy prepare done."
+}
+
 deploy() {
-	checkvars DEPLOY REPO APP DEPLOY_VARS-
+
+	[ -d /home/$DEPLOY ] || deploy_prepare
+
+	checkvars DEPLOY REPO APP APP_VERSION SDK_VERSION
 	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION SDK_VERSION=$SDK_VERSION..."
 
 	[ -d /home/$DEPLOY/$APP ] && app running && must app stop
@@ -206,7 +229,7 @@ deploy() {
 
 	deploy_gen_conf
 
-	[ "$HTTP_PORT" -a "$DOMAIN" ] && {
+	[[ $HTTP_PORT && $DOMAIN ]] && {
 		local src=/home/$DEPLOY/$APP/www/5xx.html
 		local dst=/var/www/$DOMAIN/5xx.html
 		if [ -f "$src" ]; then
@@ -217,12 +240,14 @@ deploy() {
 		deploy_nginx_config
 	}
 
-	say "Installing the app..."
+	must ln -sf $APP /home/$DEPLOY/app
+
+	say; say "Installing the app..."
 	must app install forealz
 
-	must app start
+	say; must app start
 
-	say "Deploy done."
+	say; say "Deploy done."
 }
 
 deploy_secret_gen() {
