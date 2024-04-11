@@ -2,7 +2,6 @@
 - d-vars-upload
 - mma app runs with vars
 - deploy
-- d-status
 
 - acme-check
 - d-issue-ssl-cert

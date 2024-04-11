@@ -1,13 +1,13 @@
 # machine lib: programs running as root on a machine administered by mm.
 
 MI_FMT="%-10s %-5s %-5s %-7s %-7s %-7s %-7s %-30s %-40s\n"
-ME_FMT="%-10s %-5s %-5s %-7s %-7s %-7s %-7s %s\n"
+ME_FMT="%-10s %s\n"
 machine_info_header() {
 	printf "$MI_FMT" MACHINE CPUS CORES RAM FREE HDD FREE OS_VER CPU
 }
 
 machine_info_line_fail() { # MACHINE ERROR
-	printf "$ME_FMT" $1 - - - - - - "$2"
+	printf "$ME_FMT" "$1" "$2"
 }
 
 machine_info_line() {
@@ -98,7 +98,7 @@ service_status_header() {
 	printf "$SS_FMT" MACHINE SERVICE STATUS VERSION
 }
 service_status() { # ]SERVICES]
-	[ "$1" ] && SERVICES="$1" || SERVICES="mysql tarantool"
+	[ "$1" ] && SERVICES="$1" || SERVICES="cron mysql tarantool"
 	for SERVICE in $SERVICES; do
 		is_running "$SERVICE"
 		[ $? == 0 ] && STATUS=RUNNING || STATUS=stopped

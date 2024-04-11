@@ -7,35 +7,31 @@ machine_deploys() {
 	done
 }
 
-deploy_status() {
-	checkvars DEPLOY APP
-	[ -d /home/$DEPLOY                    ] || say "no /home/$DEPLOY dir"
-	[ -d /home/$DEPLOY/$APP               ] || say "no /home/$DEPLOY/$APP dir"
-	[ -d /home/$DEPLOY/$APP/sdk           ] || say "no sdk dir"
-	[ -d /home/$DEPLOY/$APP/sdk/bin/linux ] || say "no sdk/bin/linux dir"
-	[ -f /home/$DEPLOY/$APP/${APP}.conf   ] || say "no ${APP}.conf"
-	app status
-}
-
 DI_FMT="%-10s %-10s %-10s %-10s %-10s %-10s\n"
-DE_FMT="%-10s %s\n"
-deploy_info_header() {
+DE_FMT="%-10s %-10s %s\n"
+machine_deploy_info_header() {
 	printf "$DI_FMT" "MACHINE" "DEPLOY" "STATUS" "APP" "APP_COM" "SDK_COM"
 }
-deploy_info_line() {
+machine_deploy_info_line() {
+	local DEPLOY=$1
 	local APP="$(readlink /home/$DEPLOY/app)"
-	local APP_COMMIT="$(cd /home/$DEPLOY/app     && run_as $DEPLOY git rev-parse --short HEAD)"
-	local SDK_COMMIT="$(cd /home/$DEPLOY/app/sdk && run_as $DEPLOY git rev-parse --short HEAD)"
+	local APP_COMMIT; APP_COMMIT="$(cd /home/$DEPLOY/app     && run_as $DEPLOY git rev-parse --short HEAD)" || return
+	local SDK_COMMIT; SDK_COMMIT="$(cd /home/$DEPLOY/app/sdk && run_as $DEPLOY git rev-parse --short HEAD)" || return
 	local STATUS; app running && STATUS="RUNNING" || STATUS="-"
 	printf "$DI_FMT" "$MACHINE" "$DEPLOY" "$STATUS" "$APP" "$APP_COMMIT" "$SDK_COMMIT"
 }
-deploy_info_line_fail() { # DEPLOY ERR
-	printf "$DI_FMT" $1 "$2"
+machine_deploy_info_line_fail() { # DEPLOY ERR
+	printf "$DE_FMT" "$MACHINE" "$1" "$2"
 }
 machine_deploys_info() {
 	local DEPLOY
 	for DEPLOY in `machine_deploys`; do
-		deploy_info_line
+		local s
+		if s="$(machine_deploy_info_line $DEPLOY 2>&1)"; then
+			printf "%s\n" "$s"
+		else
+			machine_deploy_info_line_fail $DEPLOY "$s"
+		fi
 	done
 }
 
@@ -184,12 +180,9 @@ deploy_remove() { # DEPLOY DOMAIN=
 
 app() {
 	checkvars DEPLOY APP
-	local dir=/home/$DEPLOY/$APP
-	[ -d $dir ] || die "App dir missing. Not deployed?"
-	(
-	must cd /home/$DEPLOY/$APP
+	must pushd /home/$DEPLOY/$APP
 	VARS="DEBUG VERBOSE" run_as $DEPLOY ./$APP "$@"
-	)
+	popd
 }
 
 deploy() {

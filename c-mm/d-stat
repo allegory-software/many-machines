@@ -1,9 +1,0 @@
-#!/bin/bash
-# list deployments
-. mmlib
-
-deploy_info_header
-print_deploy_line() {
-	ssh_script $1 "machine_deploys_info"
-}
-QUIET=1 each_machine "$1" print_deploy_line

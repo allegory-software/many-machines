@@ -1,11 +1,11 @@
 #!/bin/bash
-# ["MD1 ..."] show machine info
+# ["MD1 ..."] show live machine status/info
 . mmlib
 
 machine_info_header
 try_machine_info_line() {
 	local line
-	if line=`ssh_script $1 "machine_info_line" 2>&1`; then
+	if line="$(ssh_script $1 "machine_info_line" 2>&1)"; then
 		printf "%s\n" "$line"
 	else
 		read -r line <<< "$line"
