@@ -1,5 +1,19 @@
 # mm lib: functions reading var/machines and var/deploys.
 
+mm_update() {
+	if [ -d /opt/mm ]; then
+		must git clone git@github.com:allegory-software/many-machines2 /opt/mm
+		# install globally
+		must ln -sf /opt/mm/mma     /usr/bin/mma
+		must ln -sf /opt/mm/mm      /usr/bin/mm
+		must ln -sf /opt/mm/lib/all /usr/bin/mmlib
+	else
+		pushd /opt/mm
+		git pull
+		popd
+	fi
+}
+
 # machines database ----------------------------------------------------------
 
 check_deploy() { # DEPLOY
