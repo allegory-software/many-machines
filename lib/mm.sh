@@ -55,7 +55,7 @@ each_machine() { # [MACHINES] COMMAND ...
 	local CMD="$1"; shift
 	for MACHINE in $MACHINES; do
 		[ "$QUIET" ] || say "On machine $MACHINE:"; indent
-		"$CMD" "$MACHINE" "$@"
+		("$CMD" "$MACHINE" "$@")
 		outdent
 	done
 }

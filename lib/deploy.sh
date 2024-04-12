@@ -181,7 +181,7 @@ deploy_remove() { # DEPLOY DOMAIN=
 app() {
 	checkvars DEPLOY APP
 	must pushd /home/$DEPLOY/$APP
-	VARS="DEBUG VERBOSE" run_as $DEPLOY ./$APP "$@"
+	VARS="DEBUG VERBOSE" must run_as $DEPLOY ./$APP "$@"
 	popd
 }
 
@@ -190,9 +190,6 @@ deploy_prepare() {
 
 	user_create    $DEPLOY
 	user_lock_pass $DEPLOY
-
-	#ssh_pubkey_update $KEYNAME $DEPLOY mm "$SSH_PUBKEY"
-	#ssh_pubkey_for_user $DEPLOY mm  # print it so we can check it
 
 	git_keys_update $DEPLOY
 	git_config_user "mm@allegory.ro" "Many Machines"
@@ -207,26 +204,30 @@ deploy_prepare() {
 
 deploy() {
 
+	checkvars DEPLOY REPO APP APP_VERSION
+
 	[ -d /home/$DEPLOY ] || deploy_prepare
 
-	checkvars DEPLOY REPO APP APP_VERSION SDK_VERSION
-	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION SDK_VERSION=$SDK_VERSION..."
+	say
+	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION..."
 
-	[ -d /home/$DEPLOY/$APP ] && app running && must app stop
+	say
+	app running && must app stop
 
+	say
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app
 
-	git_clone_for $DEPLOY \
-		git@github.com:allegory-software/allegory-sdk \
-		/home/$DEPLOY/$APP/sdk "$SDK_VERSION" sdk
+	say
+	say "Pulling sdk..."
+	must cd /home/$DEPLOY/$APP
+	run_as $DEPLOY git submodule update --init sdk
 
-	must cd /home/$DEPLOY/$APP/sdk
-	run_as $DEPLOY git submodule update --init canvas-ui
+	say
+	say "Pulling sdk/canvas-ui and sdk/bin/linux..."
+	must cd sdk
+	run_as $DEPLOY git submodule update --init canvas-ui bin/linux
 
-	git_clone_for $DEPLOY \
-		git@github.com:allegory-software/allegory-sdk-bin-debian10 \
-		/home/$DEPLOY/$APP/sdk/bin/linux "$SDK_VERSION"
-
+	say
 	deploy_gen_conf
 
 	[[ $HTTP_PORT && $DOMAIN ]] && {
@@ -240,12 +241,14 @@ deploy() {
 		deploy_nginx_config
 	}
 
-	must ln -sf $APP /home/$DEPLOY/app
+	must ln -sTf $APP /home/$DEPLOY/app
 
 	say; say "Installing the app..."
 	must app install forealz
 
-	say; must app start
+	say; say "Starting the app..."
+	must app start
+	must app status
 
 	say; say "Deploy done."
 }

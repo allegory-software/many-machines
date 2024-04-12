@@ -187,8 +187,16 @@ mysql_pass() { # USER/DB
 	[ -f "$cnf" ] && sed -n 's/password=\(.*\)/\1/p' $cnf
 }
 
-mysql_pass_gen() {
-	must openssl rand 23 | base64 # result is 32 chars
+mysql_pass_gen() { # FILE [ONCE]
+	local FILE="$1"
+	checkvars FILE
+	[[ $2 && -f $FILE ]] && return 0
+	local PASS; PASS=$(must openssl rand 23 | base64) || return # result is 32 chars
+	save "$PASS" $FILE
+}
+
+mysql_pass_gen_once() { # FILE
+	mysql_pass_gen "$1" once
 }
 
 # update ~/.my.cnf for using mysql and mysqldump without a password.

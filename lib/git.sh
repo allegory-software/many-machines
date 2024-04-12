@@ -30,6 +30,7 @@ git_clone_for() { # USER REPO DIR VERSION LABEL
 	local DIR="$3"
 	local VERSION="$4"
 	local LABEL="$5"
+	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	checkvars USER REPO DIR
 	[ "$VERSION" ] || VERSION=master
 	say "Pulling $DIR $VERSION ..."
@@ -37,12 +38,12 @@ git_clone_for() { # USER REPO DIR VERSION LABEL
 	must mkdir -p $DIR
 	must chown -R root:root $DIR
 	must cd $DIR
-	[ -d .git ] || must git init -q
-	git ls-remote --exit-code origin 2>/dev/null && must git remote remove origin
+	[ -d .git ] || must git init $QUIET
+	git ls-remote --exit-code origin >/dev/null && must git remote remove origin
 	run  git remote rm  origin 2>/dev/null
 	must git remote add origin $REPO
-	must git -c advice.objectNameWarning=false fetch --depth=1 -q origin "$VERSION:refs/remotes/origin/$VERSION"
-	must git -c advice.detachedHead=false checkout -q -B "$VERSION" "origin/$VERSION"
+	must git -c advice.objectNameWarning=false fetch --depth=1 $QUIET origin "$VERSION:refs/remotes/origin/$VERSION"
+	must git -c advice.detachedHead=false checkout $QUIET -B "$VERSION" "origin/$VERSION"
 	[ "$LABEL" ] && echo "${LABEL}_commit=$(git rev-parse --short HEAD)"
 	exit 0
 	)

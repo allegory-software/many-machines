@@ -2,14 +2,13 @@
 # ["DEPLOY1 ..."] :: list deployments as found in the local database
 . mmlib
 
-FMT="%-10s %-10s %-7s %-10s %-10s %-10s %-10s %-10s\n"
-printf "$FMT" "MACHINE" "DEPLOY" "ACTIVE"  "APP" "APP_VER" "APP_COM" "SDK_VER" "SDK_COM"
+FMT="%-10s %-10s %-7s %-10s %-10s %-10s\n"
+printf "$FMT" "MACHINE" "DEPLOY" "ACTIVE"  "APP" "APP_VER" "APP_COM"
 print_deploy_line() {
 	local DEPLOY="$1"
 	deploy_vars "$DEPLOY"
 	eval "${R1[*]}"
 	local APP_COMMIT=$(git ls-remote $REPO refs/heads/$APP_VERSION)
-	local SDK_COMMIT=$(git ls-remote git@github.com:allegory-software/allegory-sdk refs/heads/$SDK_VERSION)
-	printf "$FMT" "$MACHINE" "$DEPLOY" "$ACTIVE" "$APP" "$APP_VERSION" "${APP_COMMIT:0:7}" "$SDK_VERSION" "${SDK_COMMIT:0:7}"
+	printf "$FMT" "$MACHINE" "$DEPLOY" "$ACTIVE" "$APP" "$APP_VERSION" "${APP_COMMIT:0:7}"
 }
 QUIET=1 INACTIVE=1 each_deploy "$1" print_deploy_line

@@ -2,10 +2,9 @@
 # ["DEPLOY1 ..."] :: deploy an app on its target machine
 . mmlib
 
-machine_deploy_info_header
 _deploy() {
+	mysql_pass_gen_once var/deploys/$1/mysql_pass
 	deploy_vars $1
-	local s
 	ssh_script $1 "
 		${R1[*]}
 		DEPLOY=$1 deploy

@@ -5,8 +5,8 @@
 DEPLOY="$1"
 check_deploy "$DEPLOY"
 
-FILE=var/deploys/$DEPLOY/mysql_pass
 say "Generating MySQL password for $DEPLOY..."
-PASS=`mysql_pass_gen`
-save "$PASS" $FILE
+
+mysql_pass_gen var/deploys/$DEPLOY/mysql_pass
+
 say "Now run \`mm mysql-pass-update $DEPLOY\` to make it usable."
