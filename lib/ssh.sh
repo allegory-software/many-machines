@@ -223,7 +223,6 @@ rsync_cmd() {
 	say "  dst: $DST_DIR"
 	[ "$LINK_DIR" ] && say "  lnk: $LINK_DIR"
 	[ "$DRY" ] && say "  dry mode!"
-	say "..."
 
 	MACHINE=$DST_MACHINE ssh_cmd_opt; local ssh_cmd=("${R1[@]}")
 

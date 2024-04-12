@@ -8,6 +8,11 @@ mm_update() {
 	must ln -sf /opt/mm/lib/all /usr/bin/mmlib
 }
 
+mc_update() {
+	must cp -rf ~/.config etc/home
+	SRC_DIR=etc/home/./.config DST_DIR=/root DST_MACHINE=$1 rsync_dir
+}
+
 # machines database ----------------------------------------------------------
 
 check_deploy() { # DEPLOY

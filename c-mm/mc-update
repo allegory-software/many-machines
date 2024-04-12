@@ -2,8 +2,5 @@
 # ["MD1 ..."] :: update mc config on machines
 . mmlib
 
-_update() {
-	must cp -rf ~/.config etc/home
-	SRC_DIR=etc/home/./.config DST_DIR=/root DST_MACHINE=$1 rsync_dir
-}
-each_machine "$1" _update
+each_machine "$1" mc_update
+
