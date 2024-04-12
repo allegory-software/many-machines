@@ -1,7 +1,7 @@
 # acme.sh install and running
 
 acme_sh() {
-	local cmd_args="/root/.acme.sh/acme.sh --config-home /root/.acme.sh.etc"
+	local cmd_args="/root/.acme.sh/acme.sh --config-home $PWD/var/.acme.sh.etc"
 	run $cmd_args "$@"
 	local ret=$?; [ $ret == 2 ] && ret=0 # skipping gets exit code 2.
 	[ $ret == 0 ] || die "$cmd_args $@ [$ret]"

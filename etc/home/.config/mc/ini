@@ -5,7 +5,7 @@ auto_save_setup=true
 preallocate_space=false
 auto_menu=false
 use_internal_view=true
-use_internal_edit=false
+use_internal_edit=true
 clear_before_exec=true
 confirm_delete=true
 confirm_overwrite=true
@@ -40,15 +40,15 @@ ftpfs_use_unix_list_options=true
 ftpfs_first_cd_then_ls=true
 ignore_ftp_chattr_errors=true
 editor_fill_tabs_with_spaces=false
-editor_return_does_auto_indent=true
-editor_backspace_through_tabs=false
+editor_return_does_auto_indent=false
+editor_backspace_through_tabs=true
 editor_fake_half_tabs=false
 editor_option_save_position=true
 editor_option_auto_para_formatting=false
 editor_option_typewriter_wrap=false
 editor_edit_confirm_save=false
 editor_syntax_highlighting=true
-editor_persistent_selections=false
+editor_persistent_selections=true
 editor_drop_selection_on_copy=true
 editor_cursor_beyond_eol=false
 editor_cursor_after_inserted_block=false
@@ -60,8 +60,9 @@ editor_check_new_line=false
 editor_show_right_margin=false
 editor_group_undo=true
 editor_state_full_filename=true
-editor_ask_filename_before_edit=false
+editor_ask_filename_before_edit=true
 nice_rotating_dash=true
+shadows=true
 mcview_remember_file_position=false
 auto_fill_mkdir_name=true
 copymove_persistent_attr=true
@@ -87,18 +88,18 @@ skin=darkfar
 filepos_max_saved_entries=1024
 
 [Layout]
-message_visible=0
-keybar_visible=0
-xterm_title=1
 output_lines=0
-command_prompt=1
-menubar_visible=0
-free_space=1
-horizontal_split=0
-vertical_equal=1
 left_panel_size=70
-horizontal_equal=1
-top_panel_size=1
+top_panel_size=0
+message_visible=false
+keybar_visible=true
+xterm_title=true
+command_prompt=true
+menubar_visible=true
+free_space=true
+horizontal_split=false
+vertical_equal=true
+horizontal_equal=true
 
 [Misc]
 timeformat_recent=%b %e %H:%M
@@ -114,7 +115,7 @@ clipboard_paste=
 
 [Colors]
 base_color=
-xterm=
+linux=
 color_terminals=
 
 xterm-256color=
@@ -129,32 +130,16 @@ fast_reload=false
 fast_reload_msg_shown=false
 mark_moves_down=true
 reverse_files_only=true
-auto_save_setup_panels=true
+auto_save_setup_panels=false
 navigate_with_arrows=false
 panel_scroll_pages=true
 panel_scroll_center=false
 mouse_move_pages=true
 filetype_mode=true
-permission_mode=true
+permission_mode=false
 torben_fj_mode=false
 quick_search_mode=2
 select_flags=6
-
-simple_swap=false
-
-[FindFile]
-file_case_sens=true
-file_shell_pattern=true
-file_find_recurs=true
-file_skip_hidden=false
-file_all_charsets=false
-content_case_sens=true
-content_regexp=false
-content_first_hit=false
-content_whole_words=false
-content_all_charsets=false
-ignore_dirs_enable=true
-ignore_dirs=
 
 [Panelize]
 Find *.orig after patching=find . -name \\*.orig -print

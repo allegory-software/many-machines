@@ -38,6 +38,8 @@ say; mysql_install
 say; tarantool_install
 say; acme_install
 
+say; mm_update
+
 say; say "Machine prepare done."
 
 }

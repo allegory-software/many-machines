@@ -218,19 +218,17 @@ rsync_cmd() {
 	[ "$SRC_MACHINE" ] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
 	[ "$DST_MACHINE" ] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
 
-	[ "$QUIET" ] || {
-		say "Sync'ing dir"
-		say "  src: $SRC_DIR"
-  		say "  dst: $DST_DIR"
-		[ "$LINK_DIR" ] && say "  lnk: $LINK_DIR"
-		[ "$DRY" ] && say "  dry mode!"
-		say "..."
-	}
+	say "Sync'ing dir"
+	say "  src: $SRC_DIR"
+	say "  dst: $DST_DIR"
+	[ "$LINK_DIR" ] && say "  lnk: $LINK_DIR"
+	[ "$DRY" ] && say "  dry mode!"
+	say "..."
 
 	MACHINE=$DST_MACHINE ssh_cmd_opt; local ssh_cmd=("${R1[@]}")
 
 	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
-	R1=(rsync --delete --timeout=5
+	R1=(rsync ${DELETE:+--delete} --relative --timeout=5
 		${PROGRESS:+--info=progress2}
 		${LINK_DIR:+--link-dest="$LINK_DIR"}
 		${DRY:+--dry-run}

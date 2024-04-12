@@ -3,6 +3,7 @@
 . mmlib
 
 _prepare() {
+	DELETE=1 SRC_DIR=/opt/mm/var/.acme.sh.etc/ca DST_DIR=/ DST_MACHINE=$1 rsync_dir
 	cat_all_varfiles var/machines/$1/vars
 	ssh_script $1 "
 		${R1[*]}
