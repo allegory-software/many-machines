@@ -1,6 +1,6 @@
 machine_prepare() {
 
-checkvars MACHINE MYSQL_ROOT_PASS DHPARAM-
+checkvars MACHINE MYSQL_ROOT_PASS DHPARAM- GIT_HOSTS-
 
 say; say "Disabling cloud-init because it resets our changes on reboot..."
 [ -d /etc/cloud ] && touch /etc/cloud/cloud-init.disabled
@@ -25,6 +25,7 @@ must rm -f /etc/nginx/sites-enabled/default
 is_running nginx && nginx -s reload
 
 say; say "Configuring git for pushing..."
+git_keys_update
 git_install_git_up
 git_config_user "mm@allegory.ro" "Many Machines"
 

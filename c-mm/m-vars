@@ -1,0 +1,6 @@
+#!/bin/bash
+# ["MD1 ..."] :: print machine vars
+. mmlib
+
+cat_all_varfiles var/machines/$1/vars
+printf "%s\n" "${R1[@]}"

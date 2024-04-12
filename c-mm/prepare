@@ -3,7 +3,7 @@
 . mmlib
 
 _prepare() {
-	cat_varfiles var/machines/$1 MYSQL_ROOT_PASS DHPARAM
+	cat_all_varfiles var/machines/$1/vars
 	ssh_script $1 "
 		${R1[*]}
 		machine_prepare
