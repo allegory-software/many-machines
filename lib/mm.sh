@@ -8,7 +8,8 @@ mm_update() {
 	must ln -sf /opt/mm/lib/all /usr/bin/mmlib
 }
 
-mc_update() {
+mc_conf_upload() {
+	say "Uploading mc config files..."
 	must cp -rf ~/.config etc/home
 	SRC_DIR=etc/home/./.config DST_DIR=/root DST_MACHINE=$1 rsync_dir
 }

@@ -23,3 +23,8 @@ acme_install() {
 
 	say "acme.sh install done."
 }
+
+acme_ca_upload() {
+	say "Uploading acme.sh CA files..."
+	DELETE=1 SRC_DIR=/opt/mm/var/.acme.sh.etc/ca DST_DIR=/ DST_MACHINE=$1 rsync_dir
+}
