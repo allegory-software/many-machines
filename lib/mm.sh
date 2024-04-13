@@ -9,6 +9,7 @@ mm_update() {
 }
 
 mc_conf_upload() {
+	check_machine "$1"
 	say "Uploading mc config files to machine '$1' ..."
 	cp_dir ~/.config/mc etc/home/.config/
 	SRC_DIR=etc/home/./.config/mc DST_DIR=/root DST_MACHINE=$1 rsync_dir
@@ -27,9 +28,14 @@ mc_conf_spread() {
 
 # machines database ----------------------------------------------------------
 
+check_machine() { # MACHINE
+	checknosp "$1" "MACHINE required"
+	[ -d var/machines/$1 ] || die "Machine unknown: $1"
+}
+
 check_deploy() { # DEPLOY
 	checknosp "$1" "DEPLOY required"
-	[ -d var/deploys/$1 ] || die "deployment unknown: $1"
+	[ -d var/deploys/$1 ] || die "Deployment unknown: $1"
 }
 
 machine_of_deploy() { # DEPLOY

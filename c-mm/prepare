@@ -4,12 +4,14 @@
 
 _prepare() {
 
-	say; acme_ca_upload
-	say; mc_conf_upload
+	cat_all_varfiles var/machines/$1/vars; local VARS=("${R1[@]}")
 
-	cat_all_varfiles var/machines/$1/vars
+	[[ $SERVICES == *acme* ]] && say; acme_ca_upload
+
+	say; mc_conf_upload $1
+
 	ssh_script $1 "
-		${R1[*]}
+		${VARS[*]}
 		machine_prepare
 	"
 

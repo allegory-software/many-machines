@@ -1,6 +1,6 @@
 machine_prepare() {
 
-checkvars MACHINE MYSQL_ROOT_PASS DHPARAM- GIT_HOSTS-
+checkvars MACHINE SERVICES- DHPARAM- GIT_HOSTS-
 
 say; say "Disabling cloud-init because it resets our changes on reboot..."
 [ -d /etc/cloud ] && touch /etc/cloud/cloud-init.disabled
@@ -34,11 +34,11 @@ save 'net.ipv4.ip_unprivileged_port_start=0' \
 	/etc/sysctl.d/50-unprivileged-ports.conf
 must sysctl --system
 
-say; mysql_install
-say; tarantool_install
-say; acme_install
-
 say; mm_update
+
+for SERVICE in $SERVICES; do
+	say; ${SERVICE}_install
+done
 
 say; say "Machine prepare done."
 

@@ -185,8 +185,15 @@ app() {
 	popd
 }
 
+deploy_prepare_mysql() {
+	mysql_create_db     $DEPLOY
+	mysql_create_user   localhost $DEPLOY "$MYSQL_PASS"
+	mysql_grant_user_db localhost $DEPLOY $DEPLOY
+	mysql_gen_my_cnf    localhost $DEPLOY "$MYSQL_PASS" $DEPLOY
+}
+
 deploy_prepare() {
-	checkvars DEPLOY MYSQL_PASS GIT_HOSTS-
+	checkvars DEPLOY GIT_HOSTS-
 
 	user_create    $DEPLOY
 	user_lock_pass $DEPLOY
@@ -194,10 +201,7 @@ deploy_prepare() {
 	git_keys_update $DEPLOY
 	git_config_user "mm@allegory.ro" "Many Machines"
 
-	mysql_create_db     $DEPLOY
-	mysql_create_user   localhost $DEPLOY "$MYSQL_PASS"
-	mysql_grant_user_db localhost $DEPLOY $DEPLOY
-	mysql_gen_my_cnf    localhost $DEPLOY "$MYSQL_PASS" $DEPLOY
+	[[ $MYSQL_PASS ]] && deploy_prepare_mysql
 
 	say "Deploy prepare done."
 }
@@ -212,20 +216,10 @@ deploy() {
 	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION..."
 
 	say
-	[ -d /home/$DEPLOY/$APP ] && app running && must app stop
+	[ -d /home/$DEPLOY/$APP ] && (app running && must app stop)
 
 	say
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app
-
-	say
-	say "Pulling sdk..."
-	must cd /home/$DEPLOY/$APP
-	run_as $DEPLOY git submodule update --init sdk
-
-	say
-	say "Pulling sdk/canvas-ui and sdk/bin/linux..."
-	must cd sdk
-	run_as $DEPLOY git submodule update --init canvas-ui bin/linux
 
 	say
 	deploy_gen_conf

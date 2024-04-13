@@ -24,7 +24,7 @@ git_config_user() { # email name
 	must git config --global user.name "$2"
 }
 
-git_clone_for() { # USER REPO DIR VERSION LABEL
+git_clone_for() { # USER REPO DIR [VERSION=master]
 	local USER="$1"
 	local REPO="$2"
 	local DIR="$3"
@@ -33,7 +33,7 @@ git_clone_for() { # USER REPO DIR VERSION LABEL
 	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	checkvars USER REPO DIR
 	[ "$VERSION" ] || VERSION=master
-	say "Pulling $DIR $VERSION ..."
+	say -n "Pulling $DIR $VERSION ... "
 	(
 	must mkdir -p $DIR
 	must chown -R root:root $DIR
@@ -44,7 +44,22 @@ git_clone_for() { # USER REPO DIR VERSION LABEL
 	must git remote add origin $REPO
 	must git -c advice.objectNameWarning=false fetch --depth=1 $QUIET origin "$VERSION:refs/remotes/origin/$VERSION"
 	must git -c advice.detachedHead=false checkout $QUIET -B "$VERSION" "origin/$VERSION"
-	[ "$LABEL" ] && echo "${LABEL}_commit=$(git rev-parse --short HEAD)"
+	local commit=$(must git rev-parse --short HEAD)
+	say "OK. commit: $commit"
+	[ "$LABEL" ] && echo "${LABEL}_commit=$commit"
+	[ "$SUBMODULES" ] && {
+		local SUB_PATH
+		for SUB_PATH in $SUBMODULES; do
+			must innermost_subpath_with_file .gitmodules $PWD/$SUB_PATH
+			(
+			say -n "Pulling $R1/$R2 ... "
+			must cd $R1
+			must git submodule update $QUIET --init --remote $R2
+			local commit=$(must git rev-parse --short HEAD)
+			say "OK. commit: $commit"
+			) || exit $?
+		done
+	}
 	exit 0
 	)
 	local ret=$?

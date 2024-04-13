@@ -180,3 +180,18 @@ $INDENT  lnk: $LINK_DIR "
 
 	say "OK. $(dir_lean_size $dst_dir | numfmt --to=iec) bytes in destination."
 }
+
+innermost_subpath_with_file() { # FILE DIR
+	local file="$1"
+	local dir="$2"
+	checkvars file dir
+	local dir0=$dir
+	dir=`dirname $dir`
+	R1=; R2=
+	while [[ ! -e $dir/$file ]]; do
+		[[ $dir == '.' || $dir == '/' ]] && return 1
+		dir=`dirname $dir`
+	done
+	R1=$dir
+	R2=${dir0#$dir/}
+}
