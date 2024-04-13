@@ -20,7 +20,7 @@ mc_conf_spread() {
 	for USER in `ls -1 /home`; do
 		say "Copying mc config files to user '$USER' ..."
 		indent
-		cp_dir /root/.config/mc /home/.config/ $USER
+		cp_dir /root/.config/mc /home/$USER/.config/ $USER
 		outdent
 	done
 }

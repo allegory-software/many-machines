@@ -219,10 +219,11 @@ rsync_cmd() {
 	[ "$DST_MACHINE" ] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
 
 	say "Sync'ing remote dir '${SRC_MACHINE:-local}' -> '${DST_MACHINE:-local}':"
-	say "  src: $SRC_DIR"
-	say "  dst: $DST_DIR"
-	[ "$LINK_DIR" ] && say "  lnk: $LINK_DIR"
-	[ "$DRY" ] && { say "  dry mode!"; local VERBOSE=1; }
+	say    "$INDENT  src: $SRC_DIR"
+	say -n "$INDENT  dst: $DST_DIR"
+	[ "$LINK_DIR" ] && say -n "$INDENT  lnk: $LINK_DIR"
+	[ "$DRY" ] && { say -n "$INDENT  dry mode!"; local VERBOSE=1; }
+	say -n " ... "
 
 	MACHINE=$DST_MACHINE ssh_cmd_opt; local ssh_cmd=("${R1[@]}")
 
@@ -240,4 +241,5 @@ rsync_cmd() {
 rsync_dir() {
 	rsync_cmd
 	must "${R1[@]}"
+	say OK
 }

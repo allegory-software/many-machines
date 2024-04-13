@@ -53,11 +53,12 @@ rm_file() { # FILE
 }
 
 # modified cp that treats DST based on whether it ends with a / or not.
-_cp() { # WHAT SRC DST [USER]
+_cp() { # WHAT SRC DST [USER] [MOD]
 	local what="$1"
 	local src="$2"
 	local dst="$3"
 	local user="$4"
+	local mod="$5"
 	checkvars what src dst
 	[[ $src != */ ]] || die "NYI: $src ends with slash."
 	if [[ $dst == */ ]]; then # adjust $dst for chown and chmod
@@ -75,7 +76,7 @@ $INDENT  dst: $dst ... "
 	if [[ $user ]]; then
 		checkvars user
 		dry must chown -R $user:$user $dst
-		dry must chmod -R 600 $dst
+		[[ $mod ]] && dry must chmod -R "$mod" $dst
 	fi
 	say "OK"
 }
