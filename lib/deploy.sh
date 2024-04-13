@@ -212,7 +212,7 @@ deploy() {
 	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION..."
 
 	say
-	app running && must app stop
+	[ -d /home/$DEPLOY/$APP ] && app running && must app stop
 
 	say
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app

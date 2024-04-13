@@ -8,10 +8,11 @@ outdent()   { INDENT="${INDENT:0:${#INDENT}-2}"; }
 indent-stdin() { sed "s/^/$INDENT/"; }
 say()       { [ "$SAY_NL" ] && echo -n "${INDENT}" >&2; echo "$@" >&2; [ "$1" == -n ] && SAY_NL= || SAY_NL=1; }
 say-line()  { printf '=%.0s\n' {1..72}; }
-die()       { say -n "ABORT: " >&2; say "$@" >&2; exit 1; }
-debug()     { if [ "$DEBUG" ]; then say "$@" >&2; fi; }
+die()       { say -n "ABORT: "; say "$@"; exit 1; }
+debug()     { if [ "$DEBUG" ]; then say "$@"; fi; }
 run()       { debug -n "EXEC: $@ "; "$@"; local ret=$?; debug "[$ret]"; return $ret; }
 must()      { debug -n "MUST: $@ "; "$@"; local ret=$?; debug "[$ret]"; [ $ret == 0 ] || die "$@ [$ret]"; }
+dry()       { if [ "$DRY" ]; then say "DRY: $@"; else "$@"; fi; }
 
 # enhanced sudo that can:
 #  1. inherit a list of vars.

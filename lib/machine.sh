@@ -77,7 +77,9 @@ service_version_mysql() {
 service_version_tarantool() {
 	tarantool --version | head -1
 }
-
+service_version_cron() {
+	true
+}
 SS_FMT="%-10s %-12s %-12s %s\n"
 service_status_header() {
 	printf "$SS_FMT" MACHINE SERVICE STATUS VERSION
@@ -85,9 +87,14 @@ service_status_header() {
 service_status() { # ]SERVICES]
 	[ "$1" ] && SERVICES="$1" || SERVICES="cron mysql tarantool"
 	for SERVICE in $SERVICES; do
-		is_running "$SERVICE"
-		[ $? == 0 ] && STATUS=RUNNING || STATUS=stopped
-		local VERSION=`service_version_$SERVICE 2>/dev/null`
+		local VERSION
+		if VERSION=`service_version_$SERVICE 2>/dev/null`; then
+			is_running "$SERVICE"
+			[ $? == 0 ] && STATUS=RUNNING || STATUS="not running"
+		else
+			STATUS=-
+			VERSION=-
+		fi
 		printf "$SS_FMT" "$MACHINE" "$SERVICE" "$STATUS" "$VERSION"
 	done
 }

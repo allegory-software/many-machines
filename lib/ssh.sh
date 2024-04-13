@@ -218,11 +218,11 @@ rsync_cmd() {
 	[ "$SRC_MACHINE" ] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
 	[ "$DST_MACHINE" ] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
 
-	say "Sync'ing dir"
+	say "Sync'ing remote dir '${SRC_MACHINE:-local}' -> '${DST_MACHINE:-local}':"
 	say "  src: $SRC_DIR"
 	say "  dst: $DST_DIR"
 	[ "$LINK_DIR" ] && say "  lnk: $LINK_DIR"
-	[ "$DRY" ] && say "  dry mode!"
+	[ "$DRY" ] && { say "  dry mode!"; local VERBOSE=1; }
 
 	MACHINE=$DST_MACHINE ssh_cmd_opt; local ssh_cmd=("${R1[@]}")
 

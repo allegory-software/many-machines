@@ -9,9 +9,20 @@ mm_update() {
 }
 
 mc_conf_upload() {
-	say "Uploading mc config files..."
-	must cp -rf ~/.config etc/home
-	SRC_DIR=etc/home/./.config DST_DIR=/root DST_MACHINE=$1 rsync_dir
+	say "Uploading mc config files to machine '$1' ..."
+	cp_dir ~/.config/mc etc/home/.config/
+	SRC_DIR=etc/home/./.config/mc DST_DIR=/root DST_MACHINE=$1 rsync_dir
+	ssh_script $1 "mc_conf_spread"
+}
+
+mc_conf_spread() {
+	local USER
+	for USER in `ls -1 /home`; do
+		say "Copying mc config files to user '$USER' ..."
+		indent
+		cp_dir /root/.config/mc /home/.config/ $USER
+		outdent
+	done
 }
 
 # machines database ----------------------------------------------------------

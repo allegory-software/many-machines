@@ -1,7 +1,8 @@
 #!/bin/bash
-# decrypt and unpack var dir
+# please :: decrypt and unpack var dir
 . mmlib
 
+[[ $1 == please ]] || die "Say please"
 must gpg --decrypt --batch --yes --passphrase-file var-secret var.tar.gz.gpg > var.tar.gz
 must tar xzf var.tar.gz --overwrite
 must rm var.tar.gz

@@ -38,7 +38,7 @@ rm_dir() { # DIR
 	local dir="$1"
 	checkvars dir
 	check_abs_filepath "$dir"
-	say -n "Removing dir $dir ... "
+	say -n "Removing dir: $dir ... "
 	[ "$DRY" ] || must rm -rf "$dir"
 	say OK
 }
@@ -47,28 +47,40 @@ rm_file() { # FILE
 	local file="$1"
 	checkvars file
 	check_abs_filepath "$file"
-	say -n "Removing file $file ... "
+	say -n "Removing file: $file ... "
 	[ "$DRY" ] || must rm -f "$file"
 	say OK
 }
 
-cp_file() { # SRC DST [USER]
-	local src="$1"
-	local dst="$2"
-	local user="$3"
-	checkvars src dst
-	say -n "Copying file
-	src: $src
-	dst: $dst "
-	must mkdir -p `dirname $dst`
-	must cp -f $src $dst
-	if [ "$user" ]; then
+# modified cp that treats DST based on whether it ends with a / or not.
+_cp() { # WHAT SRC DST [USER]
+	local what="$1"
+	local src="$2"
+	local dst="$3"
+	local user="$4"
+	checkvars what src dst
+	[[ $src != */ ]] || die "NYI: $src ends with slash."
+	if [[ $dst == */ ]]; then # adjust $dst for chown and chmod
+		dst=$dst`basename $src`
+	fi
+	say -n "Copying $what:
+$INDENT  src: $src
+$INDENT  dst: $dst ... "
+	[[ -e $src ]] || die: "Missing: $src"
+	[[ $what == dir  ]] && { [[ -d $src ]] || die "src is not a dir."; }
+	[[ $what == file ]] && { [[ -f $src ]] || die "src is not a file."; }
+	dry must mkdir -p `dirname $dst` # because cp doesn't do it for us
+	dry must rm -rf $dst # prevent copying _inside_ $dst if $dst is a dir
+	dry must cp -r $src $dst
+	if [[ $user ]]; then
 		checkvars user
-		must chown $user:$user $dst
-		must chmod 600 $dst
+		dry must chown -R $user:$user $dst
+		dry must chmod -R 600 $dst
 	fi
 	say "OK"
 }
+cp_file() { _cp file "$@"; }
+cp_dir()  { _cp dir  "$@"; }
 
 sha_dir() { # DIR
 	local DIR="$1"
@@ -155,13 +167,12 @@ sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
 		checkvars LINK_DIR
 	}
 
-	say -n "Sync'ing dir
-  src: $SRC_DIR
-  dst: $PWD/$DST_DIR "
+	say -n "Sync'ing dir:
+$INDENT  src: $SRC_DIR
+$INDENT  dst: $PWD/$DST_DIR "
 	[ "$LINK_DIR" ] && say -n "
-  lnk: $LINK_DIR "
-	say -n "
-  ... "
+$INDENT  lnk: $LINK_DIR "
+	say -n " ... "
 
 	# NOTE: the dot syntax cuts out the path before it as a way to make the path relative.
 	[ "$DRY" ] || must rsync --delete -aHR ${LINK_DIR:+--link-dest=$LINK_DIR} $SRC_DIR/./. $DST_DIR
