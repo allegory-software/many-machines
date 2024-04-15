@@ -11,6 +11,9 @@ while [[ $# > 0 ]]; do
 		DEPLOYS+=" $1"; shift
 	elif [[ -d var/machines/$1 ]]; then
 		MACHINES+=" $1"; shift
+	else
+		echo "Usage: mm [DEPLOY1|MACHINE1 ...] [COMMAND ARGS...]" >&2
+		exit 1
 	fi
 done
 

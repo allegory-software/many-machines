@@ -1,4 +1,8 @@
 
+1. UI: mm M1|D1 ... CMD ...
+2. UI: each_machine_list
+3. UI: each_deploy_list
+
 - acme-check
 - d-issue-ssl-cert
 

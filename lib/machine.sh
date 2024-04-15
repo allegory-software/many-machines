@@ -116,12 +116,15 @@ service_version_tarantool() {
 service_version_cron() {
 	true
 }
+service_version_nginx() {
+	nginx -v 2>&1 | awk '{print $3}'
+}
 SS_FMT="%-10s %-12s %-12s %s\n"
 service_status_header() {
 	printf "$SS_FMT" MACHINE SERVICE STATUS VERSION
 }
-service_status() { # ]SERVICES]
-	[ "$1" ] && SERVICES="$1" || SERVICES="cron mysql tarantool"
+service_status() { # [SERVICES]
+	[ "$1" ] && SERVICES="$1" || SERVICES="nginx cron mysql tarantool"
 	for SERVICE in $SERVICES; do
 		local VERSION
 		if VERSION=`service_version_$SERVICE 2>/dev/null`; then

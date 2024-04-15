@@ -29,3 +29,14 @@ acme_ca_upload() {
 	check_machine "$1"
 	DELETE=1 SRC_DIR=/opt/mm/var/.acme.sh.etc/ca DST_DIR=/ DST_MACHINE=$1 rsync_dir
 }
+
+deploy_issue_cert() { # DOMAIN
+	local DOMAIN="$1"
+	checkvars DOMAIN
+
+	say "Issuing SSL certificate for $DOMAIN with acme.sh ... "
+	local keyfile=/root/.acme.sh.etc/$DOMAIN/$DOMAIN.key
+	deploy_nginx_config_acme
+	acme_sh --issue -d $DOMAIN --stateless
+	[ -f $keyfile ] || die "SSL certificate was NOT created: $keyfile."
+}
