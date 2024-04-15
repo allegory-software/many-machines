@@ -8,6 +8,8 @@ say; say "Disabling cloud-init because it resets our changes on reboot..."
 say; machine_set_hostname $MACHINE
 say; machine_set_timezone UTC
 
+install_openssl1
+
 # remount /proc so we can pass in secrets via cmdline without them leaking.
 say; say "Remounting /proc with option to hide command line args..."
 must mount -o remount,rw,nosuid,nodev,noexec,relatime,hidepid=2 /proc

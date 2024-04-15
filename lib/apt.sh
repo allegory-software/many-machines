@@ -10,11 +10,17 @@ apt_get() { # ...
 }
 
 apt_get_update() {
-	say "Updating package list..."
+	say "Updating package list ..."
 	apt_get update --allow-releaseinfo-change
 }
 
 apt_get_install() { # ...
-	say "Installing packages: $@..."
+	say "Installing packages: $@ ..."
 	apt_get install $@
+}
+
+dpkg_i() {
+	export DEBIAN_FRONTEND=noninteractive
+	say "Installing dpkg: $@ ..."
+	must dpkg -i --force-confold "$@"
 }

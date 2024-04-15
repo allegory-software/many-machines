@@ -1,0 +1,6 @@
+#!/bin/bash
+# [MD] :: run bench.sh
+. mmlib
+
+machine_of "$1"
+ssh_script $R1 "wget -qO- bench.sh | bash"

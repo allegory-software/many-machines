@@ -1,0 +1,5 @@
+#!/bin/bash
+# ["MD1 ..."] show live machine status/info
+. mmlib
+
+each_machine_list "$1" free

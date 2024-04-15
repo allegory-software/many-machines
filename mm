@@ -1,6 +1,6 @@
 #!/bin/bash
 cd /opt/mm || exit 1
-CMD_DIR=c-mm
+CMD_DIR=cmd
 CMD="$1"
 [ "$CMD" ] || {
 	for CMD in `ls -1 $CMD_DIR`; do

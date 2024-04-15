@@ -3,7 +3,6 @@
 mm_update() {
 	git_clone_for root git@github.com:allegory-software/many-machines2 /opt/mm master mm
 	# install globally
-	must ln -sf /opt/mm/mma     /usr/bin/mma
 	must ln -sf /opt/mm/mm      /usr/bin/mm
 	must ln -sf /opt/mm/lib/all /usr/bin/mmlib
 }
@@ -70,6 +69,16 @@ each_machine() { # [MACHINES] COMMAND ...
 		[ "$QUIET" ] || say "On machine $MACHINE:"
 		("$CMD" "$MACHINE" "$@")
 	done
+}
+
+_machine_list() { # MACHINE LIST
+	printf "%-10s %s\n" $1 "$(ssh_script $MACHINE "machine_list_$2" 2>&1)"
+}
+each_machine_list() { # [MACHINES] LIST_NAME
+	local LIST="$2"
+	checkvars LIST
+	printf "%-10s %s\n" MACHINE "$(machine_list_${LIST}_header)"
+	QUIET=1 each_machine "$1" _machine_list $LIST
 }
 
 # deployments database -------------------------------------------------------
