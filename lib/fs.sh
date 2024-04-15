@@ -118,7 +118,7 @@ remove_line() { # REGEX FILE
 	local regex="$1"
 	local file="$2"
 	checkvars regex- file
-	say -n "Removing lines containing pattern /$regex/ from $file... "
+	say -n "Removing lines containing pattern '$regex' from '$file' ... "
 	if grep -q "$regex" $file; then
 		grep -v "$regex" $file > $file.temp # exits with 1
 		must mv $file.temp $file

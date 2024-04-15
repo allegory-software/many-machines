@@ -49,11 +49,14 @@ os_version() {
 
 # machine prepare ------------------------------------------------------------
 
-install_openssl1() {
+install_libssl1() {
 	os_version
 	say -n "Installing OpenSSL 1.1 ... "
 	dpkg-query -l libssl1.1 2>/dev/null >/dev/null && { say "already installed."; return 0; }
-	[[ $R1 == ubuntu ]] || { say "NYI for OS: $R1"; return 0; }
+	[[ $R1 == ubuntu && $R2 == 22.* ]] || { 
+		say "NYI for OS: $R1 $R2."
+		return 0
+	}
 	say
 	local pkg=libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
 	must wget -q http://nz2.archive.ubuntu.com/ubuntu/pool/main/o/openssl/$pkg

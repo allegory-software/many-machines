@@ -178,10 +178,11 @@ deploy_remove() { # DEPLOY DOMAIN=
 	say "Deploy removed."
 }
 
-app() {
-	checkvars DEPLOY APP
-	must pushd /home/$DEPLOY/$APP
-	VARS="DEBUG VERBOSE" must run_as $DEPLOY ./$APP "$@"
+app() { # DEPLOY
+	local DEPLOY="$1"; shift
+	checkvars DEPLOY
+	must pushd /home/$DEPLOY/app
+	(VARS="DEBUG VERBOSE" must run_as $DEPLOY ./`readlink ../app` "$@")
 	popd
 }
 
@@ -213,10 +214,10 @@ deploy() {
 	[ -d /home/$DEPLOY ] || deploy_prepare
 
 	say
-	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION..."
+	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION ..."
 
 	say
-	[ -d /home/$DEPLOY/$APP ] && (app running && must app stop)
+	[ -d /home/$DEPLOY/$APP ] && (app $DEPLOY running && must app $DEPLOY stop)
 
 	say
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app
@@ -238,11 +239,11 @@ deploy() {
 	must ln -sTf $APP /home/$DEPLOY/app
 
 	say; say "Installing the app..."
-	must app install forealz
+	must app $DEPLOY install forealz
 
 	say; say "Starting the app..."
-	must app start
-	must app status
+	must app $DEPLOY start
+	must app $DEPLOY status
 
 	say; say "Deploy done."
 }
@@ -307,4 +308,20 @@ test_task() {
 		echo "Testing $n (O)"
 		sleep .5
 	done
+}
+
+start() {
+	if [ -d /home/$1/app ]; then
+		app $1 start
+	else
+		service_start $1
+	fi
+}
+
+stop() {
+	if [ -d /home/$1/app ]; then
+		app $1 stop
+	else
+		service_stop $1
+	fi
 }

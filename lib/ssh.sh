@@ -18,16 +18,6 @@ ssh_cmd() { # MACHINE= HOST=
 	R1+=(root@$HOST)
 }
 
-quote_args() { # ARGS...
-	# must use an array because we need to quote each arg individually,
-	# and not concat and expand them to pass them along, becaue even
-	# when quoted they may contain spaces and would expand incorrectly.
-	R1=()
-	for arg in "$@"; do
-		R1+=("$(printf "%q" "$arg")")
-	done
-}
-
 ssh_to() { # MACHINE|DEPLOY COMMAND ...
 	ip_of "$1"; shift
 	MACHINE=$R2 HOST=$R1 ssh_cmd; local cmd=("${R1[@]}")

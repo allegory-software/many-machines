@@ -11,6 +11,16 @@ run()       { debug -n "EXEC: $@ "; "$@"; local ret=$?; debug "[$ret]"; return $
 must()      { debug -n "MUST: $@ "; "$@"; local ret=$?; debug "[$ret]"; [ $ret == 0 ] || die "$@ [$ret]"; }
 dry()       { if [ "$DRY" ]; then say "DRY: $@"; else "$@"; fi; }
 
+quote_args() { # ARGS...
+	# must use an array because we need to quote each arg individually,
+	# and not concat and expand them to pass them along, becaue even
+	# when quoted they may contain spaces and would expand incorrectly.
+	R1=()
+	for arg in "$@"; do
+		R1+=("$(printf "%q" "$arg")")
+	done
+}
+
 # enhanced sudo that can:
 #  1. inherit a list of vars.
 #  2. run a local function. including multiple function definitions.

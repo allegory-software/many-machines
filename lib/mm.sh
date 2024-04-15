@@ -25,10 +25,10 @@ machine_of_deploy() { # DEPLOY
 	[ "$R1" ] || die "No machine set for deploy: $1."
 }
 
-machine_of() { # MACHINE|DEPLOY
+machine_of() { # MACHINE|DEPLOY -> MACHINE, , [DEPLOY]
 	checknosp "$1" "MACHINE or DEPLOY required"
 	if [ -d var/deploys/$1 ]; then
-		machine_of_deploy $1
+		machine_of_deploy $1; R3=$1
 	elif [ -d var/machines/$1 ]; then
 		R1=$1
 	else
@@ -36,7 +36,7 @@ machine_of() { # MACHINE|DEPLOY
 	fi
 }
 
-ip_of() { # MD
+ip_of() { # MD -> IP, MACHINE, [DEPLOY]
 	machine_of "$1"; R2=$R1
 	checkfile var/machines/$R2/public_ip
 	R1=$(cat $R1)
@@ -53,10 +53,12 @@ active_machines() {
 each_machine() { # [MACHINES] COMMAND ...
 	local MDS="$1"; shift
 	local MACHINES
+	local DEPLOYS
 	if [ "$MDS" ]; then
 		local MD
 		for MD in $MDS; do
 			ip_of $MD
+			DEPLOYS+=" $R3"
 			MACHINES+=" $R2"
 		done
 		[[ ! $QUIET && $MDS != *" "* ]] && QUIET=1
@@ -67,7 +69,7 @@ each_machine() { # [MACHINES] COMMAND ...
 	local CMD="$1"; shift
 	for MACHINE in $MACHINES; do
 		[ "$QUIET" ] || say "On machine $MACHINE:"
-		("$CMD" "$MACHINE" "$@")
+		(DEPLOYS="$DEPLOYS" "$CMD" "$MACHINE" "$@")
 	done
 }
 

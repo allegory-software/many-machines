@@ -1,0 +1,12 @@
+#!/bin/bash
+# ["DEPLOY1 ..."] ARGS... :: run the app
+. mmlib
+DEPLOYS="$1"; shift
+
+_f() {
+	local DPELOY="$1"; shift
+	machine_of $DEPLOY; local MACHINE=$R1
+	quote_args "$@"
+	ssh_script $MACHINE "app $DEPLOY ${R1[*]}"
+}
+each_deploy "$DEPLOYS" _f "$@"

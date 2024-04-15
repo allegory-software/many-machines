@@ -1,14 +1,26 @@
 #!/bin/bash
 cd /opt/mm || exit 1
-CMD_DIR=cmd
-CMD="$1"
-[ "$CMD" ] || {
-	for CMD in `ls -1 $CMD_DIR`; do
-		HELP="$(head -2 "$CMD_DIR/$CMD" | tail -1)"
-		printf "mm %-20s %s\n" "$CMD" "$HELP"
-	done
-	exit
-}
-shift
 
-$CMD_DIR/$CMD "$@"
+DEPLOYS=
+MACHINES=
+while [[ $# > 0 ]]; do
+	if [[ -f cmd/$1 ]]; then
+		CMD=$1; shift; cmd/$CMD "$@"
+		exit
+	elif [[ -d var/deploys/$1 ]]; then
+		DEPLOYS+=" $1"; shift
+	elif [[ -d var/machines/$1 ]]; then
+		MACHINES+=" $1"; shift
+	fi
+done
+
+if [[ $DEPLOYS || $MACHINES ]]; then
+	[[ $DEPLOYS  ]] && printf "DEPLOYS  : %s\n" "$DEPLOYS"
+	[[ $MACHINES ]] && printf "MACHINES : %s\n" "$MACHINES"
+	exit
+fi
+
+for CMD in `ls -1 cmd`; do
+	HELP="$(head -2 "cmd/$CMD" | tail -1)"
+	printf "mm %-20s %s\n" "$CMD" "$HELP"
+done

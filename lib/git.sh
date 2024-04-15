@@ -37,7 +37,7 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 	local LABEL="$5"
 	checkvars USER REPO DIR
 	[ "$VERSION" ] || VERSION=master
-	say -n "Pulling $DIR $VERSION ... "
+	printf "Pulling %-40s ... " "$DIR $VERSION" >&2
 	(
 	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	must mkdir -p $DIR
@@ -55,9 +55,9 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 		for SUB_PATH in $SUBMODULES; do
 			must innermost_subpath_with_file .gitmodules $PWD/$SUB_PATH
 			(
-			say -n "Pulling $R1/$R2 ... "
+			printf "Pulling %-40s ... " "$R1/$R2"
 			must cd $R1
-			must git submodule update --init --remote $R2
+			must git submodule update $QUIET --init --remote $R2
 			local commit=$(must git rev-parse --short HEAD)
 			say "OK. commit: $commit"
 			) || exit $?
