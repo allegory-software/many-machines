@@ -6,7 +6,7 @@ _prepare() {
 
 	cat_all_varfiles var/machines/$1/vars; local VARS=("${R1[@]}")
 
-	# we need to install rsync on the machine before we can rsync to it.
+	# we need to install rsync on the machine before we can rsync files to it.
 	ssh_script $1 "
 		say; apt_install
 		say; apt_get_update
