@@ -8,24 +8,6 @@ mm_update() {
 	must ln -sf /opt/mm/lib/all /usr/bin/mmlib
 }
 
-mc_conf_upload() {
-	check_machine "$1"
-	say "Uploading mc config files to machine '$1' ..."
-	cp_dir ~/.config/mc etc/home/.config/
-	SRC_DIR=etc/home/./.config/mc DST_DIR=/root DST_MACHINE=$1 rsync_dir
-	ssh_script $1 "mc_conf_spread"
-}
-
-mc_conf_spread() {
-	local USER
-	for USER in `ls -1 /home`; do
-		say "Copying mc config files to user '$USER' ..."
-		indent
-		cp_dir /root/.config/mc /home/$USER/.config/ $USER
-		outdent
-	done
-}
-
 # machines database ----------------------------------------------------------
 
 check_machine() { # MACHINE
@@ -85,9 +67,8 @@ each_machine() { # [MACHINES] COMMAND ...
 	fi
 	local CMD="$1"; shift
 	for MACHINE in $MACHINES; do
-		[ "$QUIET" ] || say "On machine $MACHINE:"; indent
+		[ "$QUIET" ] || say "On machine $MACHINE:"
 		("$CMD" "$MACHINE" "$@")
-		outdent
 	done
 }
 
@@ -120,8 +101,7 @@ each_deploy() { # [DEPLOYS] COMMAND ...
 	fi
 	local CMD="$1"; shift
 	for DEPLOY in $DEPLOYS; do
-		[ "$QUIET" ] || say "On deploy $DEPLOY:"; indent
-		"$CMD" "$DEPLOY" "$@"
-		outdent
+		[ "$QUIET" ] || say "On deploy $DEPLOY:"
+		("$CMD" "$DEPLOY" "$@")
 	done
 }

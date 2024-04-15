@@ -26,5 +26,6 @@ acme_install() {
 
 acme_ca_upload() {
 	say "Uploading acme.sh CA files..."
+	check_machine "$1"
 	DELETE=1 SRC_DIR=/opt/mm/var/.acme.sh.etc/ca DST_DIR=/ DST_MACHINE=$1 rsync_dir
 }

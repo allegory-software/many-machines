@@ -1,3 +1,9 @@
+# apt wrappers
+
+apt_install() {
+	save "APT::Quiet "2";" /etc/apt/apt.conf.d/10quiet
+}
+
 apt_get() { # ...
 	export DEBIAN_FRONTEND=noninteractive
 	must apt-get -y -qq -o=Dpkg::Use-Pty=0 $@

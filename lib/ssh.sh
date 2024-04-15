@@ -87,7 +87,7 @@ ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
 	local KEYNAME="$3"
 	local UNSTABLE_IP="$4"
 	checkvars USER HOST KEYNAME
-	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER'..."; indent
+	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER'..."
 	must mkdir -p $HOME/.ssh
 	local CONFIG=$HOME/.ssh/config
 	touch "$CONFIG"
@@ -101,7 +101,6 @@ Host $HOST
   CheckHostIP no"
 	save "$s" $CONFIG
 	must chown $USER:$USER -R $HOME/.ssh
-	outdent
 }
 
 ssh_key_update_for_user() { # USER KEYNAME KEY HOSTKEY
@@ -112,7 +111,6 @@ ssh_key_update_for_user() { # USER KEYNAME KEY HOSTKEY
 	local HOSTKEY="$4"
 	checkvars USER KEYNAME KEY- HOSTKEY-
 	say "Updating SSH key '$KEYNAME' for user '$USER'..."
-	indent
 
 	must mkdir -p $HOME/.ssh
 
@@ -123,8 +121,6 @@ ssh_key_update_for_user() { # USER KEYNAME KEY HOSTKEY
 	save "$HOSTKEY" $HOSTKEYFILE $USER
 
 	must chown $USER:$USER -R $HOME/.ssh
-
-	outdent
 }
 
 ssh_host_key_update_for_user() { # USER HOST KEYNAME KEY HOSTKEY [unstable_ip]
@@ -169,7 +165,6 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY|--remove
 	local PUBKEY="$3"
 	checkvars USER KEYNAME PUBKEY-
 	say "Updating SSH public key '$KEYNAME' for user '$USER'..."
-	indent
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
 	[ -d $HOME ] || die "No home dir for user '$USER'"
 	local ak=$HOME/.ssh/authorized_keys
@@ -192,7 +187,6 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY|--remove
 			must append "$PUBKEY"$'\n' $ak
 		fi
 	fi
-	outdent
 }
 
 ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
@@ -218,12 +212,8 @@ rsync_cmd() {
 	[ "$SRC_MACHINE" ] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
 	[ "$DST_MACHINE" ] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
 
-	say "Sync'ing remote dir '${SRC_MACHINE:-local}' -> '${DST_MACHINE:-local}':"
-	say    "$INDENT  src: $SRC_DIR"
-	say -n "$INDENT  dst: $DST_DIR"
-	[ "$LINK_DIR" ] && say -n "$INDENT  lnk: $LINK_DIR"
-	[ "$DRY" ] && { say -n "$INDENT  dry mode!"; local VERBOSE=1; }
-	say -n " ... "
+	say -n "Sync'ing${DRY:+ DRY}: '$SRC_DIR' -> '$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ..."
+	[ "$DRY" ] && local VERBOSE=1
 
 	MACHINE=$DST_MACHINE ssh_cmd_opt; local ssh_cmd=("${R1[@]}")
 

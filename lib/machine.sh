@@ -72,7 +72,7 @@ service_stop() {
 }
 
 service_version_mysql() {
-	has_mysql && query 'select version();'
+	has_mysql && mysql --version | awk '{print $3}'
 }
 service_version_tarantool() {
 	tarantool --version | head -1

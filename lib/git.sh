@@ -3,6 +3,11 @@
 # make repeated git pulls faster by reusing SSH connections.
 export GIT_SSH_COMMAND="ssh -o ConnectTimeout=3 -o ControlMaster=auto -o ControlPath=~/.ssh/control-%h-%p-%r -o ControlPersist=600"
 
+git_config_default_branch() {
+	checknosp "$1"
+	git config --global init.defaultBranch $1
+}
+
 git_install_git_up() {
 	say "Installing 'git up' command..."
 	local git_up=/usr/lib/git-core/git-up
@@ -30,23 +35,21 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 	local DIR="$3"
 	local VERSION="$4"
 	local LABEL="$5"
-	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	checkvars USER REPO DIR
 	[ "$VERSION" ] || VERSION=master
 	say -n "Pulling $DIR $VERSION ... "
 	(
+	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	must mkdir -p $DIR
 	must chown -R root:root $DIR
 	must cd $DIR
 	[ -d .git ] || must git init $QUIET
-	git ls-remote --exit-code origin 2>&1 >/dev/null && must git remote remove origin
 	run  git remote rm  origin 2>/dev/null
 	must git remote add origin $REPO
 	must git -c advice.objectNameWarning=false fetch --depth=1 $QUIET origin "$VERSION:refs/remotes/origin/$VERSION"
 	must git -c advice.detachedHead=false checkout $QUIET -B "$VERSION" "origin/$VERSION"
 	local commit=$(must git rev-parse --short HEAD)
 	say "OK. commit: $commit"
-	[ "$LABEL" ] && echo "${LABEL}_commit=$commit"
 	[ "$SUBMODULES" ] && {
 		local SUB_PATH
 		for SUB_PATH in $SUBMODULES; do
@@ -54,7 +57,7 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 			(
 			say -n "Pulling $R1/$R2 ... "
 			must cd $R1
-			must git submodule update $QUIET --init --remote $R2
+			must git submodule update --init --remote $R2
 			local commit=$(must git rev-parse --short HEAD)
 			say "OK. commit: $commit"
 			) || exit $?
@@ -91,14 +94,12 @@ _git_keys_update_for_user() { # USER
 	local USER="$1"
 	checkvars USER GIT_HOSTS-
 	for NAME in $GIT_HOSTS; do
-		say "Updating git key '$NAME' for user '$USER'..."
-		indent
+		say "Updating git key '$NAME' for user '$USER' ..."
 		local -n HOST=GIT_${NAME^^}_HOST
 		local -n SSH_KEY=GIT_${NAME^^}_SSH_KEY
 		local -n SSH_HOSTKEY=GIT_${NAME^^}_SSH_HOSTKEY
 		checkvars HOST SSH_KEY- SSH_HOSTKEY-
 		ssh_host_key_update_for_user $USER $HOST mm_$NAME "$SSH_KEY" "$SSH_HOSTKEY" unstable_ip
-		outdent
 	done
 }
 git_keys_update() { # [USERS]

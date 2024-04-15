@@ -8,7 +8,7 @@ try_machine_info_line() {
 	if line="$(ssh_script $1 "machine_info_line" 2>&1)"; then
 		printf "%s\n" "$line"
 	else
-		read -r line <<< "$line"
+		#read -r line <<< "$line"
 		machine_info_line_fail $1 "$line"
 	fi
 }

@@ -64,9 +64,7 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 	if [[ $dst == */ ]]; then # adjust $dst for chown and chmod
 		dst=$dst`basename $src`
 	fi
-	say -n "Copying $what:
-$INDENT  src: $src
-$INDENT  dst: $dst ... "
+	say -n "Copying $what: '$src' -> '$dst' ... "
 	[[ -e $src ]] || die: "Missing: $src"
 	[[ $what == dir  ]] && { [[ -d $src ]] || die "src is not a dir."; }
 	[[ $what == file ]] && { [[ -f $src ]] || die "src is not a file."; }
@@ -155,7 +153,7 @@ replace_lines() { # REGEX S FILE
 	local s="$2"
 	local file="$3"
 	checkvars regex- s- file
-	say "Replacing line containing $regex to $s in file $file ... "; indent
+	say "Replacing line containing $regex to $s in file $file ... "
 	local s="$(cat "$file")" || die "cat $file [$?]"
 	local s1="${s//$regex/$}"
 	[ "$s1" != "$s" ] && save "$s1" "$file"
@@ -168,12 +166,7 @@ sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
 		checkvars LINK_DIR
 	}
 
-	say -n "Sync'ing dir:
-$INDENT  src: $SRC_DIR
-$INDENT  dst: $PWD/$DST_DIR "
-	[ "$LINK_DIR" ] && say -n "
-$INDENT  lnk: $LINK_DIR "
-	say -n " ... "
+	say -n "Sync'ing dir: '$SRC_DIR' -> '$PWD/$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
 
 	# NOTE: the dot syntax cuts out the path before it as a way to make the path relative.
 	[ "$DRY" ] || must rsync --delete -aHR ${LINK_DIR:+--link-dest=$LINK_DIR} $SRC_DIR/./. $DST_DIR

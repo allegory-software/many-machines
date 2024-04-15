@@ -3,10 +3,7 @@
 export INDENT
 SAY_NL=
 
-indent()    { INDENT="$INDENT  "; }
-outdent()   { INDENT="${INDENT:0:${#INDENT}-2}"; }
-indent-stdin() { sed "s/^/$INDENT/"; }
-say()       { [ "$SAY_NL" ] && echo -n "${INDENT}" >&2; echo "$@" >&2; [ "$1" == -n ] && SAY_NL= || SAY_NL=1; }
+say()       { echo "$@" >&2; }
 say-line()  { printf '=%.0s\n' {1..72}; }
 die()       { say -n "ABORT: "; say "$@"; exit 1; }
 debug()     { if [ "$DEBUG" ]; then say "$@"; fi; }
