@@ -1,0 +1,10 @@
+#!/bin/bash
+# ["MD1 ..."] [PACKAGE] :: install a package
+. mmlib
+
+[[ $2 ]] || {
+	functions_with_prefix install_
+	printf "%s\n" $R1
+	exit
+}
+each_machine "$1" ssh_script_machine "package_install ${2}"

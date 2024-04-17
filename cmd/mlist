@@ -1,0 +1,10 @@
+#!/bin/bash
+# list machine info
+. mmlib
+
+[ "$1" ] || {
+	functions_with_prefix machine_list_header_
+	printf "%s\n" $R1
+	exit
+}
+QUIET=1 INACTIVE=1 each_machine_list "$@"

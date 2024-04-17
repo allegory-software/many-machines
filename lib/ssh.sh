@@ -14,49 +14,72 @@ ssh_cmd_opt() { # MACHINE=
 }
 
 ssh_cmd() { # MACHINE= HOST=
+	ip_of "$MACHINE"; local HOST=$R1
 	ssh_cmd_opt
 	R1+=(root@$HOST)
 }
 
-ssh_to() { # MACHINE|DEPLOY COMMAND ...
-	ip_of "$1"; shift
-	MACHINE=$R2 HOST=$R1 ssh_cmd; local cmd=("${R1[@]}")
+ssh_to() { # MACHINE= COMMAND ARGS...
+	ssh_cmd; local cmd=("${R1[@]}")
 	quote_args "$@"; local args=("${R1[@]}")
-	run "${cmd[@]}" "${args[@]}" || die "ssh_to $MACHINE: [$?]"
+	run "${cmd[@]}" "${args[@]}" || die "MACHINE=$MACHINE ssh_to: [$?]"
 }
 
-ssh_bash() { # MACHINE|DEPLOY COMMAND ARGS ...
-	ip_of "$1"; shift
-	MACHINE=$R2 HOST=$R1 ssh_cmd; local cmd=("${R1[@]}")
+ssh_bash() { # MACHINE= COMMAND ARGS...
+	ssh_cmd; local cmd=("${R1[@]}")
 	quote_args "$@"; local args=("${R1[@]}")
 	must "${cmd[@]}" bash -c "\"${args[*]}\""
 }
 
-ssh_script() { # MACHINE|DEPLOY "SCRIPT"
+ssh_script() { # MACHINE= "SCRIPT"
+	local SCRIPT="$1"
+	checkvars SCRIPT-
 	if [ "$MM_DEBUG_LIB" ]; then
 		# rsync lib to machine and load from there:
 		# slower (takes ~1s) but reports line numbers correctly on errors.
-		QUIET=1 SRC_DIR=lib DST_DIR=.mm DST_MACHINE="$1" rsync_dir
-		ssh_to "$1" bash -s <<< "
+		QUIET=1 SRC_DIR=lib DST_DIR=.mm DST_MACHINE="$MACHINE" rsync_dir
+		ssh_to bash -s <<< "
+. ~/.mm/lib/all
 MACHINE=$MACHINE
 VERBOSE=$VERBOSE
 DEBUG=$DEBUG
-. ~/.mm/lib/all
-$2
+$SCRIPT
 "
 	else
 		# include lib contents in the script:
 		# faster but doesn't report line numbers correctly on errors in lib code.
-		ssh_to "$1" bash -s <<< "
-MACHINE=$MACHINE
-VERBOSE=$VERBOSE
-DEBUG=$DEBUG
+		ssh_to bash -s <<< "
 shopt -s nullglob
 set -o pipefail
 $(cat lib/*.sh)
-$2
+MACHINE=$MACHINE
+VERBOSE=$VERBOSE
+DEBUG=$DEBUG
+$SCRIPT
 "
 	fi
+}
+
+ssh_script_deploy() { # DEPLOY= "SCRIPT"
+	local SCRIPT="$1"
+	checkvars SCRIPT-
+	machine_of $DEPLOY; local MACHINE=$R1
+	deploy_vars $DEPLOY
+	ssh_script "
+DEPLOY=$DEPLOY
+${R1[*]}
+$SCRIPT
+"
+}
+
+ssh_script_machine() { # MACHINE= "SCRIPT"
+	local SCRIPT="$1"
+	checkvars SCRIPT-
+	machine_vars $MACHINE
+	ssh_script "
+${R1[*]}
+$SCRIPT
+"
 }
 
 ssh_hostkey() {

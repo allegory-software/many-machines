@@ -1,38 +1,25 @@
 # deploy lib: programs for deployments admin, running as root on a machine administered by mm.
 
-machine_deploys() {
-	local USER
-	for USER in `ls -1 /home`; do
-		[ -L "/home/$USER/app" ] && echo $USER
-	done
+get_APP_VER() {
+	checkvars REPO APP_VERSION
+	local s=$(git ls-remote $REPO refs/heads/$APP_VERSION)
+	echo ${s:0:7}
 }
 
-DI_FMT="%-10s %-10s %-10s %-10s %-10s %-10s\n"
-DE_FMT="%-10s %-10s %s\n"
-machine_deploy_info_header() {
-	printf "$DI_FMT" "MACHINE" "DEPLOY" "STATUS" "APP" "APP_COM" "SDK_COM"
+get_APP_DEPLVER() {
+	must pushd /home/$DEPLOY/app
+	run_as $DEPLOY git rev-parse --short HEAD
+	popd
 }
-machine_deploy_info_line() {
-	local DEPLOY=$1
-	local APP="$(readlink /home/$DEPLOY/app)"
-	local APP_COMMIT; APP_COMMIT="$(cd /home/$DEPLOY/app     && run_as $DEPLOY git rev-parse --short HEAD)" || return
-	local SDK_COMMIT; SDK_COMMIT="$(cd /home/$DEPLOY/app/sdk && run_as $DEPLOY git rev-parse --short HEAD)" || return
-	local STATUS; app running && STATUS="RUNNING" || STATUS="-"
-	printf "$DI_FMT" "$MACHINE" "$DEPLOY" "$STATUS" "$APP" "$APP_COMMIT" "$SDK_COMMIT"
+
+get_SDK_DEPLVER() {
+	must pushd /home/$DEPLOY/app/sdk
+	run_as $DEPLOY git rev-parse --short HEAD
+	popd
 }
-machine_deploy_info_line_fail() { # DEPLOY ERR
-	printf "$DE_FMT" "$MACHINE" "$1" "$2"
-}
-machine_deploys_info() {
-	local DEPLOY
-	for DEPLOY in `machine_deploys`; do
-		local s
-		if s="$(machine_deploy_info_line $DEPLOY 2>&1)"; then
-			printf "%s\n" "$s"
-		else
-			machine_deploy_info_line_fail $DEPLOY "$s"
-		fi
-	done
+
+get_STATUS() {
+	app running && echo RUNNING || printf "%s\n" -
 }
 
 deploy_remove() { # DEPLOY DOMAIN=
@@ -96,7 +83,8 @@ deploy() {
 		else
 			save "Server down!" $dst
 		fi
-		deploy_nginx_config
+		local ACME; [[ -f /opt/mm/var/.acme.sh.etc/$DOMAIN/$DOMAIN.cer ]] || ACME=1
+		ACME=$ACME deploy_nginx_config
 	}
 
 	must ln -sTf $APP /home/$DEPLOY/app

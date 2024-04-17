@@ -1,4 +1,4 @@
-# mm lib: functions reading var/machines and var/deploys.
+# mm lib: functions reading var/machines and var/deploys on the mm machine.
 
 mm_update() {
 	git_clone_for root git@github.com:allegory-software/many-machines2 /opt/mm master mm
@@ -6,8 +6,6 @@ mm_update() {
 	must ln -sf /opt/mm/mm      /usr/bin/mm
 	must ln -sf /opt/mm/lib/all /usr/bin/mmlib
 }
-
-# machines database ----------------------------------------------------------
 
 check_machine() { # MACHINE
 	checknosp "$1" "MACHINE required"
@@ -50,45 +48,105 @@ active_machines() {
 	done
 }
 
-each_machine() { # [MACHINES] COMMAND ...
-	local MDS="$1"; shift
-	local MACHINES
-	local DEPLOYS
-	if [ "$MDS" ]; then
-		local MD
-		for MD in $MDS; do
-			ip_of $MD
-			DEPLOYS+=" $R3"
-			MACHINES+=" $R2"
-		done
-		[[ ! $QUIET && $MDS != *" "* ]] && QUIET=1
-	else
+each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
+	declare -A mm
+	local M D
+	for M in $MACHINES; do
+		check_machine $M
+		mm[$M]=1
+	done
+	for D in $DEPLOYS; do
+		machine_of $D; M=$R1
+		[[ ${mm[$M]} ]] && continue
+		mm[$M]=1
+		MACHINES+=" $M"
+	done
+	if [[ ${#mm[@]} == 0 ]]; then
+		[[ $NOT_ALL  && ! $ALL ]] && die "MACHINE(s) required"
 		active_machines
 		MACHINES="$R1"
 	fi
+	[[ ! $QUIET && ${#mm[@]} == 1 ]] && QUIET=1
 	local CMD="$1"; shift
+	local MACHINE
 	for MACHINE in $MACHINES; do
 		[ "$QUIET" ] || say "On machine $MACHINE:"
-		(DEPLOYS="$DEPLOYS" "$CMD" "$MACHINE" "$@")
+		("$CMD" "$@")
 	done
 }
 
-_machine_list() { # MACHINE LIST
-	printf "%-10s %s\n" $1 "$(ssh_script $MACHINE "machine_list_$2" 2>&1)"
+_each_machine_list() { # MACHINE= LIST
+	printf "%-10s %s\n" $MACHINE "$(ssh_script "machine_list_$1" 2>&1)"
 }
-each_machine_list() { # [MACHINES] LIST_NAME
-	local LIST="$2"
+each_machine_list() { # LIST
+	local LIST="$1"
 	checkvars LIST
-	printf "%-10s %s\n" MACHINE "$(machine_list_${LIST}_header)"
-	QUIET=1 each_machine "$1" _machine_list $LIST
+	printf "%-10s %s\n" "MACHINE" "$(machine_list_header_${LIST})"
+	QUIET=1 each_machine _each_machine_list $LIST
 }
 
-# deployments database -------------------------------------------------------
+custom_list_get_values() { # FIELD1 ...
+	local FIELD
+	for FIELD in $*; do
+		if declare -f example_function > /dev/null; then
+			get_${FIELD}
+		else
+			echo "${!FIELD}"
+		fi
+	done
+}
+_each_machine_custom_list() { # FMT FIELD1 ...
+	local FMT="$1"; shift
+	local VALS
+	(
+	if VALS="$(ssh_script_machine "custom_list_get_values $*" 2>&1)"; then
+		local IFS0="$IFS"; IFS=$'\n'; printf "%-10s $FMT\n" $MACHINE $VALS; IFS="$IFS0"
+	else
+		printf "%-10s %s\n" $MACHINE "$VALS"
+	fi
+	) &
+	wait
+}
+each_machine_custom_list() { # FMT FIELD1 ...
+	local FMT="$1"; shift
+	printf "%-10s $FMT\n" MACHINE $*
+	QUIET=1 each_machine _each_machine_custom_list "$FMT" $*
+}
 
-deploy_vars() {
-	machine_of_deploy "$1"; local MACHINE=$R1
-	cat_all_varfiles var/deploys/$1
-	R1+=("MACHINE=$MACHINE"$'\n')
+_each_deploy_custom_list() { # FMT FIELD1 ...
+	local FMT="$1"; shift
+	local VALS
+	(
+	if VALS="$(ssh_script_deploy "custom_list_get_values $*" 2>&1)"; then
+		local IFS0="$IFS"; IFS=$'\n'; printf "%-10s %-10s $FMT\n" $MACHINE $DEPLOY $VALS; IFS="$IFS0"
+	else
+		printf "%-10s %-10s %s\n" $MACHINE $DEPLOY "$VALS"
+	fi
+	) &
+	wait
+}
+each_deploy_custom_list() { # FMT FIELD1 ...
+	local FMT="$1"; shift
+	printf "%-10s %-10s $FMT\n" MACHINE DEPLOY $*
+	QUIET=1 each_deploy _each_deploy_custom_list "$FMT" $*
+}
+
+machine_vars() { # MACHINE|DEPLOY
+	machine_of "$1"; local MACHINE=$R1
+	cat_all_varfiles var/machines/$MACHINE/vars
+}
+
+deploy_var() { # DPELOY VAR
+	local DEPLOY="$1"
+	local VAR="$2"
+	checkvars DEPLOY VAR
+	cat_varfile var/deploys/$DEPLOY $VAR
+}
+
+deploy_vars() { # DEPLOY
+	local DEPLOY="$1"
+	machine_of_deploy "$DEPLOY"; local MACHINE=$R1
+	cat_all_varfiles var/deploys/$DEPLOY
 }
 
 active_deploys() {
@@ -99,20 +157,41 @@ active_deploys() {
 	done
 }
 
-each_deploy() { # [DEPLOYS] COMMAND ...
-	local DEPLOYS="$1"; shift
-	if [ "$DEPLOYS" ]; then
-		local DEPLOY
+each_deploy() { # [NOT_ALL=] [ALL=] MACHINES="" DEPLOYS= COMMAND ARGS...
+	[[ $MACHINES ]] && die "Invalid deploy(s): $MACHINES"
+	if [[ $DEPLOYS ]]; then
 		for DEPLOY in $DEPLOYS; do
 			check_deploy $DEPLOY
 		done
 	else
+		[[ $NOT_ALL && ! $ALL ]] && die "DEPLOY(s) required"
 		active_deploys
 		DEPLOYS="$R1"
 	fi
 	local CMD="$1"; shift
 	for DEPLOY in $DEPLOYS; do
+		machine_of $DEPLOY
 		[ "$QUIET" ] || say "On deploy $DEPLOY:"
-		("$CMD" "$DEPLOY" "$@")
+		(MACHINE=$R1 "$CMD" "$@")
 	done
+}
+
+_each_deploy_with_domain() {
+	if deploy_var $DEPLOY DOMAIN; then
+		local DOMAIN=$R1
+		(DOMAIN=$DOMAIN "$@")
+	fi
+}
+each_deploy_with_domain() {
+	each_deploy _each_deploy_with_domain "$@"
+}
+
+_each_deploy_list() { # DEPLOY= LIST
+	printf "%-10s %-10s %s\n" $MACHINE $DEPLOY "$(ssh_script_deploy "deploy_list_$1" 2>&1)"
+}
+each_deploy_list() { # LIST
+	local LIST="$1"
+	checkvars LIST
+	printf "%-10s %-10s %s\n" "MACHINE" "DEPLOY" "$(deploy_list_header_${LIST})"
+	QUIET=1 each_deploy _each_deploy_list $LIST
 }

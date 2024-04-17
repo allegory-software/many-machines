@@ -2,49 +2,34 @@
 
 # machine info ---------------------------------------------------------------
 
-MI_FMT="%-5s %-7s %-7s %-9s %-7s %-9s %-30s\n"
-machine_list_free_header() {
-	printf "$MI_FMT" CPUS CORES RAM FREE DISK FREE OS_VER
+get_OS_VER()   { lsb_release -sd; }
+get_RAM()      { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024)}'; }
+get_FREE_RAM() { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG\n", $2/(1024*1024)}'; }
+get_HDD()      { df -l / | awk '(NR > 1) { printf "%.2fG\n", $2/(1024*1024)}'; }
+get_FREE_HDD() { df -l / | awk '(NR > 1) { printf "%.2fG\n", $4/(1024*1024)}'; }
+get_CPU()      { lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p'; }
+get_CPUS()     { lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p'; }
+get_CPS()      { lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p'; }
+get_CORES()    {
+	local cps="$(get_CPS)"
+	local sockets="$(get_CPUS)"
+	expr $sockets \* $cps
 }
-machine_list_free() {
-	local    os_ver="$(lsb_release -sd)"
-	local       cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
-	local   sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
-	local     cores="$(expr $sockets \* $cps)"
-	local       ram="$(cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG", $2/(1024*1024)}')"
-	local  free_ram="$(cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG", $2/(1024*1024)}')"
-	local       hdd="$(df -l / | awk '(NR > 1) { printf "%.2fG", $2/(1024*1024)}')"
-	local  free_hdd="$(df -l / | awk '(NR > 1) { printf "%.2fG", $4/(1024*1024)}')"
-	printf "$MI_FMT" "$sockets" "$cores" "$ram" "$free_ram" "$hdd" "$free_hdd" "$os_ver"
-}
-
-machine_list_cpu_header() {
-	printf "%-5s %-5s %s\n" CPUS CORES CPU
-}
-machine_list_cpu() {
-	local cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
-	local sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
-	local cores="$(expr $sockets \* $cps)"
-	local cpu="$(lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p')"
-	printf "%-5s %-5s %s\n" "$sockets" "$cores" "$cpu"
-}
-
-machine_list_cputest_header() {
-	printf "%-10s %-5s %-5s %s\n" TIME/CORE CPUS CORES CPU
-}
-machine_list_cputest() {
-	local cps="$(lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p')"
-	local sockets="$(lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p')"
-	local cores="$(expr $sockets \* $cps)"
-	local cpu="$(lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p')"
-	local time="$((time cat </dev/urandom | head -c 50M | gzip >/dev/null) 2>&1 | grep real | awk '{print $2}')"
-	printf "%-10s %-5s %-5s %s\n" "$time" "$sockets" "$cores" "$cpu"
+get_CPUTEST()  {
+	(time cat </dev/urandom | head -c 50M | gzip >/dev/null) 2>&1 | grep real | awk '{print $2}'
 }
 
 os_version() {
 	[ -f /etc/os-release ] || return 1
 	R1=$(. /etc/os-release; printf %s $ID)
 	R2=$(. /etc/os-release; printf %s $VERSION_ID)
+}
+
+machine_deploys() {
+	local USER
+	for USER in `ls -1 /home`; do
+		[ -L "/home/$USER/app" ] && echo $USER
+	done
 }
 
 # machine prepare ------------------------------------------------------------

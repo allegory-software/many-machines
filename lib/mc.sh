@@ -5,7 +5,7 @@ mc_conf_upload() {
 	say "Uploading mc config files to machine '$1' ..."
 	cp_dir ~/.config/mc etc/home/.config/
 	SRC_DIR=etc/home/./.config/mc DST_DIR=/root DST_MACHINE=$1 rsync_dir
-	ssh_script $1 "mc_conf_spread"
+	MACHINE=$1 ssh_script "mc_conf_spread"
 }
 
 mc_conf_spread() {

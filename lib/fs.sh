@@ -52,6 +52,18 @@ rm_file() { # FILE
 	say OK
 }
 
+mv_file_with_backup() { # OLD NEW
+	local OLD="$1"
+	local NEW="$2"
+	checkvars OLD NEW
+	if cmp -s $OLD $NEW; then
+		say "renaming '$OLD' -> '$NEW' ... files are the same. "
+		must rm $OLD
+	else
+		must mv -v --backup=numbered $OLD $NEW
+	fi
+}
+
 # modified cp that treats DST based on whether it ends with a / or not.
 _cp() { # WHAT SRC DST [USER] [MOD]
 	local what="$1"

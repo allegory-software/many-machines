@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: run a quick CPU benchmark on machine(s)
+# get CPU info
 . mmlib
 
-each_machine_list "$1" cpu
+each_machine_custom_list "%-5s %-5s %-20s" CPUS CORES CPU

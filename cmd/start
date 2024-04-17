@@ -2,4 +2,9 @@
 # ["MD1 ..."] SERVICE :: start a service
 . mmlib
 
+[[ $2 ]] || {
+	functions_with_prefix start_
+	printf "%s\n" $R1
+	exit
+}
 each_machine "$1" ssh_script "service_start \"$2\""

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: run a quick CPU benchmark on machine(s)
+# run a quick CPU load on machine(s)
 . mmlib
 
-each_machine_list "$1" cputest
+each_machine_custom_list "%-10s %-5s %-5s %-30s" CPUTEST CPUS CORES CPU

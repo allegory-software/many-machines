@@ -3,11 +3,20 @@
 . mmlib
 
 _deploy() {
+
 	mysql_pass_gen_once var/deploys/$1/mysql_pass
+
+	machine_of $1; MACHINE=$R1
+	if deploy_var $1 DOMAIN; then
+		local DOMAIN=$R1
+		acme_cert_upload $MACHINE $DOMAIN
+	fi
+
 	deploy_vars $1
 	ssh_script $1 "
 		${R1[*]}
 		DEPLOY=$1 deploy
 	"
+
 }
 each_deploy "$1" _deploy

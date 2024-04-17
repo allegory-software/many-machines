@@ -1,0 +1,10 @@
+#!/bin/bash
+# list deployment info
+. mmlib
+
+[ "$1" ] || {
+	functions_with_prefix deploy_list_header_
+	printf "%s\n" $R1
+	exit
+}
+QUIET=1 INACTIVE=1 each_deploy_list "$@"

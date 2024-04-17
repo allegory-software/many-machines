@@ -1,6 +1,14 @@
 # apt wrappers
 
-apt_install() {
+package_install() { # PACKAGE
+	if declare -F "install_${1}" > /dev/null; then
+		install_${1}
+	else
+		apt_get_install $1
+	fi
+}
+
+install_apt() {
 	save "APT::Quiet "2";" /etc/apt/apt.conf.d/10quiet
 }
 

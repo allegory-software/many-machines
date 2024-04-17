@@ -24,11 +24,7 @@ save "$DHPARAM" /etc/nginx/dhparam.pem
 must rm -f /etc/nginx/sites-enabled/default
 is_running nginx && nginx -s reload
 
-say; say "Configuring git for pushing..."
-git_config_default_branch master
-git_config_user "mm@allegory.ro" "Many Machines"
-git_keys_update
-git_install_git_up
+install_git
 
 say; say "Configuring kernel to allow binding to ports < 1024 by any user..."
 save 'net.ipv4.ip_unprivileged_port_start=0' \

@@ -1,14 +1,7 @@
 #!/bin/bash
-# ["DEPLOY1 ..."] :: list deployments as found in the local database
+# list deployments as found locally and on the git remote
 . mmlib
 
-FMT="%-10s %-10s %-7s %-10s %-10s %-10s\n"
-printf "$FMT" "MACHINE" "DEPLOY" "ACTIVE"  "APP" "APP_VER" "APP_COM"
-print_deploy_line() {
-	local DEPLOY="$1"
-	deploy_vars "$DEPLOY"
-	eval "${R1[*]}"
-	local APP_COMMIT=$(git ls-remote $REPO refs/heads/$APP_VERSION)
-	printf "$FMT" "$MACHINE" "$DEPLOY" "$ACTIVE" "$APP" "$APP_VERSION" "${APP_COMMIT:0:7}"
-}
-QUIET=1 INACTIVE=1 each_deploy "$1" print_deploy_line
+QUIET=1 INACTIVE=1 each_deploy_custom_list \
+	"%-10s %-10s %-10s %-10s %-10s %-10s" \
+	APP ENV APP_VER APP_DEPLVER SDK_DEPLVER STATUS

@@ -3,7 +3,7 @@
 
 # mysql install --------------------------------------------------------------
 
-mysql_install() {
+install_mysql() {
 
 checkvars MYSQL_ROOT_PASS
 

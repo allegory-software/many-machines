@@ -2,8 +2,7 @@
 
 deploy_nginx_config() { # DOMAIN= HTTP_PORT= [ACME=1] $0
 
-	# acme thumbprint got with `acme.sh --register-account` (thumbprint is public).
-	local ACME_THUMBPRINT="yWTiBNPg2BAKLxC66JgGTYG8IEGPTFxIe0V3qA5Jfd0"
+	checkvars ACME_THUMBPRINT
 
 	local acme_location="\
 	location ~ ^/\.well-known/acme-challenge/([-_a-zA-Z0-9]+)$ {
@@ -72,8 +71,8 @@ server {
 	ssl_session_cache shared:SSL:10m;
 	ssl_session_timeout 4h;
 	ssl_session_tickets on;
-	ssl_certificate      /root/.acme.sh.etc/$DOMAIN/fullchain.cer;
-	ssl_certificate_key  /root/.acme.sh.etc/$DOMAIN/$DOMAIN.key;
+	ssl_certificate      /opt/mm/var/.acme.sh.etc/${DOMAIN}_ecc/fullchain.cer;
+	ssl_certificate_key  /opt/mm/var/.acme.sh.etc/${DOMAIN}_ecc/$DOMAIN.key;
 	ssl_dhparam          /etc/nginx/dhparam.pem;
 
 	# HSTS with preloading to google. Another amazing tech from the web people.

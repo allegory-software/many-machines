@@ -3,6 +3,14 @@
 # make repeated git pulls faster by reusing SSH connections.
 export GIT_SSH_COMMAND="ssh -o ConnectTimeout=3 -o ControlMaster=auto -o ControlPath=~/.ssh/control-%h-%p-%r -o ControlPersist=600"
 
+install_git() {
+	say; say "Configuring git for pushing..."
+	git_config_default_branch master
+	git_config_user "mm@allegory.ro" "Many Machines"
+	git_keys_update
+	git_install_git_up
+}
+
 git_config_default_branch() {
 	checknosp "$1"
 	git config --global init.defaultBranch $1
@@ -70,7 +78,7 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 	[ $ret != 0 ] && exit
 }
 
-mgit_install() {
+install_mgit() {
 	git_clone_for root git@github.com:capr/multigit.git /opt/mgit
 	must ln -sf /opt/mgit/mgit /usr/local/bin/mgit
 }

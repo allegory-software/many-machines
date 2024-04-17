@@ -59,3 +59,18 @@ checkvars() { # VARNAME1[-] ...
 trim() { # VARNAME
 	read -rd '' $1 <<<"${!1}"
 }
+
+functions_with_prefix() { # PREFIX
+	local prefix="$1"
+	R1=
+	for func_name in $(declare -F | awk '{print $3}'); do
+		if [[ $func_name == "$prefix"* ]]; then
+			R1+=" ${func_name#$prefix}"
+		fi
+	done
+}
+
+kill_subprocesses() {
+	kill -- -$$ # Send TERM to the process group
+}
+#trap 'kill_subprocesses' EXIT

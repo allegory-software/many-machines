@@ -1,4 +1,4 @@
-# var files with include dirs
+# var files and dirs with include dirs.
 
 varfile() { # DIR VAR_NAME
 	local DIR="$1"
@@ -57,4 +57,3 @@ cat_all_varfiles() { # DIR
 		R1+=("$VAR=\"${R2[$VAR]}\""$'\n')
 	done
 }
-
