@@ -37,8 +37,9 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
     * custom install functions for installing packages
     * custom listing commands
     * field getters for custom listing commands
-* Bulk ops all the way
+* Sweet, sweet sysadmin experience
   * All ops apply to one/many/all machines and/or deployments.
+  * Data is collected from machines in parralel and shown in tabular form.
 * Easy on your memory
   * Machines and deployments are identified by name only.
   * Machines can be identified indirectly by deployment name.
