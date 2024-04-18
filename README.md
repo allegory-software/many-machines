@@ -1,3 +1,20 @@
+# Many Machines
+
+Many Machines is a Linux VPS admin automation tool
+and application deployment tool written in Bash.
+
+MM keeps a database of your machines and deployments and provides you with
+a command-line UI from which to perform and automate all your sysadmin tasks
+like SSH key management, scheduled backups, automated deployments,
+SSL certificate issuing, real-time app monitoring, etc.
+
+Accompanying that is a web server with a web UI for real-time monitoring
+and performing admin tasks, which also exposes a HTTP API for automation.
+The server is written in Lua using the Allegory SDK. The web UI is written
+in Lua and JavaScript using the Allegory SDK and Canvas-UI.
+
+One notable feature of MM that's less common in tools of this type is
+the presence of Windows-native sysadmin tools like sshfs, putty, etc.
 
 # Design
 
