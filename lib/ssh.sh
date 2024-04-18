@@ -49,9 +49,9 @@ $SCRIPT
 		# include lib contents in the script:
 		# faster but doesn't report line numbers correctly on errors in lib code.
 		ssh_to bash -s <<< "
-shopt -s nullglob
+set -f # disable globbing
 set -o pipefail
-$(cat lib/*.sh)
+$(set +f; cat lib/*.sh; set -f)
 MACHINE=$MACHINE
 VERBOSE=$VERBOSE
 DEBUG=$DEBUG
@@ -81,6 +81,8 @@ ${R1[*]}
 $SCRIPT
 "
 }
+
+# ssh config -----------------------------------------------------------------
 
 ssh_hostkey() {
 	ip_of "$1"; local MACHINE="$R2"
@@ -212,6 +214,8 @@ ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
 		ssh_pubkey_update_for_user $USER $KEYNAME "$PUBKEY"
 	done
 }
+
+# rsync ----------------------------------------------------------------------
 
 # SRC_DIR= [DST_DIR=] [LINK_DIR=] [SRC_MACHINE=] [DST_MACHINE=] [PROGRESS=1] [DRY] [VERBOSE] rsync_cmd
 rsync_cmd() {

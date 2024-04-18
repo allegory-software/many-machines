@@ -1,12 +1,13 @@
 #!/bin/bash
-# cds to mm's dir, sets up bash semantics and loads all .sh scripts in this dir.
+# cds to mm's dir, sets up bash options and loads all .sh scripts in this dir.
 # exposed in PATH as mmlib, so any script can just `. mmlib` to load all the mm
 # functions and user's (i.e. machine or deploy) vars into the script's environment.
 cd `dirname $(readlink -f $BASH_SOURCE)`/.. || exit 1
 
-shopt -s nullglob
+set -f # disable globbing
 set -o pipefail
 
-[ -f ~/.mm/vars ] && . ~/.mm/vars
+[ -f ./vars ] && . ./vars
 
-for f in lib/*.sh; do . $f; done
+for f in set +f; lib/*.sh; set -f; do . $f; done
+#for f in lib/${MM_LIBS}.sh; do . $f; done

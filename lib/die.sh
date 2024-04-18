@@ -1,10 +1,7 @@
 # die harder, see https://github.com/capr/die which this extends.
 
-export INDENT
-SAY_NL=
-
 say()       { echo "$@" >&2; }
-say-line()  { printf '=%.0s\n' {1..72}; }
+say_ln()    { printf '=%.0s\n' {1..72}; }
 die()       { say -n "ABORT: "; say "$@"; exit 1; }
 debug()     { if [ "$DEBUG" ]; then say "$@"; fi; }
 run()       { debug -n "EXEC: $@ "; "$@"; local ret=$?; debug "[$ret]"; return $ret; }

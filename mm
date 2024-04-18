@@ -21,16 +21,19 @@ while [[ $# > 0 ]]; do
 		[[ ! ${mm[$1]} ]] && { MACHINES+=" $1"; mm[$1]=1; }
 		shift
 	else
+		echo "Invalid DEPLOY, MACHINE or COMMAND: $1" >&2
 		usage
 		exit 1
 	fi
 done
 
+# no command given but machines and/or deploys given, drop to shell.
 if [[ $DEPLOYS || $MACHINES ]]; then
 	cmd/ssh
 	exit
 fi
 
+# no args at all, show available commands.
 usage
 for CMD in `ls -1 cmd`; do
 	HELP="$(head -2 "cmd/$CMD" | tail -1)"

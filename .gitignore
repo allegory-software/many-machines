@@ -2,3 +2,7 @@
 /var-secret
 /var.tar.*
 *.deb
+*.tgz
+*.tar
+*.tar.*
+/vars

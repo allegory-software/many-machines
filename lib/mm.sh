@@ -48,6 +48,14 @@ active_machines() {
 	done
 }
 
+active_deploys() {
+	R1=
+	local DEPLOY
+	for DEPLOY in `ls -1 var/deploys`; do
+		[[ "$INACTIVE" != "" || -f var/deploys/$DEPLOY/active ]] && R1+=" $DEPLOY"
+	done
+}
+
 each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 	declare -A mm
 	local M D
@@ -75,20 +83,39 @@ each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 	done
 }
 
-_each_machine_list() { # MACHINE= LIST
-	printf "%-10s %s\n" $MACHINE "$(ssh_script "machine_list_$1" 2>&1)"
+each_deploy() { # [NOT_ALL=] [ALL=] MACHINES="" DEPLOYS= COMMAND ARGS...
+	[[ $MACHINES ]] && die "Invalid deploy(s): $MACHINES"
+	if [[ $DEPLOYS ]]; then
+		for DEPLOY in $DEPLOYS; do
+			check_deploy $DEPLOY
+		done
+	else
+		[[ $NOT_ALL && ! $ALL ]] && die "DEPLOY(s) required"
+		active_deploys
+		DEPLOYS="$R1"
+	fi
+	local CMD="$1"; shift
+	for DEPLOY in $DEPLOYS; do
+		machine_of $DEPLOY
+		[ "$QUIET" ] || say "On deploy $DEPLOY:"
+		(MACHINE=$R1 "$CMD" "$@")
+	done
 }
-each_machine_list() { # LIST
-	local LIST="$1"
-	checkvars LIST
-	printf "%-10s %s\n" "MACHINE" "$(machine_list_header_${LIST})"
-	QUIET=1 each_machine _each_machine_list $LIST
+
+_each_deploy_with_domain() {
+	if deploy_var $DEPLOY DOMAIN; then
+		local DOMAIN=$R1
+		(DOMAIN=$DOMAIN "$@")
+	fi
+}
+each_deploy_with_domain() {
+	each_deploy _each_deploy_with_domain "$@"
 }
 
 custom_list_get_values() { # FIELD1 ...
 	local FIELD
 	for FIELD in $*; do
-		if declare -f example_function > /dev/null; then
+		if declare -f get_${FIELD} > /dev/null; then
 			get_${FIELD}
 		else
 			echo "${!FIELD}"
@@ -147,51 +174,4 @@ deploy_vars() { # DEPLOY
 	local DEPLOY="$1"
 	machine_of_deploy "$DEPLOY"; local MACHINE=$R1
 	cat_all_varfiles var/deploys/$DEPLOY
-}
-
-active_deploys() {
-	R1=
-	local DEPLOY
-	for DEPLOY in `ls -1 var/deploys`; do
-		[[ "$INACTIVE" != "" || -f var/deploys/$DEPLOY/active ]] && R1+=" $DEPLOY"
-	done
-}
-
-each_deploy() { # [NOT_ALL=] [ALL=] MACHINES="" DEPLOYS= COMMAND ARGS...
-	[[ $MACHINES ]] && die "Invalid deploy(s): $MACHINES"
-	if [[ $DEPLOYS ]]; then
-		for DEPLOY in $DEPLOYS; do
-			check_deploy $DEPLOY
-		done
-	else
-		[[ $NOT_ALL && ! $ALL ]] && die "DEPLOY(s) required"
-		active_deploys
-		DEPLOYS="$R1"
-	fi
-	local CMD="$1"; shift
-	for DEPLOY in $DEPLOYS; do
-		machine_of $DEPLOY
-		[ "$QUIET" ] || say "On deploy $DEPLOY:"
-		(MACHINE=$R1 "$CMD" "$@")
-	done
-}
-
-_each_deploy_with_domain() {
-	if deploy_var $DEPLOY DOMAIN; then
-		local DOMAIN=$R1
-		(DOMAIN=$DOMAIN "$@")
-	fi
-}
-each_deploy_with_domain() {
-	each_deploy _each_deploy_with_domain "$@"
-}
-
-_each_deploy_list() { # DEPLOY= LIST
-	printf "%-10s %-10s %s\n" $MACHINE $DEPLOY "$(ssh_script_deploy "deploy_list_$1" 2>&1)"
-}
-each_deploy_list() { # LIST
-	local LIST="$1"
-	checkvars LIST
-	printf "%-10s %-10s %s\n" "MACHINE" "DEPLOY" "$(deploy_list_header_${LIST})"
-	QUIET=1 each_deploy _each_deploy_list $LIST
 }
