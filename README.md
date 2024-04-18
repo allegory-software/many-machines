@@ -1,4 +1,4 @@
-# Many Machines
+# :sunglasses: Many Machines
 
 Many Machines is a Linux VPS admin automation tool
 and application deployment tool written in Bash.
