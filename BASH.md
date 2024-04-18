@@ -45,20 +45,20 @@ Assignments of form `a=$b` or `a=$(cmd)` do not need quoting.
 ## Special vars
 
 ```
-"$@"  -  expand args 1:1
-$*    - expand args and split them by whitespace
+"$@"  - expand args without word-splitting
+$*    - expand args and word-split them
 $#    - arg count
-$?    - last exit code
-$!    - PID of last bg command
+$?    - exit code of last command
+$!    - PID of last background command
 $$    - PID of current process
 $IFS  - word splitting separator
 $PWD  - current dir
 $OLDPWD - prev. current dir
-$RANDOM - gen random positive int16
+$RANDOM - generate a random positive int16
 $LINENO - current line number
 ```
 
-## Missing values
+## Dealing with missing values
 
 ```
 ${var:-default} - default if var is empty
