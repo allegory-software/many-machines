@@ -1,28 +1,30 @@
 # speedtest.net network speed tester
 
+SPEEDTEST_DIR=/opt/mm/tmp/speedtest-cli
+
 install_speedtest() {
-	[[ -e tmp/speedtest-cli/speedtest ]] && return
+	[[ -e $SPEEDTEST_DIR/speedtest ]] && return
 	local sys_bit=x86_64
 	local url1="https://install.speedtest.net/app/cli/ookla-speedtest-1.2.0-linux-${sys_bit}.tgz"
 	local url2="https://dl.lamp.sh/files/ookla-speedtest-1.2.0-linux-${sys_bit}.tgz"
 	local get="wget --no-check-certificate -q -T10 -O speedtest.tgz"
 	run $get "$url1" || must $get "$url2"
-	must mkdir -p tmp/speedtest-cli
-	must tar zxf speedtest.tgz -C tmp/speedtest-cli
-	must chmod +x tmp/speedtest-cli/speedtest
+	must mkdir -p $SPEEDTEST_DIR
+	must tar zxf speedtest.tgz -C $SPEEDTEST_DIR
+	must chmod +x $SPEEDTEST_DIR/speedtest
 	must rm -f speedtest.tgz
 }
 
 speedtest1() { # [SERVER_ID|list] [NODE_NAME]
-	if ! run tmp/speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr ${1:+--server-id="$1"} \
-		> tmp/speedtest-cli/speedtest.log 2>&1
+	if ! run $SPEEDTEST_DIR/speedtest --progress=no --accept-license --accept-gdpr ${1:+--server-id="$1"} \
+		> $SPEEDTEST_DIR/speedtest.log 2>&1
 	then
-		cat tmp/speedtest-cli/speedtest.log
+		cat $SPEEDTEST_DIR/speedtest.log
 	fi
 	local dl_speed up_speed latency
-	dl_speed=$(awk '/Download/{print $3" "$4}' tmp/speedtest-cli/speedtest.log)
-	up_speed=$(awk '/Upload/{print $3" "$4}'   tmp/speedtest-cli/speedtest.log)
-	latency=$(awk '/Latency/{print $3" "$4}'   tmp/speedtest-cli/speedtest.log)
+	dl_speed=$(awk '/Download/{print $3" "$4}' $SPEEDTEST_DIR/speedtest.log)
+	up_speed=$(awk '/Upload/{print $3" "$4}'   $SPEEDTEST_DIR/speedtest.log)
+	latency=$(awk '/Latency/{print $3" "$4}'   $SPEEDTEST_DIR/speedtest.log)
 	printf "%-10s %-18s %-18s %-20s %-12s\n" "$MACHINE" "$2" "$up_speed" "$dl_speed" "$latency"
 }
 
