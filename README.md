@@ -51,3 +51,7 @@
   * operation
     * remote SQL
     * listing databases, tables, table structure
+
+# Status
+
+In development.
