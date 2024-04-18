@@ -30,15 +30,16 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
   * shared config groups with include dirs (think multiple inheritance with overrides).
   * linked entities with symlinks.
 * Written in Bash
-  * no dependencies, so less bit rot.
+  * no dependencies, less bit rot.
   * expandable, meaning you can add:
     * commands and command aliases
     * function libraries with new functions and overrides
     * custom install functions for installing packages
     * custom listing commands
     * field getters for custom listing commands
-* Universal support for bulk ops
+* Bulk ops all the way
   * All ops apply to one/many/all machines and/or deployments.
+* Easy on your memory
   * Machines and deployments are identified by name only.
   * Machines can be identified indirectly by deployment name.
 * Sweet, sweet developer experience
