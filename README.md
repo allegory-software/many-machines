@@ -51,7 +51,7 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
   and you can't run stale code on remote machines.
   * command tracing, error handling and arg checking vocabulary (see die.sh).
   * very small and hackable codebase due to pyramid-of-abstraction approach
-  (you won't believe how few lines of code this entire project has).
+  (you won't believe how little code this entire project has).
 
 # Functionality
 
