@@ -37,9 +37,11 @@ ssh_script() { # MACHINE= "SCRIPT"
 	if [ "$MM_DEBUG_LIB" ]; then
 		# rsync lib to machine and load from there:
 		# slower (takes ~1s) but reports line numbers correctly on errors.
-		QUIET=1 SRC_DIR=lib DST_DIR=.mm DST_MACHINE="$MACHINE" rsync_dir
+		QUIET=1 SRC_DIR=lib    DST_DIR=/root/.mm DST_MACHINE="$MACHINE" rsync_dir
+		QUIET=1 SRC_DIR=libopt DST_DIR=/root/.mm DST_MACHINE="$MACHINE" rsync_dir
 		ssh_to bash -s <<< "
-. ~/.mm/lib/all
+MM_LIBS=\"$MM_LIBS\"
+. /root/.mm/lib/all
 MACHINE=$MACHINE
 VERBOSE=$VERBOSE
 DEBUG=$DEBUG
@@ -51,7 +53,8 @@ $SCRIPT
 		ssh_to bash -s <<< "
 set -f # disable globbing
 set -o pipefail
-$(set +f; cat lib/*.sh; set -f)
+$(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
+$(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)
 MACHINE=$MACHINE
 VERBOSE=$VERBOSE
 DEBUG=$DEBUG

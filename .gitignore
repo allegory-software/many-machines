@@ -6,3 +6,4 @@
 *.tar
 *.tar.*
 /vars
+/tmp
