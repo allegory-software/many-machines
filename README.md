@@ -45,7 +45,7 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
 * Sweet, sweet developer experience
   * sub-second, no extra-steps dev-run cycle: all code is uploaded
   on each invocation, there's no extra "syncing" or "cache clearing" step,
-  and you can't run stale code.
+  and you can't run stale code on remote machines.
   * command tracing, error handling and arg checking vocabulary (see die.sh).
 
 # Functionality
