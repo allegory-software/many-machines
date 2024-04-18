@@ -2,18 +2,20 @@
 
 # machine info ---------------------------------------------------------------
 
-get_OS_VER()   { lsb_release -sd; }
-get_RAM()      { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024)}'; }
-get_FREE_RAM() { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG\n", $2/(1024*1024)}'; }
-get_HDD()      { df -l / | awk '(NR > 1) { printf "%.2fG\n", $2/(1024*1024)}'; }
-get_FREE_HDD() { df -l / | awk '(NR > 1) { printf "%.2fG\n", $4/(1024*1024)}'; }
-get_CPU()      { lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p'; }
-get_CPUS()     { lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p'; }
-get_CPS()      { lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p'; }
-get_CORES()    {
-	local cps="$(get_CPS)"
-	local sockets="$(get_CPUS)"
-	expr $sockets \* $cps
+get_OS_VER()      { lsb_release -sd; }
+get_RAM()         { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_FREE_RAM()    { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_FREE_RAM_KB() { cat /proc/meminfo | awk '/MemAvailable/  { print $2 }'; }
+get_HDD()         { df -l / | awk '(NR > 1) { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_FREE_HDD()    { df -l / | awk '(NR > 1) { printf "%.2fG\n", $4/(1024*1024) }'; }
+get_FREE_HDD_KB() { df -l / | awk '(NR > 1) { print $4 }'; }
+get_CPU()         { lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p'; }
+get_CPUS()        { lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p'; }
+get_CPS()         { lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p'; }
+get_CORES()       {
+	local cps=`get_CPS`
+	local sockets=`get_CPUS`
+	printf "%d\n" $((sockets * cps))
 }
 get_CPUTEST()  {
 	(time cat </dev/urandom | head -c 50M | gzip >/dev/null) 2>&1 | grep real | awk '{print $2}'
@@ -49,7 +51,7 @@ install_libssl1() {
 }
 
 machine_set_hostname() { # machine
-	local HOST="$1"
+	local HOST=$1
 	checkvars HOST
 	say "Setting machine hostname to: $HOST..."
 	must hostnamectl set-hostname $HOST
@@ -61,7 +63,7 @@ machine_set_hostname() { # machine
 }
 
 machine_set_timezone() { # tz
-	local TZ="$1"
+	local TZ=$1
 	checkvars TZ
 	say "Setting machine timezone to: $TZ...."
 	must timedatectl set-timezone "$TZ" # sets /etc/localtime and /etc/timezone
@@ -81,13 +83,13 @@ is_running() {
 }
 
 service_start() {
-	local SERVICE="$1"; checkvars SERVICE
+	local SERVICE=$1; checkvars SERVICE
 	say "Starting $SERVICE..."
 	must service "$SERVICE" start
 }
 
 service_stop() {
-	local SERVICE="$1"; checkvars SERVICE
+	local SERVICE=$1; checkvars SERVICE
 	say "Stopping $SERVICE..."
 	must service "$SERVICE" stop
 }
@@ -109,7 +111,7 @@ service_status_header() {
 	printf "$SS_FMT" MACHINE SERVICE STATUS VERSION
 }
 service_status() { # [SERVICES]
-	[ "$1" ] && SERVICES="$1" || SERVICES="nginx cron mysql tarantool"
+	[ "$1" ] && SERVICES=$1 || SERVICES="nginx cron mysql tarantool"
 	for SERVICE in $SERVICES; do
 		local VERSION
 		if VERSION=`service_version_$SERVICE 2>/dev/null`; then

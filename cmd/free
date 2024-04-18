@@ -1,5 +1,7 @@
 #!/bin/bash
-# ["MD1 ..."] show live machine status/info
+# list available RAM & HDD
 . mmlib
 
-each_machine_list "$1" free
+each_machine_custom_list \
+	"%-5s %-5s %-10s %-10s %-10s %-10s" \
+	CPUS CORES RAM FREE_RAM HDD FREE_HDD

@@ -42,12 +42,12 @@ checknosp() { # VAL [ERROR...]
 checkvars() { # VARNAME1[-] ...
 	local var
 	for var in $@; do
-		if [ "${var::-1}-" == "${var}" ]; then # spaces allowed
-			var="${var::-1}"
-			[ "${!var}" ] || die "${FUNCNAME[1]}: $var required"
+		if [[ ${var::-1}- == $var ]]; then # spaces allowed
+			var=${var::-1}
+			[[ ${!var} ]] || die "${FUNCNAME[1]}: $var required"
 		else
-			[ "${!var}" ] || die "${FUNCNAME[1]}: $var required"
-			[[ "${!var}" =~ ( |\') ]] && die "${FUNCNAME[1]}: $var contains spaces"
+			[[ ${!var} ]] || die "${FUNCNAME[1]}: $var required"
+			[[ ${!var} =~ ( |\') ]] && die "${FUNCNAME[1]}: $var contains spaces"
 		fi
 	done
 	return 0

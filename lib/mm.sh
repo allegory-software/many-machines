@@ -112,6 +112,27 @@ each_deploy_with_domain() {
 	each_deploy _each_deploy_with_domain "$@"
 }
 
+_deploy_remote_list() {
+	local FUNC=$1 FMT=$2 FIELDS=$3; shift 3
+	quote_args "$@"
+	local ARGS=("${R1[@]}")
+	local VALS
+	(
+	if VALS=$(ssh_script_deploy "$FUNC ${ARGS[*]}"); then
+		local IFS0="$IFS"; IFS=$'\n'; printf "%-10s %-10s $FMT\n" $MACHINE $DEPLOY $VALS; IFS="$IFS0"
+	else
+		printf "%-10s %-10s %s\n" $MACHINE $DEPLOY "$VALS"
+	fi
+	) &
+	wait
+}
+each_deploy_remote_list() { # LIST_FUNC PRINTF_FIELDS_FORMAT "FIELD1_NAME ..." LIST_FUNC_ARGS...
+	local FUNC=$1 FMT=$2 FIELDS=$3
+	checkvars FUNC FMT- FIELDS-
+	printf "%-10s %-10s $FMT\n" MACHINE DEPLOY $FIELDS
+	QUIET=1 each_deploy _deploy_remote_list "$@"
+}
+
 custom_list_get_values() { # FIELD1 ...
 	local FIELD
 	for FIELD in $*; do
@@ -122,7 +143,7 @@ custom_list_get_values() { # FIELD1 ...
 		fi
 	done
 }
-_each_machine_custom_list() { # FMT FIELD1 ...
+_machine_custom_list() { # FMT FIELD1 ...
 	local FMT="$1"; shift
 	local VALS
 	(
@@ -137,7 +158,7 @@ _each_machine_custom_list() { # FMT FIELD1 ...
 each_machine_custom_list() { # FMT FIELD1 ...
 	local FMT="$1"; shift
 	printf "%-10s $FMT\n" MACHINE $*
-	QUIET=1 each_machine _each_machine_custom_list "$FMT" $*
+	QUIET=1 each_machine _machine_custom_list "$FMT" $*
 }
 
 _each_deploy_custom_list() { # FMT FIELD1 ...
@@ -154,8 +175,8 @@ _each_deploy_custom_list() { # FMT FIELD1 ...
 }
 each_deploy_custom_list() { # FMT FIELD1 ...
 	local FMT="$1"; shift
-	printf "%-10s %-10s $FMT\n" MACHINE DEPLOY $*
-	QUIET=1 each_deploy _each_deploy_custom_list "$FMT" $*
+	printf "%-10s %-10s $FMT\n" MACHINE DEPLOY "$@"
+	QUIET=1 each_deploy _each_deploy_custom_list "$FMT" "$@"
 }
 
 machine_vars() { # MACHINE|DEPLOY

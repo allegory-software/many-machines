@@ -1,18 +1,18 @@
 # deploy lib: programs for deployments admin, running as root on a machine administered by mm.
 
-get_APP_VER() {
+get_APP_WANT() {
 	checkvars REPO APP_VERSION
 	local s=$(git ls-remote $REPO refs/heads/$APP_VERSION)
 	echo ${s:0:7}
 }
 
-get_APP_DEPLVER() {
+get_APP_DEPL() {
 	must pushd /home/$DEPLOY/app
 	run_as $DEPLOY git rev-parse --short HEAD
 	popd
 }
 
-get_SDK_DEPLVER() {
+get_SDK_DEPL() {
 	must pushd /home/$DEPLOY/app/sdk
 	run_as $DEPLOY git rev-parse --short HEAD
 	popd

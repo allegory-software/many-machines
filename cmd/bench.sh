@@ -1,0 +1,1 @@
+/root/.__mm/bin/bench.sh

@@ -32,13 +32,13 @@ ssh_bash() { # MACHINE= COMMAND ARGS...
 }
 
 ssh_script() { # MACHINE= "SCRIPT"
-	local SCRIPT="$1"
+	local SCRIPT=$1
 	checkvars SCRIPT-
 	if [ "$MM_DEBUG_LIB" ]; then
 		# rsync lib to machine and load from there:
 		# slower (takes ~1s) but reports line numbers correctly on errors.
-		QUIET=1 SRC_DIR=lib    DST_DIR=/root/.mm DST_MACHINE="$MACHINE" rsync_dir
-		QUIET=1 SRC_DIR=libopt DST_DIR=/root/.mm DST_MACHINE="$MACHINE" rsync_dir
+		QUIET=1 SRC_DIR=lib    DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
+		QUIET=1 SRC_DIR=libopt DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
 		ssh_to bash -s <<< "
 MM_LIBS=\"$MM_LIBS\"
 . /root/.mm/lib/all
@@ -64,7 +64,7 @@ $SCRIPT
 }
 
 ssh_script_deploy() { # DEPLOY= "SCRIPT"
-	local SCRIPT="$1"
+	local SCRIPT=$1
 	checkvars SCRIPT-
 	machine_of $DEPLOY; local MACHINE=$R1
 	deploy_vars $DEPLOY
@@ -76,7 +76,7 @@ $SCRIPT
 }
 
 ssh_script_machine() { # MACHINE= "SCRIPT"
-	local SCRIPT="$1"
+	local SCRIPT=$1
 	checkvars SCRIPT-
 	machine_vars $MACHINE
 	ssh_script "
@@ -88,7 +88,7 @@ $SCRIPT
 # ssh config -----------------------------------------------------------------
 
 ssh_hostkey() {
-	ip_of "$1"; local MACHINE="$R2"
+	ip_of "$1"; local MACHINE=$R2
 	catfile var/machines/$MACHINE/ssh_hostkey
 }
 
@@ -99,17 +99,17 @@ ssh_hostkey_update() {
 }
 
 ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
-	local USER="$1"
+	local USER=$1
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	local HOST="$2"
-	local KEYNAME="$3"
-	local UNSTABLE_IP="$4"
+	local HOST=$2
+	local KEYNAME=$3
+	local UNSTABLE_IP=$4
 	checkvars USER HOST KEYNAME
 	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER'..."
 	must mkdir -p $HOME/.ssh
 	local CONFIG=$HOME/.ssh/config
 	touch "$CONFIG"
-	local s="$(sed 's/^Host/\n&/' $CONFIG | sed '/^Host '"$HOST"'$/,/^$/d;/^$/d')"
+	local s=$(sed 's/^Host/\n&/' $CONFIG | sed '/^Host '"$HOST"'$/,/^$/d;/^$/d')
 	s="$s
 Host $HOST
   HostName $HOST
@@ -122,11 +122,11 @@ Host $HOST
 }
 
 ssh_key_update_for_user() { # USER KEYNAME KEY HOSTKEY
-	local USER="$1"
+	local USER=$1
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	local KEYNAME="$2"
-	local KEY="$3"
-	local HOSTKEY="$4"
+	local KEYNAME=$2
+	local KEY=$3
+	local HOSTKEY=$4
 	checkvars USER KEYNAME KEY- HOSTKEY-
 	say "Updating SSH key '$KEYNAME' for user '$USER'..."
 
@@ -147,18 +147,18 @@ ssh_host_key_update_for_user() { # USER HOST KEYNAME KEY HOSTKEY [unstable_ip]
 }
 
 ssh_pubkey() { # USER KEYNAME
-	local USER="$1"
-	local KEYNAME="$2"
+	local USER=$1
+	local KEYNAME=$2
 	checkvars USER KEYNAME
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
 	cat $HOME/.ssh/authorized_keys | grep " $KEYNAME\$"
 }
 
 ssh_pubkeys() { # FMT [USERS] [KEYNAME] [MM_PUBKEY]
-	local FMT="$1"
-	local USERS="$2"
-	local KEYNAME="$3"
-	local MM_PUBKEY="$4"
+	local FMT=$1
+	local USERS=$2
+	local KEYNAME=$3
+	local MM_PUBKEY=$4
 	checkvars FMT-
 	[ "$USERS" ] || USERS=`echo root; ls -1 /home`
 	for USER in $USERS; do
@@ -178,9 +178,9 @@ ssh_pubkeys() { # FMT [USERS] [KEYNAME] [MM_PUBKEY]
 }
 
 ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY|--remove
-	local USER="$1"
-	local KEYNAME="$2"
-	local PUBKEY="$3"
+	local USER=$1
+	local KEYNAME=$2
+	local PUBKEY=$3
 	checkvars USER KEYNAME PUBKEY-
 	say "Updating SSH public key '$KEYNAME' for user '$USER'..."
 	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
@@ -194,7 +194,7 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY|--remove
 		must chmod 600 $ak
 		must chown $USER:$USER -R $HOME/.ssh
 	}
-	local UP_PUBKEY="$(grep " $KEYNAME\$" $ak)"
+	local UP_PUBKEY=$(grep " $KEYNAME\$" $ak)
 	if [[ "$PUBKEY" == --remove && "$UP_PUBKEY" == "" ]]; then
 		say "Key not found."
 	elif [[ "$PUBKEY" == "$UP_PUBKEY" ]]; then

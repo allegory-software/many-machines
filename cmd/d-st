@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: list deployments as found on machines
+# list deployments as found on machines
 . mmlib
 
 machine_deploy_info_header
@@ -12,4 +12,4 @@ try_machine_deploys_info() {
 		MACHINE=$1 machine_deploy_info_line_fail "-" "$s"
 	fi
 }
-QUIET=1 each_machine "$1" try_machine_deploys_info
+QUIET=1 each_machine try_machine_deploys_info

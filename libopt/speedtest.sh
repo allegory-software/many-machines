@@ -25,7 +25,7 @@ speedtest1() { # [SERVER_ID|list] [NODE_NAME]
 	dl_speed=$(awk '/Download/{print $3" "$4}' $SPEEDTEST_DIR/speedtest.log)
 	up_speed=$(awk '/Upload/{print $3" "$4}'   $SPEEDTEST_DIR/speedtest.log)
 	latency=$(awk '/Latency/{print $3" "$4}'   $SPEEDTEST_DIR/speedtest.log)
-	printf "%-10s %-18s %-18s %-20s %-12s\n" "$MACHINE" "$2" "$up_speed" "$dl_speed" "$latency"
+	printf "%-10s %-18s %-18s %-20s %-12s\n" "$MACHINE" "${2:-$1}" "$up_speed" "$dl_speed" "$latency"
 }
 
 speedtest_header() {

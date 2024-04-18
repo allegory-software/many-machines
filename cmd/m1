@@ -1,7 +1,0 @@
-#!/bin/bash
-# ["MD1 ..."] :: print machine vars
-. mmlib
-
-each_machine_custom_list \
-	"%-5s %-5s %-10s %-10s %-10s %-10s %-30s" \
-	CPUS CORES RAM FREE_RAM HDD FREE_HDD OS_VER

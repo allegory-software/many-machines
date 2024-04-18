@@ -87,7 +87,8 @@ ${var/%patt/repl} - replace suffix
 declare -a A   - create array
 A=(a b c)      - create array and initialize
 A+=(a b c)     - append to array
-"${A[@]}"      - expand elements without splitting
+"${A[@]}"      - expand elements without word-splitting
+${#A[@]}       - array length
 ```
 
 # Hashmaps
