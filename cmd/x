@@ -1,3 +1,0 @@
-
-files=/opt/mm/lib/*.sh
-echo $files

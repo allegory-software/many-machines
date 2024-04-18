@@ -10,4 +10,4 @@ set -o pipefail
 [ -f ./vars ] && . ./vars
 
 for f in set +f; lib/*.sh; set -f; do . $f; done
-#for f in lib/${MM_LIBS}.sh; do . $f; done
+for f in $MM_LIBS; do . libopt/$f.sh; done

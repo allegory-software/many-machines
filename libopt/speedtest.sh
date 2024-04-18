@@ -1,5 +1,5 @@
 install_speedtest() {
-    if [ ! -e "./speedtest-cli/speedtest" ]; then
+    if [ ! -e "tmp/speedtest-cli/speedtest" ]; then
         sys_bit=""
         local sysarch
         sysarch="$(uname -m)"
@@ -29,11 +29,30 @@ install_speedtest() {
                 die "Failed to download speedtest-cli."
             fi
         fi
-        must mkdir -p speedtest-cli && tar zxf speedtest.tgz -C ./speedtest-cli && chmod +x ./speedtest-cli/speedtest
+        must mkdir -p tmp/speedtest-cli
+        must tar zxf speedtest.tgz -C tmp/speedtest-cli
+        must chmod +x tmp/speedtest-cli/speedtest
         must rm -f speedtest.tgz
     fi
 }
 
 speedtest() {
     printf "%-18s%-18s%-20s%-12s\n" " Node Name" "Upload Speed" "Download Speed" "Latency"
+}
+speed_test() {
+    local nodeName="$2"
+    if [ -z "$1" ];then
+        tmp/speedtest-cli/speedtest --progress=no --accept-license --accept-gdpr >tmp/speedtest-cli/speedtest.log 2>&1
+    else
+        tmp/speedtest-cli/speedtest --progress=no --server-id="$1" --accept-license --accept-gdpr >tmp/speedtest-cli/speedtest.log 2>&1
+    fi
+    if [[ $? == 0 ]]; then
+        local dl_speed up_speed latency
+        dl_speed=$(awk '/Download/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+        up_speed=$(awk '/Upload/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+        latency=$(awk '/Latency/{print $3" "$4}' ./speedtest-cli/speedtest.log)
+        if [[ -n "${dl_speed}" && -n "${up_speed}" && -n "${latency}" ]]; then
+            printf "\033[0;33m%-18s\033[0;32m%-18s\033[0;31m%-20s\033[0;36m%-12s\033[0m\n" " ${nodeName}" "${up_speed}" "${dl_speed}" "${latency}"
+        fi
+    fi
 }
