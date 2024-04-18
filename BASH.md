@@ -10,7 +10,7 @@ If you check your input with `checkvars`, then you don't have to
 quote vars that can't contain spaces (which is most vars).
 It also makes it easy to see which vars allow spaces and which do not.
 
-Assignments of form `VAR=$(echo a b)` do not need quoting.
+Assignments of form `a=$b` or `a=$(cmd)` do not need quoting.
 
 ## Unsafe constructs
 

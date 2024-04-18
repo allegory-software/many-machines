@@ -67,7 +67,7 @@ deploy() {
 	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION ..."
 
 	say
-	[ -d /home/$DEPLOY/$APP ] && (app $DEPLOY running && must app $DEPLOY stop)
+	[ -d /home/$DEPLOY/$APP ] && (app running && must app stop)
 
 	say
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app
@@ -90,11 +90,11 @@ deploy() {
 	must ln -sTf $APP /home/$DEPLOY/app
 
 	say; say "Installing the app..."
-	must app $DEPLOY install forealz
+	must app install forealz
 
 	say; say "Starting the app..."
-	must app $DEPLOY start
-	must app $DEPLOY status
+	must app start
+	must app status
 
 	say; say "Deploy done."
 }
@@ -151,8 +151,7 @@ deploy_rename() { # OLD_DEPLOY NEW_DEPLOY [nosql]
 	deploy_gen_conf
 }
 
-app() { # DEPLOY
-	local DEPLOY="$1"; shift
+app() {
 	checkvars DEPLOY
 	must pushd /home/$DEPLOY/app
 	VARS="DEBUG VERBOSE" must run_as $DEPLOY ./`readlink ../app` "$@"
@@ -171,7 +170,7 @@ test_task() {
 
 start() {
 	if [ -d /home/$1/app ]; then
-		app $1 start
+		DEPLOY=$1 app start
 	else
 		service_start $1
 	fi
@@ -179,7 +178,7 @@ start() {
 
 stop() {
 	if [ -d /home/$1/app ]; then
-		app $1 stop
+		DEPLOY=$1 app stop
 	else
 		service_stop $1
 	fi
