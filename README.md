@@ -41,7 +41,9 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
   * Bulk ops all the way:
     * all ops apply to one/many/all machines and/or deployments.
   * Easy on your eyes:
-    * data is allways shown in tabular form no matter how it is collected.
+    * data gathered from machines is always shown in tabular form,
+    not just blurted out like the output of most unix commands,
+    and you can make your own custom listings with only relevant columns.
   * Easy on your memory:
     * machines and deployments are identified by name only.
     * machines can be identified indirectly by deployment name.
