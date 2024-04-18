@@ -38,11 +38,13 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
     * custom listing commands
     * field getters for custom listing commands
 * Sweet, sweet sysadmin experience
-  * All ops apply to one/many/all machines and/or deployments.
-  * Data is collected from machines in parralel and shown in tabular form.
-* Easy on your memory
-  * Machines and deployments are identified by name only.
-  * Machines can be identified indirectly by deployment name.
+  * Bulk ops all the way:
+    * all ops apply to one/many/all machines and/or deployments.
+  * Easy on your eyes:
+    * data is allways shown in tabular form no matter how it is collected.
+  * Easy on your memory:
+    * machines and deployments are identified by name only.
+    * machines can be identified indirectly by deployment name.
 * Sweet, sweet developer experience
   * sub-second, no extra-steps dev-run cycle: all code is uploaded
   on each invocation, there's no extra "syncing" or "cache clearing" step,
