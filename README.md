@@ -71,4 +71,4 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
 
 # Status
 
-In active development.
+In active development, see TODO.txt.
