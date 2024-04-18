@@ -23,8 +23,8 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
 
 * File-based config database
   * no need to develop a CRUD UI, and then have people learn how to use it;
-  just use mc for CRUD which people already know, can do bulk ops, and you can
-  inspect and repair the data if something goes wrong.
+  use mc for CRUD which you already know, can do bulk ops on data,
+  and you can inspect and repair the data if something goes wrong.
   * single-value-per-file for fast and robust CRUD scripting without sed.
   * simple backup and restore with tar, gz, gpg and rsync or even git.
   * shared config groups with include dirs (think multiple inheritance with overrides).
