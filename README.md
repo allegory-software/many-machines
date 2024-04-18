@@ -13,8 +13,8 @@ and performing admin tasks, which also exposes a HTTP API for automation.
 The server is written in Lua using the [Allegory SDK]. The web UI is written
 in Lua and JavaScript using the Allegory SDK and [Canvas-UI].
 
-[Allegory SDK] : https://github.com/allegory-software/allegory-sdk
-[Canvas-UI]    : https://github.com/allegory-software/canvas-ui
+[Allegory SDK]: https://github.com/allegory-software/allegory-sdk
+[Canvas-UI]:    https://github.com/allegory-software/canvas-ui
 
 One notable feature of MM that's less common in tools of this type is
 the presence of Windows-native sysadmin tools like sshfs, putty, etc.
