@@ -6,6 +6,8 @@ get_OS_VER()      { lsb_release -sd; }
 get_RAM()         { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_RAM()    { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_RAM_KB() { cat /proc/meminfo | awk '/MemAvailable/  { print $2 }'; }
+get_SWAP()        { cat /proc/meminfo | awk '/SwapTotal/     { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_FREE_SWAP()   { cat /proc/meminfo | awk '/SwapFree/      { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_HDD()         { df -l / | awk '(NR > 1) { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_HDD()    { df -l / | awk '(NR > 1) { printf "%.2fG\n", $4/(1024*1024) }'; }
 get_FREE_HDD_KB() { df -l / | awk '(NR > 1) { print $4 }'; }

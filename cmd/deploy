@@ -11,11 +11,7 @@ _f() {
 		acme_cert_upload $MACHINE $DOMAIN
 	fi
 
-	deploy_vars
-	ssh_script "
-		${R1[*]}
-		deploy
-	"
+	ssh_script_deploy "deploy"
 
 }
 each_deploy _f

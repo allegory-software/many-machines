@@ -1,7 +1,0 @@
-#!/bin/bash
-# run bench.sh
-. mmlib
-
-each_machine ssh_script "
-$(cat bin/bench.sh)
-"

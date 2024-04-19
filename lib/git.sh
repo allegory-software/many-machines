@@ -66,7 +66,7 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 			printf "Pulling %-40s ... " "$R1/$R2"
 			must cd $R1
 			must git submodule update $QUIET --init --remote $R2
-			local commit=$(must git rev-parse --short HEAD)
+			local commit=$(must cd $R2; must git rev-parse --short HEAD)
 			say "OK. commit: $commit"
 			) || exit $?
 		done
