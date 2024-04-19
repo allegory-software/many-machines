@@ -2,21 +2,20 @@
 # ["DEPLOY1 ..."] :: deploy an app on its target machine
 . mmlib
 
-_deploy() {
+_f() {
 
-	mysql_pass_gen_once var/deploys/$1/mysql_pass
+	mysql_pass_gen_once var/deploys/$DEPLOY/mysql_pass
 
-	machine_of $1; MACHINE=$R1
-	if deploy_var $1 DOMAIN; then
+	if deploy_var DOMAIN; then
 		local DOMAIN=$R1
 		acme_cert_upload $MACHINE $DOMAIN
 	fi
 
-	deploy_vars $1
-	ssh_script $1 "
+	deploy_vars
+	ssh_script "
 		${R1[*]}
-		DEPLOY=$1 deploy
+		deploy
 	"
 
 }
-each_deploy "$1" _deploy
+each_deploy _f

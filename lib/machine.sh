@@ -30,8 +30,13 @@ os_version() {
 machine_deploys() {
 	local USER
 	for USER in `ls -1 /home`; do
-		[ -L "/home/$USER/app" ] && echo $USER
+		[[ -L /home/$USER/app ]] && printf "%s\n" $USER
 	done
+}
+
+get_DEPLOYS() {
+	local s=`machine_deploys`
+	printf "%s\n" "${s//$'\n'/ }"
 }
 
 # machine prepare ------------------------------------------------------------
@@ -76,6 +81,52 @@ machine_rename() { # OLD_MACHINE NEW_MACHINE
 	machine_set_hostname "$NEW_MACHINE"
 }
 
+# components -----------------------------------------------------------------
+
+package_version() { # PACKAGE
+	local PACKAGE=$1
+	checkvars PACKAGE
+	grep -A 10 "^Package: $PACKAGE\$" /var/lib/dpkg/status | grep "^Version:" | cut -d' ' -f2
+}
+
+version_os() {
+	cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2
+}
+version_kernel() {
+	uname -r
+}
+version_mm() {
+	(
+	must cd /opt/mm
+	must git rev-parse --short HEAD
+	)
+}
+version_mysql() {
+	has_mysql && mysql --version | awk '{print $3}'
+}
+version_tarantool() {
+	tarantool --version | head -1
+}
+version_cron() {
+	# this is too slow...
+	#apt show cron 2>/dev/null | grep Version: | cut -d' ' -f2
+	package_version cron
+}
+version_acme() {
+	/root/.acme.sh/acme.sh -v | tail -1
+}
+version_nginx() {
+	nginx -v 2>&1 | awk '{print $3}'
+}
+
+component_version() { # ["COMPONENT1 ..."]
+	local COMPS; [[ $1 ]] && COMPS=$1 || { functions_with_prefix version_; COMPS=$R1; }
+	for COMP in $COMPS; do
+		local VERSION=`version_$COMP 2>/dev/null`
+		printf "%s\n" $MACHINE $COMP "${VERSION:--}"
+	done
+}
+
 # services -------------------------------------------------------------------
 
 is_running() {
@@ -94,48 +145,14 @@ service_stop() {
 	must service "$SERVICE" stop
 }
 
-service_version_mysql() {
-	has_mysql && mysql --version | awk '{print $3}'
-}
-service_version_tarantool() {
-	tarantool --version | head -1
-}
-service_version_cron() {
-	true
-}
-service_version_nginx() {
-	nginx -v 2>&1 | awk '{print $3}'
-}
-SS_FMT="%-10s %-12s %-12s %s\n"
-service_status_header() {
-	printf "$SS_FMT" MACHINE SERVICE STATUS VERSION
-}
-service_status() { # [SERVICES]
-	[[ $1 ]] && SERVICES=$1 || SERVICES="nginx cron mysql tarantool"
+service_status() { # ["SERVICE1 ..."]
+	[[ $1 ]] && SERVICES=$1
 	for SERVICE in $SERVICES; do
 		local VERSION
-		if VERSION=`service_version_$SERVICE 2>/dev/null`; then
+		if VERSION=`version_$SERVICE 2>/dev/null`; then
 			is_running "$SERVICE"
-			[ $? == 0 ] && STATUS=RUNNING || STATUS="not running"
-		else
-			STATUS=-
-			VERSION=-
+			[ $? == 0 ] && STATUS=UP || STATUS=DOWN!
 		fi
-		printf "$SS_FMT" "$MACHINE" "$SERVICE" "$STATUS" "$VERSION"
-	done
-}
-
-get_SER_STATUS() { # ["SERVICE1 ..."]
-	[[ $1 ]] && SERVICES=$1 || SERVICES="nginx cron mysql tarantool"
-	for SERVICE in $SERVICES; do
-		local VERSION
-		if VERSION=`service_version_$SERVICE 2>/dev/null`; then
-			is_running "$SERVICE"
-			[ $? == 0 ] && STATUS=RUNNING || STATUS="not running"
-		else
-			STATUS=-
-			VERSION=-
-		fi
-		printf "%s\n" $SERVICE $STATUS
+		printf "%s\n" $MACHINE $SERVICE "${STATUS:--}" "${VERSION:--}"
 	done
 }

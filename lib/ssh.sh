@@ -67,7 +67,7 @@ ssh_script_deploy() { # DEPLOY= "SCRIPT"
 	local SCRIPT=$1
 	checkvars SCRIPT-
 	machine_of $DEPLOY; local MACHINE=$R1
-	deploy_vars $DEPLOY
+	deploy_vars
 	ssh_script "
 DEPLOY=$DEPLOY
 ${R1[*]}
@@ -78,7 +78,7 @@ $SCRIPT
 ssh_script_machine() { # MACHINE= "SCRIPT"
 	local SCRIPT=$1
 	checkvars SCRIPT-
-	machine_vars $MACHINE
+	machine_vars
 	ssh_script "
 ${R1[*]}
 $SCRIPT

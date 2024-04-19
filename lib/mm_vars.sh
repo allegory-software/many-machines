@@ -1,6 +1,6 @@
 # var files and dirs with include dirs.
 
-varfile() { # DIR VAR_NAME
+varfile() { # DIR VAR
 	local DIR="$1"
 	local FILE="${2,,}"
 	R1=
@@ -12,24 +12,12 @@ varfile() { # DIR VAR_NAME
 	return 1
 }
 
-cat_varfile() { # DIR VAR_NAME [DEFAULT_VALUE]
+cat_varfile() { # DIR VAR [DEFAULT]
 	if varfile "$1" "$2"; then
 		try_catfile $R1 "$3"
 		return 0
 	fi
 	return 1
-}
-
-cat_varfiles() { # DIR VAR_NAME1 ...
-	local DIR="$1"; shift
-	local LINES=()
-	local VAR
-	for VAR in $@; do
-		if cat_varfile "$DIR" "$VAR"; then
-			LINES+=("${VAR^^}=\"$R1\""$'\n')
-		fi
-	done
-	R1=("${LINES[@]}")
 }
 
 _add_varfiles() { # DIR
@@ -42,8 +30,8 @@ _add_varfiles() { # DIR
 		fi
 	done
 }
-cat_all_varfiles() { # DIR
-	local DIR="$1"
+cat_all_varfiles() { # [LOCAL="local "] DIR
+	local DIR=$1
 	checkvars DIR
 	declare -A R2
 	_add_varfiles $DIR
@@ -54,26 +42,46 @@ cat_all_varfiles() { # DIR
 	R1=()
 	local VAR
 	for VAR in "${!R2[@]}"; do
-		R1+=("$VAR=\"${R2[$VAR]}\""$'\n')
+		R1+=("$LOCAL$VAR=\"${R2[$VAR]}\""$'\n')
 	done
+}
+
+cat_varfiles() { # [LOCAL="local "] DIR [VAR1 ...]
+	local DIR=$1; shift
+	if [[ $1 ]]; then
+		local LINES=()
+		local VAR
+		for VAR in $@; do
+			if cat_varfile "$DIR" "$VAR"; then
+				LINES+=("$LOCAL${VAR^^}=\"$R1\""$'\n')
+			fi
+		done
+		R1=("${LINES[@]}")
+	else
+		cat_all_varfiles "$DIR"
+	fi
 }
 
 # var tables -----------------------------------------------------------------
 
-machine_vars() { # MACHINE|DEPLOY
-	machine_of "$1"; local MACHINE=$R1
-	cat_all_varfiles var/machines/$MACHINE/vars
+machine_vars() { # MACHINE= [VAR1 ...]
+	checkvars MACHINE
+	cat_varfiles var/machines/$MACHINE/vars "$@"
 }
 
-deploy_vars() { # DEPLOY
-	local DEPLOY="$1"
+deploy_vars() { # DEPLOY= [VAR1 ...]
 	machine_of_deploy "$DEPLOY"; local MACHINE=$R1
-	cat_all_varfiles var/deploys/$DEPLOY
+	cat_varfiles var/deploys/$DEPLOY "$@"
 }
 
-deploy_var() { # DPELOY VAR
-	local DEPLOY="$1"
-	local VAR="$2"
+machine_var() { # MACHINE= VAR [DEFAULT]
+	local VAR=$1 DEFAULT=$2
+	checkvars MACHINE VAR
+	cat_varfile var/machines/$MACHINE $VAR "$DEFAULT"
+}
+
+deploy_var() { # DEPLOY= VAR [DEFAULT]
+	local VAR=$1 DEFAULT=$2
 	checkvars DEPLOY VAR
-	cat_varfile var/deploys/$DEPLOY $VAR
+	cat_varfile var/deploys/$DEPLOY $VAR "$DEFAULT"
 }

@@ -2,24 +2,11 @@
 # list machines
 . mmlib
 
-FMT="%-10s %-6s %-15s %s\n"
-
-printf "$FMT" MACHINE ACTIVE PUBLIC_IP DEPLOYS
-
-deploys_on() { # MACHINE
-	active_deploys
-	local ds=()
-	local d; for d in $R1; do
-		machine_of $d
-		[[ $R1 == $1 ]] && ds+=($d)
-	done
-	R1=`IFS=', '; printf "%s" "${ds[*]}"`
+FMT="%-10s %-6s %-15s\n"
+_f() {
+	cat_varfile var/machines/$MACHINE active    ; local ACTIVE=$R1
+	cat_varfile var/machines/$MACHINE public_ip ; local PUBLIC_IP=$R1
+	printf "$FMT" $MACHINE "$ACTIVE" "$PUBLIC_IP"
 }
-
-print_machine() {
-	local IP=`cat var/machines/$1/public_ip`
-	local ACTIVE; [ -f var/machines/$1/active ] && ACTIVE=Y || ACTIVE=-
-	deploys_on $1; local DEPLOYS="$R1"
-	printf "$FMT" "$MACHINE" "$ACTIVE" "$IP" "$DEPLOYS"
-}
-QUIET=1 INACTIVE=1 each_machine "$1" print_machine
+printf "$FMT" MACHINE ACTIVE PUBLIC_IP
+QUIET=1 INACTIVE=1 each_machine _f

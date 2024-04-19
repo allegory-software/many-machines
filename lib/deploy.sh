@@ -1,9 +1,17 @@
 # deploy lib: programs for deployments admin, running as root on a machine administered by mm.
 
+# get it from github: slow.
 get_APP_WANT() {
 	checkvars REPO APP_VERSION
 	local s=$(git ls-remote $REPO refs/heads/$APP_VERSION)
 	echo ${s:0:7}
+}
+
+# get it locally: fast but wrong.
+_get_APP_WANT() {
+	must pushd /home/$DEPLOY/app
+	run_as $DEPLOY git rev-parse --short $APP_VERSION
+	popd
 }
 
 get_APP_DEPL() {
@@ -12,13 +20,17 @@ get_APP_DEPL() {
 	popd
 }
 
+get_APP_LATEST() {
+	[[ `get_APP_WANT` == `get_APP_DEPL` ]] && echo YES || echo NO
+}
+
 get_SDK_DEPL() {
 	must pushd /home/$DEPLOY/app/sdk
 	run_as $DEPLOY git rev-parse --short HEAD
 	popd
 }
 
-get_STATUS() {
+get_APP_STATUS() {
 	app running && echo RUNNING || printf "%s\n" -
 }
 

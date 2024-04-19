@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] SERVICE :: start a service
+# SERVICE :: start a service
 . mmlib
 
 [[ $2 ]] || {
@@ -7,4 +7,4 @@
 	printf "%s\n" $R1
 	exit
 }
-each_machine "$1" ssh_script "service_start \"$2\""
+each_machine ssh_script "service_start $1"

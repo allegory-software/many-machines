@@ -35,11 +35,12 @@ Assignments of form `a=$b` or `a=$(cmd)` do not need quoting.
 [[ str =~ regex   ]]  - string matches regex pattern like ^[0-9]+$ etc.
 [[ str == extglob ]]  - string contains extglob pattern like *(patt), ?(patt), *(patt)*, etc.
 
-[[ -f file ]]  - file exists
-[[ -s file ]]  - file not empty
-[[ -d dir  ]]  - dir exists
-[[ -e name ]]  - file or dir etc. exists
-[[ -w file ]]  - file exists and it's writable
+[[ -f file ]]  - it's a file
+[[ -d dir  ]]  - it's a dir
+[[ -L name ]]  - it's a symlink
+[[ -e name ]]  - it's something
+[[ -s file ]]  - it's a non-empty file
+[[ -w file ]]  - it's a writable file
 ```
 
 ## Special vars

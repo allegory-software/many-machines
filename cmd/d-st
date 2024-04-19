@@ -2,14 +2,4 @@
 # list deployments as found on machines
 . mmlib
 
-machine_deploy_info_header
-try_machine_deploys_info() {
-	local s
-	if s="$(ssh_script $1 "machine_deploys_info" 2>&1)"; then
-		printf "%s\n" "$s"
-	else
-		read -r s <<< "$s" # first line only
-		MACHINE=$1 machine_deploy_info_line_fail "-" "$s"
-	fi
-}
-QUIET=1 each_machine try_machine_deploys_info
+each_deploy_custom_list "%-10s %-10s %-10s %-10s %-10s" "APP_STATUS APP_LATEST APP_WANT APP_DEPL SDK_DEPL"

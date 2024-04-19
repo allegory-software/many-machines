@@ -2,6 +2,11 @@
 # list deployments as found locally and on the git remote
 . mmlib
 
-INACTIVE=1 each_deploy_custom_list \
-	"%-10s %-10s %-10s %-10s %-10s %-10s" \
-	"APP ENV APP_WANT APP_DEPL SDK_DEPL STATUS"
+FMT="%-10s %-10s %-10s %-10s %-10s\n"
+_f() {
+	#LOCAL="local " deploy_vars; eval "${R1[*]}"
+	deploy_var APP; local APP=$R1
+	printf "$FMT" "$MACHINE" "$DEPLOY" "$APP" "$ENV" "$APP_VERSION"
+}
+printf "$FMT" MACHINE DEPLOY APP ENV APP_WANT
+QUIET=1 INACTIVE=1 each_deploy _f

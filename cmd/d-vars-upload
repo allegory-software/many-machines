@@ -1,5 +1,0 @@
-#!/bin/bash
-# ["D1 ..."] :: upload deploy env vars to machine(s)
-. mmlib
-
-each_deploy "$1" deploy_vars_upload

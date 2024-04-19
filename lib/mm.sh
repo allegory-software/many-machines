@@ -40,20 +40,32 @@ ip_of() { # MD -> IP, MACHINE, [DEPLOY]
 	R1=$(cat $R1)
 }
 
+machine_is_active() {
+	machine_var ACTIVE 0
+	[[ $R1 != 0 ]]; return $?
+}
+
+deploy_is_active() {
+	deploy_var ACTIVE 0
+	[[ $R1 != 0 ]]; return $?
+}
+
 active_machines() {
-	R1=
+	local S
 	local MACHINE
 	for MACHINE in `ls -1 var/machines`; do
-		[ "$INACTIVE" != "" -o -f "var/machines/$MACHINE/active" ] && R1+=" $MACHINE"
+		if [[ $INACTIVE ]] || machine_is_active; then  S+=" $MACHINE"; fi
 	done
+	R1=$S
 }
 
 active_deploys() {
-	R1=
+	local S
 	local DEPLOY
 	for DEPLOY in `ls -1 var/deploys`; do
-		[[ "$INACTIVE" != "" || -f var/deploys/$DEPLOY/active ]] && R1+=" $DEPLOY"
+		if [[ $INACTIVE ]] || deploy_is_active; then S+=" $DEPLOY"; fi
 	done
+	R1=$S
 }
 
 each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
@@ -103,7 +115,7 @@ each_deploy() { # [NOT_ALL=] [ALL=] MACHINES="" DEPLOYS= COMMAND ARGS...
 }
 
 _each_deploy_with_domain() {
-	if deploy_var $DEPLOY DOMAIN; then
+	if deploy_var DOMAIN; then
 		local DOMAIN=$R1
 		(DOMAIN=$DOMAIN "$@")
 	fi
