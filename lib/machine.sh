@@ -2,7 +2,6 @@
 
 # machine info ---------------------------------------------------------------
 
-get_OS_VER()      { lsb_release -sd; }
 get_RAM()         { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_RAM()    { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_RAM_KB() { cat /proc/meminfo | awk '/MemAvailable/  { print $2 }'; }
@@ -11,6 +10,7 @@ get_FREE_SWAP()   { cat /proc/meminfo | awk '/SwapFree/      { printf "%.2fG\n",
 get_HDD()         { df -l / | awk '(NR > 1) { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_HDD()    { df -l / | awk '(NR > 1) { printf "%.2fG\n", $4/(1024*1024) }'; }
 get_FREE_HDD_KB() { df -l / | awk '(NR > 1) { print $4 }'; }
+
 get_CPU()         { lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p'; }
 get_CPUS()        { lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p'; }
 get_CPS()         { lscpu | sed -n 's/^Core(s) per socket:\s*\(.*\)/\1/p'; }
@@ -19,9 +19,19 @@ get_CORES()       {
 	local sockets=`get_CPUS`
 	printf "%d\n" $((sockets * cps))
 }
+
+get_UPTIME()   {
+	awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%dd%dh%dm\n",a,b,c)}' /proc/uptime
+}
+
 get_CPUTEST()  {
 	(time cat </dev/urandom | head -c 50M | gzip >/dev/null) 2>&1 | grep real | awk '{print $2}'
 }
+
+get_ISP()     { wget -q -T10 -O- ipinfo.io/org; }
+get_CITY()    { wget -q -T10 -O- ipinfo.io/city; }
+get_COUNTRY() { wget -q -T10 -O- ipinfo.io/country; }
+get_REGION()  { wget -q -T10 -O- ipinfo.io/region; }
 
 os_version() {
 	[ -f /etc/os-release ] || return 1

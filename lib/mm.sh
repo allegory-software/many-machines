@@ -5,6 +5,8 @@ mm_update() {
 	# install globally
 	must ln -sf /opt/mm/mm      /usr/bin/mm
 	must ln -sf /opt/mm/lib/all /usr/bin/mmlib
+	remove_line /opt/mm/mm-autocomplete.sh /root/.bashrc
+	append ". /opt/mm/mm-autocomplete.sh" /root/.bashrc
 }
 
 check_machine() { # MACHINE

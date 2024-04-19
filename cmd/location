@@ -1,0 +1,6 @@
+#!/bin/bash
+# get machine location info
+MM_LIBS="iotest"
+. mmlib
+
+each_machine_custom_list "%-20s %-10s %-16s %s" "CITY COUNTRY REGION ISP"
