@@ -4,4 +4,4 @@
 
 INACTIVE=1 each_deploy_custom_list \
 	"%-10s %-10s %-10s %-10s %-10s %-10s" \
-	APP ENV APP_WANT APP_DEPL SDK_DEPL STATUS
+	"APP ENV APP_WANT APP_DEPL SDK_DEPL STATUS"

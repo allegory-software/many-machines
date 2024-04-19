@@ -57,3 +57,23 @@ cat_all_varfiles() { # DIR
 		R1+=("$VAR=\"${R2[$VAR]}\""$'\n')
 	done
 }
+
+# var tables -----------------------------------------------------------------
+
+machine_vars() { # MACHINE|DEPLOY
+	machine_of "$1"; local MACHINE=$R1
+	cat_all_varfiles var/machines/$MACHINE/vars
+}
+
+deploy_vars() { # DEPLOY
+	local DEPLOY="$1"
+	machine_of_deploy "$DEPLOY"; local MACHINE=$R1
+	cat_all_varfiles var/deploys/$DEPLOY
+}
+
+deploy_var() { # DPELOY VAR
+	local DEPLOY="$1"
+	local VAR="$2"
+	checkvars DEPLOY VAR
+	cat_varfile var/deploys/$DEPLOY $VAR
+}

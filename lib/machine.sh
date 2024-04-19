@@ -111,7 +111,7 @@ service_status_header() {
 	printf "$SS_FMT" MACHINE SERVICE STATUS VERSION
 }
 service_status() { # [SERVICES]
-	[ "$1" ] && SERVICES=$1 || SERVICES="nginx cron mysql tarantool"
+	[[ $1 ]] && SERVICES=$1 || SERVICES="nginx cron mysql tarantool"
 	for SERVICE in $SERVICES; do
 		local VERSION
 		if VERSION=`service_version_$SERVICE 2>/dev/null`; then
@@ -122,5 +122,20 @@ service_status() { # [SERVICES]
 			VERSION=-
 		fi
 		printf "$SS_FMT" "$MACHINE" "$SERVICE" "$STATUS" "$VERSION"
+	done
+}
+
+get_SER_STATUS() { # ["SERVICE1 ..."]
+	[[ $1 ]] && SERVICES=$1 || SERVICES="nginx cron mysql tarantool"
+	for SERVICE in $SERVICES; do
+		local VERSION
+		if VERSION=`service_version_$SERVICE 2>/dev/null`; then
+			is_running "$SERVICE"
+			[ $? == 0 ] && STATUS=RUNNING || STATUS="not running"
+		else
+			STATUS=-
+			VERSION=-
+		fi
+		printf "%s\n" $SERVICE $STATUS
 	done
 }

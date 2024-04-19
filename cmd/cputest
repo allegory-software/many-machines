@@ -2,4 +2,4 @@
 # run a quick CPU load and time it
 . mmlib
 
-each_machine_custom_list "%-10s %-5s %-5s %-30s" CPUTEST CPUS CORES CPU
+each_machine_custom_list "%-10s %-5s %-5s %-30s" "CPUTEST CPUS CORES CPU"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] ["SERVICE1 ..."] :: print service(s) status
+# ["SERVICE1 ..."] :: print service(s) status
 . mmlib
 
 service_status_header
