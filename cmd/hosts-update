@@ -5,13 +5,15 @@
 remove_line '# added by mm' /etc/hosts
 
 update_host() {
-	ip_of $1; local IP=$R1; local MACHINE=$R2
-	append "$(printf "%-20s %-20s %s" $IP $1 "# added by mm")"$'\n' /etc/hosts
+	ip_of $MACHINE; local IP=$R1
+	printf -v s "%-20s %-20s %s\n" "$IP" "${DEPLOY:-$MACHINE}" "# added by mm"
+	append "$s" /etc/hosts
 	must catfile var/machines/$MACHINE/ssh_hostkey
-	#append "$R1"$'\n' ~/.ssh/known_hosts
+	remove_line "$R1" ~/.ssh/known_hosts
+	append "$R1"$'\n' ~/.ssh/known_hosts
 }
-each_machine "" update_host
-each_deploy  "" update_host
+each_machine update_host
+each_deploy  update_host
 
-# NOTE: For hosts that don't have the latest mm ssh pubkey, use `mm ssh` or `mm ssh-pubkey-update`.
+# NOTE: For hosts that don't have the latest mm ssh pubkey, use `mm ssh` or run `mm pubkey-update`.
 cp_file var/ssh_key-mm-$HOSTNAME   ~/.ssh/id_rsa

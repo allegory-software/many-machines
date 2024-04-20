@@ -1,4 +1,3 @@
 #!/bin/bash
 # TOOLS || run htop on machine(s)
-MD="$1"; shift
-mm ssh-tty "$MD" htop "$@"
+mm ssh-tty htop "$@"

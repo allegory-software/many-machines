@@ -75,6 +75,7 @@ active_deploys() {
 each_machine() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS...
 	declare -A mm
 	local M D
+	local MACHINES="$MACHINES"
 	for M in $MACHINES; do
 		check_machine $M
 		mm[$M]=1
@@ -105,6 +106,7 @@ each_machine() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS
 
 each_deploy() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES="" DEPLOYS= COMMAND ARGS...
 	[[ $MACHINES ]] && die "Invalid deploy(s): $MACHINES"
+	local DEPLOYS="$DEPLOYS"
 	if [[ $DEPLOYS ]]; then
 		for DEPLOY in $DEPLOYS; do
 			check_deploy $DEPLOY
