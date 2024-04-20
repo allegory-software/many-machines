@@ -1,0 +1,42 @@
+#!/bin/bash
+# DIAG || find and report problems
+. mmlib
+
+MIN_FREE_HDD_KB=$((1024 * 1000)) # 1 GB
+MIN_FREE_RAM_KB=$((1024 *  300)) # 200 MB
+
+nag "Checking for offline machines (port 22) ..."
+ONLINE=
+OFFLINE=
+_f() {
+	machine_var PUBLIC_IP
+	if PUBLIC_IP=$R1 is_listening 22; then
+		ONLINE+=" $MACHINE"
+	else
+		OFFLINE+=" $MACHINE"
+	fi
+}
+QUIET=1 each_machine _f
+[[ $OFFLINE ]] && say "OFFLINE (port 22): $OFFLINE"
+
+# work only with online machines from here on.
+MACHINES=$ONLINE
+
+_add_full() {
+	local FREE_${1}_KB=`ssh_script "get_FREE_${1}_KB"`
+	(( FREE_${1}_KB < MIN_FREE_${1}_KB )) && FULL+=" $MACHINE"
+}
+check_full() {
+	nag "Checking for $1 full (< $((MIN_FREE_${1}_KB / 1024)) MB) ..."
+	local FULL=
+	QUIET=1 NOTRY=1 each_machine _add_full $1
+	[[ $FULL ]] && say "$1 FULL (< $((MIN_FREE_${1}_KB / 1024)) MB):$FULL"
+}
+check_full HDD
+check_full RAM
+
+nag "Checking for services that are down ..."
+mm status | grep !
+
+nag "Checking for deployments that are down or need updating ..."
+mm d-st | grep !

@@ -2,7 +2,7 @@
 # SERVICES | SERVICE | start a service
 . mmlib
 
-[[ $2 ]] || {
+[[ ! $1 ]] && {
 	functions_with_prefix start_
 	printf "%s\n" $R1
 	exit

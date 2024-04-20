@@ -1,0 +1,9 @@
+#!/bin/bash
+# INFO || ping machine
+. mmlib
+
+_f() {
+	must machine_var PUBLIC_IP
+	ping "$@" $R1
+}
+each_machine _f "$@"

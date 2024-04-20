@@ -10,9 +10,9 @@ kf=var/ssh_key-$KEYNAME
 	cp_file ~/.ssh/id_rsa $kf
 	ssh-keygen -y -f $kf > $kf.pub
 }
-catfile $kf.pub; PUBKEY="$R1"
+must catfile $kf.pub; PUBKEY="$R1"
 
-_update() {
+_f() {
 	local UP_PUBKEY="$(must ssh_script $1 "ssh_pubkey root $KEYNAME; true")"
 	if [ "$UP_PUBKEY" == "$PUBKEY" ]; then
 		say "SSH public key '$KEYNAME' is there and it's the same."
@@ -21,4 +21,4 @@ _update() {
 		cp_file $kf  var/machines/$1/ssh_key-$KEYNAME
 	fi
 }
-each_machine "$1" _update
+each_machine _f

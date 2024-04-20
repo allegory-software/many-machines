@@ -5,5 +5,5 @@
 tfile=var/acme_thumbprint
 acme_sh --register-account 2>&1 | tee >(must sed -n "s/.*ACCOUNT_THUMBPRINT='\(.*\)'/\1/p" > $tfile.new) || exit $?
 mv_file_with_backup $tfile.new $tfile
-catfile $tfile
+must catfile $tfile
 say; say "Extracted acme_thumbprint: $R1"

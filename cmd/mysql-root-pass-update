@@ -3,7 +3,7 @@
 . mmlib
 
 FILE=var/mysql_root_pass
-catfile $FILE; PASS=$R1
+must catfile $FILE; PASS=$R1
 
 update_root_pass() {
 	ssh_script "$1" "

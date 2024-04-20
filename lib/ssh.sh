@@ -25,64 +25,56 @@ ssh_to() { # MACHINE= COMMAND ARGS...
 	run "${cmd[@]}" "${args[@]}" || die "MACHINE=$MACHINE ssh_to: [$?]"
 }
 
-ssh_bash() { # MACHINE= COMMAND ARGS...
-	ssh_cmd; local cmd=("${R1[@]}")
-	quote_args "$@"; local args=("${R1[@]}")
-	must "${cmd[@]}" bash -c "\"${args[*]}\""
-}
-
-ssh_script() { # MACHINE= "SCRIPT"
-	local SCRIPT=$1
-	checkvars SCRIPT-
+ssh_script() { # [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ..."] "SCRIPT" ARGS...
+	local SCRIPT=$1; shift
+	checkvars MACHINE SCRIPT-
+	quote_args "$@"; local ARGS="${R1[*]}"
+	ssh_cmd; local ssh_cmd=("${R1[@]}")
+	[[ $FUNCS ]] && local FUNCS=$(declare -f $FUNCS)
+	local VARS=$(declare -p DEBUG VERBOSE MACHINE MM_LIBS $VARS 2>/dev/null)
 	if [ "$MM_DEBUG_LIB" ]; then
 		# rsync lib to machine and load from there:
 		# slower (takes ~1s) but reports line numbers correctly on errors.
 		QUIET=1 SRC_DIR=lib    DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
 		QUIET=1 SRC_DIR=libopt DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
-		ssh_to bash -s <<< "
-MM_LIBS=\"$MM_LIBS\"
+		run "${ssh_cmd[@]}" bash -s <<< "
+$VARS
+$FUNCS
 . /root/.mm/lib/all
-MACHINE=$MACHINE
-VERBOSE=$VERBOSE
-DEBUG=$DEBUG
-$SCRIPT
+$SCRIPT $ARGS
 "
 	else
 		# include lib contents in the script:
 		# faster but doesn't report line numbers correctly on errors in lib code.
-		ssh_to bash -s <<< "
+		run "${ssh_cmd[@]}" bash -s <<< "
+$VARS
 set -f # disable globbing
 set -o pipefail
 $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
 $(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)
-MACHINE=$MACHINE
-VERBOSE=$VERBOSE
-DEBUG=$DEBUG
-$SCRIPT
+$FUNCS
+$SCRIPT $ARGS
 "
 	fi
 }
 
-ssh_script_deploy() { # DEPLOY= "SCRIPT"
-	local SCRIPT=$1
-	checkvars SCRIPT-
-	machine_of $DEPLOY; local MACHINE=$R1
-	deploy_vars
-	ssh_script "
-DEPLOY=$DEPLOY
-${R1[*]}
-$SCRIPT
-"
-}
-
-ssh_script_machine() { # MACHINE= "SCRIPT"
-	local SCRIPT=$1
+ssh_script_machine() { # MACHINE= "SCRIPT" ARGS...
+	local SCRIPT=$1; shift
 	checkvars SCRIPT-
 	machine_vars
 	ssh_script "
 ${R1[*]}
-$SCRIPT
-"
+$SCRIPT" "$@"
+}
+
+ssh_script_deploy() { # DEPLOY= "SCRIPT" ARGS...
+	local SCRIPT=$1; shift
+	checkvars SCRIPT-
+	machine_of $DEPLOY; local MACHINE=$R1
+	deploy_vars
+	VARS="DEPLOY $VARS" ssh_script "
+${R1[*]}
+$SCRIPT" "$@"
 }
 
 # ssh config -----------------------------------------------------------------

@@ -1,9 +1,12 @@
 #!/bin/bash
-# TOOLS | please | decrypt and unpack var dir
+# BACKUP | please | decrypt and unpack var dir
 . mmlib
 
 [[ $1 == please ]] || die "Say please"
 must gpg --decrypt --batch --yes --passphrase-file var-secret var.tar.gz.gpg > var.tar.gz
-must tar xzf var.tar.gz --overwrite
+must mkdir var.new
+must tar xzf var.tar.gz -C var.new --overwrite
 must rm var.tar.gz
+must mv --backup=numbered var.new/var .
+must rmdir var.new
 must chmod 770 var

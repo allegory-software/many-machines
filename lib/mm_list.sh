@@ -2,11 +2,9 @@
 
 _machine_ssh_list() {
 	local FUNC=$1 FMT=$2 FIELDS=$3; shift 3
-	quote_args "$@"
-	local ARGS=("${R1[@]}")
 	local VALS
 	(
-	if VALS=$(ssh_script_machine "FIELDS=\"$FIELDS\" $FUNC ${ARGS[*]}"); then
+	if VALS=$(VARS=FIELDS ssh_script_machine $FUNC "$@"); then
 		local IFS0="$IFS"; IFS=$'\n'
 		printf "%-10s $FMT\n" $VALS
 		IFS="$IFS0"
@@ -16,7 +14,7 @@ _machine_ssh_list() {
 	) &
 	wait
 }
-each_machine_ssh_list() { # LIST_FUNC PRINTF_FIELDS_FORMAT "FIELD1_NAME ..." LIST_FUNC_ARGS...
+each_machine_ssh_list() { # LIST_FUNC FMT "FIELD1 ..." LIST_FUNC_ARGS...
 	local FUNC=$1 FMT=$2 FIELDS=$3
 	checkvars FUNC FMT- FIELDS-
 	printf "%-10s $FMT\n" MACHINE $FIELDS
@@ -25,11 +23,9 @@ each_machine_ssh_list() { # LIST_FUNC PRINTF_FIELDS_FORMAT "FIELD1_NAME ..." LIS
 
 _deploy_ssh_list() {
 	local FUNC=$1 FMT=$2 FIELDS=$3; shift 3
-	quote_args "$@"
-	local ARGS=("${R1[@]}")
 	local VALS
 	(
-	if VALS=$(ssh_script_deploy "FIELDS=\"$FIELDS\" $FUNC ${ARGS[*]}"); then
+	if VALS=$(VARS=FIELDS ssh_script_deploy $FUNC "$@"); then
 		local IFS0="$IFS"; IFS=$'\n'
 		printf "%-10s %-10s $FMT\n" $VALS
 		IFS="$IFS0"
@@ -39,7 +35,7 @@ _deploy_ssh_list() {
 	) &
 	wait
 }
-each_deploy_ssh_list() { # LIST_FUNC PRINTF_FIELDS_FORMAT "FIELD1_NAME ..." LIST_FUNC_ARGS...
+each_deploy_ssh_list() { # LIST_FUNC FMT "FIELD1 ..." LIST_FUNC_ARGS...
 	local FUNC=$1 FMT=$2 FIELDS=$3
 	checkvars FUNC FMT- FIELDS-
 	printf "%-10s %-10s $FMT\n" MACHINE DEPLOY $FIELDS
@@ -48,9 +44,9 @@ each_deploy_ssh_list() { # LIST_FUNC PRINTF_FIELDS_FORMAT "FIELD1_NAME ..." LIST
 
 # listings with configurable field lists -------------------------------------
 
-_custom_list_get_values() { # FIELD1 ...
+_custom_list_get_values() { # "FIELD1 ..."
 	local FIELD
-	for FIELD in "$@"; do
+	for FIELD in $1; do
 		local VAL
 		if declare -f get_${FIELD} > /dev/null; then
 			VAL=`get_${FIELD}`
@@ -58,12 +54,14 @@ _custom_list_get_values() { # FIELD1 ...
 			VAL=${!FIELD}
 		fi
 		VAL=${VAL:- } # can't echo an empty line, it will get skipped when line-splitting.
+		#local MIN=${!MIN_$FIELD}
+		#[[ $MIN ]] && ((VAL < MIN)) && continue
 		printf "%s\n" "$VAL"
 	done
 }
 _machine_custom_list() {
 	echo $MACHINE
-	_custom_list_get_values $FIELDS
+	_custom_list_get_values "$FIELDS"
 }
 each_machine_custom_list() { # FMT "FIELD1 ..."
 	each_machine_ssh_list _machine_custom_list "$@"
@@ -72,7 +70,7 @@ each_machine_custom_list() { # FMT "FIELD1 ..."
 _deploy_custom_list() {
 	echo $MACHINE
 	echo $DEPLOY
-	_custom_list_get_values $FIELDS
+	_custom_list_get_values "$FIELDS"
 }
 each_deploy_custom_list() { # FMT "FIELD1 ..."
 	each_deploy_ssh_list _deploy_custom_list "$@"

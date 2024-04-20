@@ -13,11 +13,8 @@ varfile() { # DIR VAR
 }
 
 cat_varfile() { # DIR VAR [DEFAULT]
-	if varfile "$1" "$2"; then
-		try_catfile $R1 "$3"
-		return 0
-	fi
-	return 1
+	varfile "$1" "$2" || return 1
+	catfile $R1 "$3"
 }
 
 _add_varfiles() { # DIR
@@ -25,7 +22,7 @@ _add_varfiles() { # DIR
 	for FILE in `ls -1Lp $1 | grep -v /`; do # list files & file symlinks only (and no dotfiles)
 		local VAR="${FILE^^}"
 		if [[ ! -v R2[$VAR] ]]; then
-			catfile $1/$FILE
+			must catfile $1/$FILE
 			R2[$VAR]="$R1"
 		fi
 	done

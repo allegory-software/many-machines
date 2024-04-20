@@ -2,8 +2,8 @@
 # MYSQL || list MySQL databases
 . mmlib
 
-print_dbs() {
-	ssh_script $1 "MYSQL_PRETTY=1 query \"
+_f() {
+	ssh_script "MYSQL_PRETTY=1 query" "
 select
 	schema_name as db,
 	default_character_set_name as charset,
@@ -12,7 +12,6 @@ from
 	information_schema.schemata
 where
 	schema_name not in ('mysql', 'information_schema', 'performance_schema', 'sys')
-\"
 "
 }
-each_machine print_dbs
+each_machine _f

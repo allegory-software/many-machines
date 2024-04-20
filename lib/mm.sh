@@ -70,6 +70,7 @@ active_deploys() {
 	R1=$S
 }
 
+# NOTE: set NOT_ALL=1 in scripts for dangerous commands. User will set ALL=1 to override.
 each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 	declare -A mm
 	local M D
@@ -92,8 +93,12 @@ each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 	local CMD="$1"; shift
 	local MACHINE
 	for MACHINE in $MACHINES; do
-		[ "$QUIET" ] || say "On machine $MACHINE:"
-		("$CMD" "$@")
+		[[ $QUIET ]] || say "On machine $MACHINE:"
+		if [[ $NOTRY ]]; then
+			"$CMD" "$@"
+		else
+			("$CMD" "$@")
+		fi
 	done
 }
 

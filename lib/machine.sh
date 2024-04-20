@@ -1,5 +1,11 @@
 # machine lib: programs running as root on a machine administered by mm.
 
+is_listening() {
+	local PORT=$1
+	checkvars PUBLIC_IP PORT
+	nc -zw1 $PUBLIC_IP $1
+}
+
 # machine info ---------------------------------------------------------------
 
 get_RAM()         { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024) }'; }
@@ -165,8 +171,7 @@ service_status() { # ["SERVICE1 ..."]
 	for SERVICE in $SERVICES; do
 		local VERSION
 		if VERSION=`version_$SERVICE 2>/dev/null`; then
-			is_running "$SERVICE"
-			[ $? == 0 ] && STATUS=UP || STATUS=DOWN!
+			is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
 		fi
 		printf "%s\n" $MACHINE $SERVICE "${STATUS:--}" "${VERSION:--}"
 	done

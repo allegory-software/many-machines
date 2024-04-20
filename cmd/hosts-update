@@ -7,7 +7,7 @@ remove_line '# added by mm' /etc/hosts
 update_host() {
 	ip_of $1; local IP=$R1; local MACHINE=$R2
 	append "$(printf "%-20s %-20s %s" $IP $1 "# added by mm")"$'\n' /etc/hosts
-	catfile var/machines/$MACHINE/ssh_hostkey
+	must catfile var/machines/$MACHINE/ssh_hostkey
 	#append "$R1"$'\n' ~/.ssh/known_hosts
 }
 each_machine "" update_host

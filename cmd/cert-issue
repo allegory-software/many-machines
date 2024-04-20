@@ -5,6 +5,6 @@ DEPLOYS="$1"; shift
 
 _f() {
 	acme_ca_upload
-	ssh_script_deploy "acme_issue_cert \$DOMAIN"
+	ssh_script_deploy 'acme_issue_cert $DOMAIN'
 }
 each_deploy_with_domain _f

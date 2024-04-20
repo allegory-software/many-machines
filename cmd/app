@@ -2,8 +2,4 @@
 # DEPLOY | ... | run the deployed app
 . mmlib
 
-_f() {
-	quote_args "$@"
-	ssh_script_deploy "app ${R1[*]}"
-}
-each_deploy _f "$@"
+each_deploy ssh_script_deploy app "$@"

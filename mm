@@ -1,17 +1,18 @@
 #!/bin/bash
 cd /opt/mm || exit 1
 
+set -f # disable globbing
+set -o pipefail
+
 export DEPLOYS
 export MACHINES
 
-trim() { # VARNAME
-	read -rd '' $1 <<<"${!1}"
-}
+. lib/die.sh
 
 usage() {
-	echo >&2
-	echo "Usage: mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS..." >&2
-	echo >&2
+	say
+	say "Usage: mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS..."
+	say
 }
 
 main() {
@@ -27,8 +28,11 @@ while [[ $# > 0 ]]; do
 	elif [[ -d var/machines/$1 ]]; then
 		[[ ! ${mm[$1]} ]] && { MACHINES+=" $1"; mm[$1]=1; }
 		shift
+	elif [[ $1 == -v ]]; then
+		export VERBOSE=1
+		shift
 	else
-		echo "Invalid DEPLOY, MACHINE or COMMAND: $1" >&2
+		say "Invalid DEPLOY, MACHINE or COMMAND: $1"
 		usage
 		exit 1
 	fi
@@ -69,4 +73,3 @@ done
 }
 
 main "$@"
-

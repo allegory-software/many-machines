@@ -4,34 +4,24 @@ pushd() { command pushd "$@" > /dev/null; }
 popd()  { command popd  "$@" > /dev/null; }
 
 check_abs_filepath() {
-	[ "${1:0:1}" == "/" ] || die "path not absolute: $1"
-	[ "${1: -1}" == "/" ] && die "path ends in slash: $1"
+	[[ "${1:0:1}" == "/" ]] || die "path not absolute: $1"
+	[[ "${1: -1}" == "/" ]] && die "path ends in slash: $1"
 }
 
 checkfile() {
-    [ -f "$1" ] || die "File not found: $1"
-    R1="$1"
+	[[ -f $1 ]] || die "File not found: $1"
+	R1=$1
 }
 
 # NOTE: trims content!
-catfile() { # FILE
-	local FILE="$1"; checkvars FILE
+catfile() { # FILE [DEFAULT]
+	local FILE=$1 DEFAULT=$2; checkvars FILE
 	# NOTE: this is faster than "$(cat $FILE)".
 	# it fails if the file contains \0 but we can't store \0
 	# in bash vars anyway so just don't read binary files with this!
-	[ -f "$FILE" ] || die "catfile $FILE [$?]"
+	[[ -f $FILE ]] || { R1=$DEFAULT; trim R1; return 1; }
 	IFS= read -r -d '' R1 < "$FILE" # read exits with 1 because it hits EOF
 	trim R1
-}
-
-# NOTE: trims content!
-try_catfile() { # FILE [DEFAULT]
-	local FILE="$1"; checkvars FILE
-	if [ ! -f "$FILE" ]; then
-		R1="$2"; trim R1
-	else
-		catfile "$FILE"
-	fi
 }
 
 rm_dir() { # DIR

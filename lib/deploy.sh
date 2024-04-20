@@ -21,7 +21,7 @@ get_APP_DEPL() {
 }
 
 get_APP_LATEST() {
-	[[ `get_APP_WANT` == `get_APP_DEPL` ]] && echo YES || echo NO
+	[[ `get_APP_WANT` == `get_APP_DEPL` ]] && echo YES || echo NO!
 }
 
 get_SDK_DEPL() {
@@ -31,7 +31,7 @@ get_SDK_DEPL() {
 }
 
 get_APP_STATUS() {
-	app running && echo RUNNING || printf "%s\n" -
+	app running && echo RUNNING || echo DOWN!
 }
 
 deploy_remove() { # DEPLOY DOMAIN=

@@ -1,4 +1,6 @@
 /var
+/var.~*~
+/var0
 /var-secret
 /var.tar.*
 *.deb

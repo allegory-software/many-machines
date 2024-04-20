@@ -1,11 +1,11 @@
 #!/bin/bash
-# MYSQL | TABLE | list MySQL columns
+# MYSQL | [DB=] TABLE | list MySQL columns
 . mmlib
 
 TABLE="$1"
 checkvars TABLE
 
 list_cols() {
-	ssh_script "MYSQL_PRETTY=1 query_on $DEPLOY 'show columns from $TABLE'"
+	ssh_script "MYSQL_PRETTY=1 query_on ${DB:-$DEPLOY} 'show columns from $TABLE'"
 }
 each_deploy list_cols $TABLE
