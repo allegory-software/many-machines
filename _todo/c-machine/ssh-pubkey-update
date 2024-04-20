@@ -1,5 +1,0 @@
-#!/bin/bash
-# KEYNAME "PUBKEY" ["USER1 ..."] :: update a ssh public key on root and all deploy users
-. mmlib
-
-ssh_pubkey_update "$@"

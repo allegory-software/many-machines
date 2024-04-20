@@ -1,5 +1,0 @@
-#!/bin/bash
-# list MySQL databases
-. mmlib
-
-mysql_dbs

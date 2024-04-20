@@ -1,8 +1,0 @@
-#!/bin/bash
-# [KEYNAME=mm] [USER] :: print a ssh public key
-. mmlib
-
-KEYNAME=mm
-[ "$1" ] && KEYNAME="$1"
-[ "$2" ] && USER="$2"
-ssh_pubkey_for_user "$USER" "$KEYNAME"

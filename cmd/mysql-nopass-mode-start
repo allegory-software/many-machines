@@ -1,9 +1,13 @@
 #!/bin/bash
-# restart MySQL in skip-grant-tables mode
+# MYSQL || restart MySQL in skip-grant-tables mode
 . mmlib
 
+_f() {
 service_stop mysql
 mysql_config nopass "
 skip-grant-tables
 "
 service_start mysql
+}
+NOALL=1 each_machine _f
+

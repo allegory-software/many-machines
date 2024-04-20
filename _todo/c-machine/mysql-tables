@@ -1,6 +1,0 @@
-#!/bin/bash
-# [DB] :: list MySQL tables
-. mmlib
-
-DB="$1"; checkvars DB
-mysql_tables "$DB"

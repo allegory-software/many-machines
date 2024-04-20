@@ -1,5 +1,0 @@
-#!/bin/bash
-# print MySQL root password
-. mmlib
-
-echo $MYSQL_ROOT_PASS

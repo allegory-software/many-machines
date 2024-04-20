@@ -1,5 +1,5 @@
 #!/bin/bash
-# DIR :: start a service
+# TOOLS | DIR | compute dir SHA
 . mmlib
 
 sha_dir "$1"

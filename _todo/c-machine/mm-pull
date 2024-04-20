@@ -1,6 +1,0 @@
-#!/bin/bash
-# pull mm
-. mmlib
-
-#git reset --hard HEAD
-must git pull

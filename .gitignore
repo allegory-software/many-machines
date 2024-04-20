@@ -1,11 +1,6 @@
-/var
-/var.~*~
-/var0
-/var-secret
-/var.tar.*
+/var*
 *.deb
 *.tgz
 *.tar
 *.tar.*
-/vars
 /tmp

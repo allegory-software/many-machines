@@ -2,5 +2,5 @@
 # UPDATE || update mc config on machines
 . mmlib
 
-each_machine "$1" mc_conf_upload
+each_machine mc_conf_upload
 

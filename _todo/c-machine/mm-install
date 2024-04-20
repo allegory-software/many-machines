@@ -1,7 +1,0 @@
-#!/bin/bash
-# install mm locally
-. /opt/mm/lib/all
-
-must ln -sf /opt/mm/mma     /usr/bin/mma
-must ln -sf /opt/mm/mm      /usr/bin/mm
-must ln -sf /opt/mm/lib/all /usr/bin/mmlib
