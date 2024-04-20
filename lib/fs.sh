@@ -96,8 +96,9 @@ sha_dir() { # DIR
 dir_lean_size() { # DIR
 	local DIR="$1"
 	checkvars DIR
-	local s="$(find $DIR -type f -links 1 -printf "%s\n" | awk '{s=s+$1} END {print s}')"; local ret=$?
-	[ $ret != 0 ] && die "dir_lean_size: [$ret]"
+	local s
+	s=$(find $DIR -type f -links 1 -printf "%s\n" | awk '{s=s+$1} END {printf "%d\n", s}' | numfmt --to=iec) \
+		 || die "dir_lean_size: [$ret]"
 	[ "$s" ] || s=0
 	echo "$s"
 }

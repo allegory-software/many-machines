@@ -12,6 +12,12 @@ It also makes it easy to see which vars allow spaces and which do not.
 
 Assignments of form `a=$b` or `a=$(cmd)` do not need quoting.
 
+## Var scope
+
+Variables are not exported by default, i.e. they are not inherited
+by exec'ed programs. However, they are always inherited by functions
+both locals and globals, including inside sub-processes created with `()`.
+
 ## Unsafe constructs
 
 `[ "$VAR" ]` is not safe (what if VAR is "-z" ?), use `[[ $VAR ]]` instead.

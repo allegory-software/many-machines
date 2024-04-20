@@ -6,6 +6,8 @@ TABLE="$1"
 checkvars TABLE
 
 list_cols() {
-	ssh_script "MYSQL_PRETTY=1 query_on ${DB:-$DEPLOY} 'show columns from $TABLE'"
+	local DB=${DB:-$DEPLOY}
+	checkvars DB
+	ssh_script "MYSQL_PRETTY=1 query_on $DB 'show columns from $TABLE'"
 }
-each_deploy list_cols $TABLE
+each_deploy_or_machine list_cols $TABLE
