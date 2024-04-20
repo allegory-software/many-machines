@@ -60,48 +60,6 @@ get_DEPLOYS() {
 	printf "%s\n" "${s//$'\n'/ }"
 }
 
-# machine prepare ------------------------------------------------------------
-
-install_libssl1() {
-	os_version
-	say -n "Installing OpenSSL 1.1 ... "
-	dpkg-query -l libssl1.1 2>/dev/null >/dev/null && { say "already installed."; return 0; }
-	[[ $R1 == ubuntu && $R2 == 22.* ]] || { 
-		say "NYI for OS: $R1 $R2."
-		return 0
-	}
-	say
-	local pkg=libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
-	must wget -q http://nz2.archive.ubuntu.com/ubuntu/pool/main/o/openssl/$pkg
-	dpkg_i $pkg
-}
-
-machine_set_hostname() { # machine
-	local HOST=$1
-	checkvars HOST
-	say "Setting machine hostname to: $HOST..."
-	must hostnamectl set-hostname $HOST
-	must sed -i '/^127.0.0.1/d' /etc/hosts
-	append "\
-127.0.0.1 $HOST $HOST
-127.0.0.1 localhost
-" /etc/hosts
-}
-
-machine_set_timezone() { # tz
-	local TZ=$1
-	checkvars TZ
-	say "Setting machine timezone to: $TZ...."
-	must timedatectl set-timezone "$TZ" # sets /etc/localtime and /etc/timezone
-}
-
-machine_rename() { # OLD_MACHINE NEW_MACHINE
-	local OLD_MACHINE=$1
-	local NEW_MACHINE=$2
-	checkvars OLD_MACHINE NEW_MACHINE
-	machine_set_hostname "$NEW_MACHINE"
-}
-
 # components -----------------------------------------------------------------
 
 package_version() { # PACKAGE

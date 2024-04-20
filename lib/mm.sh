@@ -1,6 +1,6 @@
 # mm lib: functions reading var/machines and var/deploys on the mm machine.
 
-mm_update() {
+install_mm() {
 	git_clone_for root git@github.com:allegory-software/many-machines2 /opt/mm master mm
 	# install globally
 	must ln -sf /opt/mm/mm      /usr/bin/mm
@@ -71,7 +71,7 @@ active_deploys() {
 }
 
 # NOTE: set NOALL=1 in scripts for dangerous commands. User will set ALL=1 to override.
-each_machine() { # [NOALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
+each_machine() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS...
 	declare -A mm
 	local M D
 	for M in $MACHINES; do
@@ -94,7 +94,7 @@ each_machine() { # [NOALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 	local MACHINE
 	for MACHINE in $MACHINES; do
 		[[ $QUIET ]] || say "On machine $MACHINE:"
-		if [[ $NOTRY ]]; then
+		if [[ $NOSUBPROC ]]; then
 			"$CMD" "$@"
 		else
 			("$CMD" "$@")
@@ -102,7 +102,7 @@ each_machine() { # [NOALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 	done
 }
 
-each_deploy() { # [NOALL=] [ALL=] MACHINES="" DEPLOYS= COMMAND ARGS...
+each_deploy() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES="" DEPLOYS= COMMAND ARGS...
 	[[ $MACHINES ]] && die "Invalid deploy(s): $MACHINES"
 	if [[ $DEPLOYS ]]; then
 		for DEPLOY in $DEPLOYS; do
@@ -111,13 +111,17 @@ each_deploy() { # [NOALL=] [ALL=] MACHINES="" DEPLOYS= COMMAND ARGS...
 	else
 		[[ $NOALL && ! $ALL ]] && die "DEPLOY(s) required"
 		active_deploys
-		DEPLOYS="$R1"
+		DEPLOYS=$R1
 	fi
-	local CMD="$1"; shift
+	local CMD=$1; shift
 	for DEPLOY in $DEPLOYS; do
 		machine_of $DEPLOY
-		[ "$QUIET" ] || say "On deploy $DEPLOY:"
-		(MACHINE=$R1 "$CMD" "$@")
+		[[ $QUIET ]] || say "On deploy $DEPLOY:"
+		if [[ $NOSUBPROC ]]; then
+			MACHINE=$R1 "$CMD" "$@"
+		else
+			(MACHINE=$R1 "$CMD" "$@")
+		fi
 	done
 }
 

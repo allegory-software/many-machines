@@ -1,11 +1,14 @@
 # apt wrappers
 
-package_install() { # PACKAGE
-	if declare -F "install_${1}" > /dev/null; then
-		install_${1}
-	else
-		apt_get_install $1
-	fi
+package_install() { # PACKAGE1 ...
+	local pkg
+	for pkg in "$@"; do
+		if declare -F "install_${pkg}" > /dev/null; then
+			install_${pkg}
+		else
+			apt_get_install "$pkg"
+		fi
+	done
 }
 
 install_apt() {

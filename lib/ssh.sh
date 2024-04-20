@@ -19,13 +19,13 @@ ssh_cmd() { # MACHINE= HOST=
 	R1+=(root@$HOST)
 }
 
-ssh_to() { # MACHINE= COMMAND ARGS...
+ssh_to() { # [AS_USER=] MACHINE= COMMAND ARGS...
 	ssh_cmd; local cmd=("${R1[@]}")
 	quote_args "$@"; local args=("${R1[@]}")
-	run "${cmd[@]}" "${args[@]}" || die "MACHINE=$MACHINE ssh_to: [$?]"
+	run "${cmd[@]}" ${AS_USER:+sudo -u $AS_USER} "${args[@]}" || die "MACHINE=$MACHINE ssh_to: [$?]"
 }
 
-ssh_script() { # [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ..."] "SCRIPT" ARGS...
+ssh_script() { # [AS_USER=] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ..."] "SCRIPT" ARGS...
 	local SCRIPT=$1; shift
 	checkvars MACHINE SCRIPT-
 	quote_args "$@"; local ARGS="${R1[*]}"
@@ -37,7 +37,7 @@ ssh_script() { # [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ...
 		# slower (takes ~1s) but reports line numbers correctly on errors.
 		QUIET=1 SRC_DIR=lib    DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
 		QUIET=1 SRC_DIR=libopt DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
-		run "${ssh_cmd[@]}" bash -s <<< "
+		run "${ssh_cmd[@]}" ${AS_USER:+sudo -u $AS_USER} bash -s <<< "
 $VARS
 $FUNCS
 . /root/.mm/lib/all
@@ -46,7 +46,7 @@ $SCRIPT $ARGS
 	else
 		# include lib contents in the script:
 		# faster but doesn't report line numbers correctly on errors in lib code.
-		run "${ssh_cmd[@]}" bash -s <<< "
+		run "${ssh_cmd[@]}" ${AS_USER:+sudo -u $AS_USER} bash -s <<< "
 $VARS
 set -f # disable globbing
 set -o pipefail
