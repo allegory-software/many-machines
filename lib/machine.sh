@@ -19,6 +19,9 @@ get_CORES()       {
 	local sockets=`get_CPUS`
 	printf "%d\n" $((sockets * cps))
 }
+get_CPU_CACHE()   { awk -F: '/cache size/ {cache=$2} END {print cache}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//'; }
+get_CPU_FREQ()    { awk -F'[ :]' '/cpu MHz/ {printf "%.1f GHz\n", $4/1024; exit}' /proc/cpuinfo; }
+get_AES()         { grep -iq 'aes' /proc/cpuinfo && echo "YES"; }
 
 get_UPTIME()   {
 	awk '{a=$1/86400;b=($1%86400)/3600;c=($1%3600)/60} {printf("%dd%dh%dm\n",a,b,c)}' /proc/uptime
