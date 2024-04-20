@@ -2,9 +2,9 @@
 # SSH || print ssh host fingerprint SHA of machine(s)
 . mmlib
 
-echo_ssh_hostkey_sha() {
-	ssh_hostkey "$1"
-	R1="$(printf "%s" "$R1" | ssh-keygen -E sha256 -lf -)"
-	printf "%-10s %s\n" "$1" "$R1"
+_f(){
+	ssh_hostkey $MACHINE
+	local s=$(printf "%s" "$R1" | ssh-keygen -E sha256 -lf -)
+	printf "%-10s %s\n" $MACHINE "$s"
 }
-QUIET=1 each_machine "$1" echo_ssh_hostkey_sha
+QUIET=1 each_machine _f

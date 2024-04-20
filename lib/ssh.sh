@@ -85,7 +85,7 @@ ssh_hostkey() {
 }
 
 ssh_hostkey_update() {
-	ip_of "$1"; local IP=$R1; local MACHINE=$R2
+	ip_of "$MACHINE"; local IP=$R1; local MACHINE=$R2
 	say "Updating SSH host fingerprint for machine: $MACHINE ..."
 	must ssh-keyscan -4 -T 2 -t rsa $IP > var/machines/$MACHINE/ssh_hostkey
 }

@@ -70,8 +70,8 @@ active_deploys() {
 	R1=$S
 }
 
-# NOTE: set NOT_ALL=1 in scripts for dangerous commands. User will set ALL=1 to override.
-each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
+# NOTE: set NOALL=1 in scripts for dangerous commands. User will set ALL=1 to override.
+each_machine() { # [NOALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 	declare -A mm
 	local M D
 	for M in $MACHINES; do
@@ -85,7 +85,7 @@ each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 		MACHINES+=" $M"
 	done
 	if [[ ${#mm[@]} == 0 ]]; then
-		[[ $NOT_ALL  && ! $ALL ]] && die "MACHINE(s) required"
+		[[ $NOALL  && ! $ALL ]] && die "MACHINE(s) required"
 		active_machines
 		MACHINES="$R1"
 	fi
@@ -102,14 +102,14 @@ each_machine() { # [NOT_ALL=] [ALL=] MACHINES= DEPLOYS= COMMAND ARGS...
 	done
 }
 
-each_deploy() { # [NOT_ALL=] [ALL=] MACHINES="" DEPLOYS= COMMAND ARGS...
+each_deploy() { # [NOALL=] [ALL=] MACHINES="" DEPLOYS= COMMAND ARGS...
 	[[ $MACHINES ]] && die "Invalid deploy(s): $MACHINES"
 	if [[ $DEPLOYS ]]; then
 		for DEPLOY in $DEPLOYS; do
 			check_deploy $DEPLOY
 		done
 	else
-		[[ $NOT_ALL && ! $ALL ]] && die "DEPLOY(s) required"
+		[[ $NOALL && ! $ALL ]] && die "DEPLOY(s) required"
 		active_deploys
 		DEPLOYS="$R1"
 	fi

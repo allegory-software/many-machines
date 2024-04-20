@@ -2,5 +2,4 @@
 # TOOLS || reboot machine
 . mmlib
 
-[ "$1" ] || die "MACHINE or DEPLOY required."
-each_machine "$1" ssh_to reboot
+NOALL=1 each_machine ssh_to reboot

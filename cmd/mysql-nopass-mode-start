@@ -10,4 +10,3 @@ skip-grant-tables
 service_start mysql
 }
 NOALL=1 each_machine _f
-

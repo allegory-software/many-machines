@@ -2,4 +2,4 @@
 # SSH || make machine(s) known to mm
 . mmlib
 
-each_machine "$1" ssh_hostkey_update
+each_machine ssh_hostkey_update
