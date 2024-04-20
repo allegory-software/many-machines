@@ -4,6 +4,7 @@ install_mm() {
 	git_clone_for root git@github.com:allegory-software/many-machines2 /opt/mm master mm
 	# install globally
 	must ln -sf /opt/mm/mm      /usr/bin/mm
+	must ln -sf /opt/mm/mmd     /usr/bin/mmd
 	must ln -sf /opt/mm/lib/all /usr/bin/mmlib
 	remove_line /opt/mm/mm-autocomplete.sh /root/.bashrc
 	append ". /opt/mm/mm-autocomplete.sh" /root/.bashrc
@@ -133,4 +134,12 @@ _each_deploy_with_domain() {
 }
 each_deploy_with_domain() {
 	each_deploy _each_deploy_with_domain "$@"
+}
+
+each_deploy_or_machine() {
+	if [[ $MM_DEPLOY ]]; then
+		each_deploy "$@"
+	else
+		each_machine "$@"
+	fi
 }

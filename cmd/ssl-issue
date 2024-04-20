@@ -1,7 +1,6 @@
 #!/bin/bash
 # SSL || issue SSL certificates for deployment(s)
 . mmlib
-DEPLOYS="$1"; shift
 
 _f() {
 	acme_ca_upload

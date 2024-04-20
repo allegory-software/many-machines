@@ -1,9 +1,8 @@
 #!/bin/bash
-# MYSQL || list MySQL tables
+# MYSQL | [DB=] | list MySQL tables
 . mmlib
 
 list_tables() {
-	machine_of_deploy $1; local MACHINE=$R1
-	ssh_script $MACHINE "MYSQL_PRETTY=1 query_on $1 'show tables'"
+	ssh_script "MYSQL_PRETTY=1 query_on ${DB:-$DEPLOY} 'show tables'"
 }
-each_deploy "$1" list_tables
+each_deploy list_tables

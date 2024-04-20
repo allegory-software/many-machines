@@ -1,5 +1,5 @@
 #!/bin/bash
-# BACKUP | please | decrypt and unpack var dir
+# BACKUP | please | decrypt and unpack var.tar.gz to var dir
 . mmlib
 
 [[ $1 == please ]] || die "Say please"

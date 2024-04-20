@@ -1,4 +1,8 @@
 #!/bin/bash
 # MYSQL | [MYSQL-ARGS...] | get a mysql remote terminal
-MD="$1"; shift
-mm ssh-tty "$MD" mysql "$@"
+. mmlib
+
+_f() {
+	AS_USER=$DEPLOY MM_SSH_TTY=1 ssh_to mysql "$@"
+}
+each_deploy_or_machine _f "$@"

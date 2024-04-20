@@ -1,12 +1,11 @@
 #!/bin/bash
-# MYSQL | "col1,... from ..." | select on a MySQL database
+# MYSQL | [DB=] "col1,... from ..." | select on a MySQL database
 . mmlib
 
-SELECT="$2"
+SELECT=$1
 checkvars SELECT-
 
-select_records() {
-	machine_of_deploy $1; local MACHINE=$R1
-	ssh_script $MACHINE "MYSQL_PRETTY=1 query_on $1 'select $SELECT'"
+_f() {
+	ssh_script "MYSQL_PRETTY=1 query_on ${DB:-$DEPLOY} 'select $SELECT'"
 }
-each_deploy "$1" select_records
+each_deploy _f

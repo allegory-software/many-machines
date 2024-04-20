@@ -2,10 +2,10 @@
 # MYSQL | DB | list MySQL tables
 . mmlib
 
-DB="$2"
+DB=$1
 checkvars DB
 
 list_tables() {
-	ssh_script $1 "MYSQL_PRETTY=1 query_on $DB 'show tables'"
+	ssh_script "MYSQL_PRETTY=1 query_on $DB 'show tables'"
 }
-each_machine "$1" list_tables
+each_machine list_tables
