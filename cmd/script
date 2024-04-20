@@ -4,4 +4,7 @@
 
 SCRIPT=$1; shift
 checkvars SCRIPT-
-each_machine ssh_script "$SCRIPT" "$@"
+_f() {
+	AS_USER=$DEPLOY ssh_script "$SCRIPT" "$@"
+}
+each_deploy_or_machine _f

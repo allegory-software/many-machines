@@ -1,6 +1,9 @@
 #!/bin/bash
 # SSH | [COMMAND ...] | exec remote commands (or drop to shell)
 . mmlib
-export AS_USER
+
 [[ $1 ]] || MM_SSH_TTY=1
-each_machine ssh_to "$@"
+_f() {
+	AS_USER=$DEPLOY ssh_to "$@"
+}
+each_deploy_or_machine _f "$@"

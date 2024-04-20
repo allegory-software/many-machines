@@ -14,6 +14,9 @@ _mm_completion() {
 	set +o pipefail
 }
 complete -F _mm_completion mm
+complete -F _mm_completion mmd
 
 set +f
 set +o pipefail
+
+must cd $PWD0

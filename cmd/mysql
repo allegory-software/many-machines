@@ -3,6 +3,6 @@
 . mmlib
 
 _f() {
-	AS_USER=$DEPLOY MM_SSH_TTY=1 ssh_to mysql "$@"
+	AS_USER=$DEPLOY MM_SSH_TTY=1 ssh_to mysql $DEPLOY "$@"
 }
 each_deploy_or_machine _f "$@"
