@@ -2,28 +2,23 @@
 # UPDATE || prepare a machine for deployments
 . mmlib
 
-_prepare() {
-
-	cat_all_varfiles var/machines/$1/vars; local VARS=("${R1[@]}")
+_f() {
 
 	# we need to install rsync on the machine before we can rsync files to it.
-	ssh_script $1 "
+	ssh_script "
 		say; apt_install
 		say; apt_get_update
-		say; apt_get_install sudo htop mc git rsync cron curl nginx
+		say; apt_get_install \$PACKAGES
 	"
 
 	# we need the CA uploaded before we install acme.sh.
-	[[ $SERVICES == *acme* ]] && { say; acme_ca_upload $1; }
+	[[ $PACKAGES == *acme* ]] && { say; acme_ca_upload $1; }
 
-	ssh_script $1 "
-		${VARS[*]}
-		machine_prepare
-	"
+	ssh_script_machine "machine_prepare"
 
-	say; mc_conf_upload $1
+	say; mc_conf_upload
 
 	say; say "Machine prepare done."
 
 }
-each_machine "$1" _prepare
+each_machine _f
