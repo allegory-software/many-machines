@@ -7,6 +7,7 @@ _mm_completion() {
 	local names
 	active_deploys; names="$R1"
 	active_machines; names+=" $R1"
+	names+=" $(ls cmd)"
 	COMPREPLY=($(compgen -W "$names" -- "$2"))
 	popd
 	set +f

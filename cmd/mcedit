@@ -1,4 +1,5 @@
 #!/bin/bash
 # TOOLS || run mcedit on machine(s)
-MD="$1"; shift
-mm ssh-tty "$MD" mcedit "$@"
+. mmlib
+
+MM_SSH_TTY=1 each_machine ssh_to mcedit "$@"
