@@ -9,6 +9,27 @@ must()      { debug -n "MUST: $@ "; "$@"; local ret=$?; debug "[$ret]"; [[ $ret 
 dry()       { if [[ $DRY ]]; then say "DRY: $@"; else "$@"; fi; }
 nag()       { [[ $VERBOSE ]] || return 0; say "$@"; }
 
+# colors!
+
+[[ $TERM ]] && {
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+BLUE="\e[34m"
+MAGENTA="\e[35m"
+CYAN="\e[36m"
+LIGHTGRAY="\e[37m"
+GRAY="\e[90m"
+LIGHTRED="\e[91m"
+LIGHTGREEN="\e[92m"
+LIGHTYELLOW="\e[93m"
+LIGHTBLUE="\e[94m"
+LIGHTMAGENTA="\e[95m"
+LIGHTCYAN="\e[96m"
+WHITE="\e[97m"
+ENDCOLOR="\e[0m"
+}
+
 # arg checking and sanitizing
 
 checknosp() { # VAL [ERROR...]

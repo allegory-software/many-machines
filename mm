@@ -59,7 +59,7 @@ for CMD in `ls -1 cmd`; do
 	IFS="|" read -r SECTION ARGS DESCR <<< "$s"
 	trim SECTION; trim ARGS; trim DESCR
 	# add help line to its section.
-	printf -v s "mm %-20s %s\n" "$CMD $ARGS" "$DESCR"
+	printf -v s "mm ${WHITE}%-20s${ENDCOLOR} %s\n" "${CMD} $ARGS" "$DESCR"
 	help[$SECTION]+="$s"
 done
 
@@ -67,7 +67,7 @@ local s=$(printf "%s\n" "${!help[@]}" | sort)
 local SECTION
 IFS=$'\n'
 for SECTION in $s; do
-	printf "%s\n" "$SECTION" >&2
+	printf "${GREEN}%s${ENDCOLOR}\n" "$SECTION" >&2
 	printf "%s\n" "${help[$SECTION]}" >&2
 done
 }
