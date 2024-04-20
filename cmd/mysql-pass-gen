@@ -2,11 +2,9 @@
 # MYSQL ADMIN || generate a MySQL password for a deployment
 . mmlib
 
-DEPLOY="$1"
-check_deploy "$DEPLOY"
-
-say "Generating MySQL password for $DEPLOY..."
-
-mysql_pass_gen var/deploys/$DEPLOY/mysql_pass
-
-say "Now run \`mm mysql-pass-update $DEPLOY\` to make it usable."
+_f() {
+	say "Generating MySQL password for $DEPLOY..."
+	mysql_pass_gen var/deploys/$DEPLOY/mysql_pass
+	say "Now run \`mm mysql-pass-update $DEPLOY\` to make it usable."
+}
+NOALL=1 each_deploy _f

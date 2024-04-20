@@ -5,10 +5,10 @@
 FILE=var/mysql_root_pass
 must catfile $FILE; PASS=$R1
 
-update_root_pass() {
-	ssh_script "$1" "
+_f() {
+	ssh_script "
 		mysql_update_pass localhost root $PASS
 		mysql_gen_my_cnf  localhost root $PASS
 	"
 }
-each_machine "$1" update_root_pass
+each_machine _f

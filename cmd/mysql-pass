@@ -4,9 +4,8 @@
 
 USERS="$2"
 
-echo_mysql_pass() {
-	local MACHINE=$1
-	ssh_script $MACHINE '
+_f() {
+	ssh_script '
 USERS="'"$USERS"'"; [ "$USERS" ] || USERS=`echo root; ls -1 /home`
 for USER in $USERS; do
 	PASS=`mysql_pass $USER`
@@ -16,4 +15,6 @@ true
 '
 }
 printf "%-10s %-10s %s\n" MACHINE USER PASS
-QUIET=1 each_machine "$1" echo_mysql_pass
+QUIET=1 each_machine _f
+
+# TODO: UPTODATE column

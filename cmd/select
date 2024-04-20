@@ -8,6 +8,6 @@ checkvars SELECT-
 _f() {
 	local DB=${DB:-$DEPLOY}
 	checkvars DB
-	AS_USER=$DEPLOY ssh_script "MYSQL_PRETTY=1 query_on $DB 'select $SELECT'"
+	AS_DEPLOY=1 ssh_script "MYSQL_PRETTY=1 query_on $DB 'select $SELECT'"
 }
 each_deploy_or_machine _f

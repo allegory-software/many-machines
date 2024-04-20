@@ -2,13 +2,13 @@
 # MYSQL ADMIN || update a deployment MySQL password
 . mmlib
 
-DEPLOY="$1"
-machine_of_deploy "$DEPLOY"
-MACHINE=$R1
-FILE=var/deploys/$DEPLOY/mysql_pass
-must catfile $FILE; PASS=$R1
-say "Uploading MySQL password for $DEPLOY..."
-ssh_script "$MACHINE" "
-	mysql_update_pass localhost $DEPLOY $PASS
-	mysql_gen_my_cnf  localhost $DEPLOY $PASS
-"
+_f() {
+	FILE=var/deploys/$DEPLOY/mysql_pass
+	must catfile $FILE; PASS=$R1
+	say "Uploading MySQL password for $DEPLOY..."
+	ssh_script "
+		mysql_update_pass localhost $DEPLOY $PASS
+		mysql_gen_my_cnf  localhost $DEPLOY $PASS
+	"
+}
+NOALL=1 each_deploy _f

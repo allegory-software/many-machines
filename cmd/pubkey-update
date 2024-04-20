@@ -2,8 +2,8 @@
 # SSH | [KEYNAME] ["USER1 ..."] | update a ssh public key into machine(s)
 . mmlib
 
-KEYNAME="$2"; [ "$KEYNAME" ] || KEYNAME=mm-$HOSTNAME
-USERS="$3"
+KEYNAME=${1:-mm-$HOSTNAME}
+USERS=$2
 kf=var/ssh_key-$KEYNAME
 [ -f $kf ] || {
 	say "Key file $kf not found. Using ~/.ssh/id_rsa..."
@@ -13,12 +13,12 @@ kf=var/ssh_key-$KEYNAME
 must catfile $kf.pub; PUBKEY="$R1"
 
 _f() {
-	local UP_PUBKEY="$(must ssh_script $1 "ssh_pubkey root $KEYNAME; true")"
-	if [ "$UP_PUBKEY" == "$PUBKEY" ]; then
+	local UP_PUBKEY=$(must ssh_script $1 "ssh_pubkey root $KEYNAME; true")
+	if [[ $UP_PUBKEY == $PUBKEY ]]; then
 		say "SSH public key '$KEYNAME' is there and it's the same."
 	else
-		ssh_script $1 "ssh_pubkey_update $KEYNAME \"$PUBKEY\" \"$USERS\""
-		cp_file $kf  var/machines/$1/ssh_key-$KEYNAME
+		ssh_script "ssh_pubkey_update" "$KEYNAME" "$PUBKEY" "$USERS"
+		cp_file $kf  var/machines/$MACHINE/ssh_key-$KEYNAME
 	fi
 }
 each_machine _f

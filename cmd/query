@@ -6,6 +6,8 @@ SQL="$1"
 checkvars SQL-
 
 _f() {
-	ssh_script "query_on ${DB:-DEPLOY}" "$SQL"
+	local DB=${DB:-DEPLOY}
+	checkvars DB
+	ssh_script "query_on $DB" "$SQL"
 }
-QUIET=1 each_deploy _f
+QUIET=1 each_deploy_or_machine _f

@@ -1,8 +1,8 @@
 #!/bin/bash
-# MYSQL | [MYSQL-ARGS...] | get a mysql remote terminal
+# MYSQL | [DB=] [MYSQL-ARGS...] | get a mysql remote terminal
 . mmlib
 
 _f() {
-	AS_USER=$DEPLOY MM_SSH_TTY=1 ssh_to mysql $DEPLOY "$@"
+	MM_SSH_TTY=1 ssh_to mysql ${DB:-$DEPLOY} "$@"
 }
-each_deploy_or_machine _f "$@"
+AS_DEPLOY=1 each_deploy_or_machine _f "$@"

@@ -2,7 +2,9 @@
 # MYSQL | [DB=] | list MySQL tables
 . mmlib
 
-list_tables() {
-	ssh_script "MYSQL_PRETTY=1 query_on ${DB:-$DEPLOY} 'show tables'"
+_f() {
+	local DB=${DB:-$DEPLOY}
+	checkvars DB
+	AS_DEPLOY=1 ssh_script "MYSQL_PRETTY=1 query_on $DB 'show tables'"
 }
-each_deploy list_tables
+each_deploy_or_machine _f

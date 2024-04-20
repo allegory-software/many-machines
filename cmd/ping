@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO || ping machine
+# INFO | [ping options...] | ping machine
 . mmlib
 
 _f() {

@@ -2,9 +2,4 @@
 # SSH | "SCRIPT" ARGS... | exec bash script remotely
 . mmlib
 
-SCRIPT=$1; shift
-checkvars SCRIPT-
-_f() {
-	AS_USER=$DEPLOY ssh_script "$SCRIPT" "$@"
-}
-each_deploy_or_machine _f
+AS_DEPLOY=1 each_deploy_or_machine ssh_script "$@"

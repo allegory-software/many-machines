@@ -1,5 +1,0 @@
-#!/bin/bash
-# UPDATE || install/update mm on machines
-. /opt/mm/lib/all
-
-each_machine ssh_script "mm_update"
