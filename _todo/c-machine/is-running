@@ -1,5 +1,0 @@
-#!/bin/bash
-# SERVICE :: check if a service is running (quietly)
-. mmlib
-
-is_running "$1"

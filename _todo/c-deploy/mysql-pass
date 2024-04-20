@@ -1,5 +1,0 @@
-#!/bin/bash
-# print MySQL password
-. mmlib
-
-mysql_pass $USER

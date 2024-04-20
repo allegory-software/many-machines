@@ -1,8 +1,0 @@
-#!/bin/bash
-# update MySQL password
-. mmlib
-
-checkvars USER MYSQL_PASS
-
-mysql_update_pass localhost $USER $MYSQL_PASS
-mysql_gen_my_cnf  localhost $USER $MYSQL_PASS

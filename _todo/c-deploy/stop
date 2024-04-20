@@ -1,5 +1,0 @@
-#!/bin/bash
-# stop the app
-. mmlib
-
-app stop
