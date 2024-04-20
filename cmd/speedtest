@@ -1,5 +1,5 @@
 #!/bin/bash
-# [NODE|list] run a speed test
+# TEST | [NODE or "list"] | run a speed test
 MM_LIBS="speedtest"
 . mmlib
 

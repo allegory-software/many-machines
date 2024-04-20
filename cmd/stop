@@ -1,5 +1,5 @@
 #!/bin/bash
-# SERVICE :: stop a service
+# SERVICES | SERVICE | stop a service
 . mmlib
 
 each_machine ssh_script "service_stop $1"

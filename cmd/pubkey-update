@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] [KEYNAME] ["USER1 ..."] :: update a ssh public key into machine(s)
+# SSH | [KEYNAME] ["USER1 ..."] | update a ssh public key into machine(s)
 . mmlib
 
 KEYNAME="$2"; [ "$KEYNAME" ] || KEYNAME=mm-$HOSTNAME

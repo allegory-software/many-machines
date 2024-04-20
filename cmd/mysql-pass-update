@@ -1,5 +1,5 @@
 #!/bin/bash
-# DEPLOY :: update a deployment MySQL password
+# MYSQL ADMIN || update a deployment MySQL password
 . mmlib
 
 DEPLOY="$1"

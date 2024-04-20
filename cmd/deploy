@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["DEPLOY1 ..."] :: deploy an app on its target machine
+# DEPLOY || deploy an app on its target machine
 . mmlib
 
 _f() {

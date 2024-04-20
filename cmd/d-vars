@@ -1,5 +1,5 @@
 #!/bin/bash
-# [VAR1 ...] list deploy env vars
+# INFO | [VAR1 ...] | list deploy env vars
 . mmlib
 
 _f() {

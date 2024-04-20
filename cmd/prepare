@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: prepare a machine for deployments
+# UPDATE || prepare a machine for deployments
 . mmlib
 
 _prepare() {

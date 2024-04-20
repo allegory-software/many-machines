@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: update the root MySQL password on (all) machines.
+# MYSQL ADMIN || update the root MySQL password on (all) machines.
 . mmlib
 
 FILE=var/mysql_root_pass

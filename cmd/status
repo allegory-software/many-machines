@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["SERVICE1 ..."] :: print service(s) status
+# SERVICES | ["SERVICE1 ..."] | print service(s) status
 . mmlib
 
 each_machine_ssh_list service_status "%-10s %-10s %s" "SERVICE STATUS VERSION" "$@"

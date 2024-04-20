@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD ..."] :: reboot machine
+# TOOLS || reboot machine
 . mmlib
 
 [ "$1" ] || die "MACHINE or DEPLOY required."

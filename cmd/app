@@ -1,5 +1,5 @@
 #!/bin/bash
-# APP-ARGS... :: run the deployed app
+# DEPLOY | ... | run the deployed app
 . mmlib
 
 _f() {

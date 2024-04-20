@@ -1,6 +1,0 @@
-#!/bin/bash
-# MD :: list machine env vars
-. mmlib
-
-git_vars
-printf "%s" "${R1[@]}"

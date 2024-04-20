@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["DEPLOY1 ..."] "col1,... from ..." :: select on a MySQL database
+# MYSQL | "col1,... from ..." | select on a MySQL database
 . mmlib
 
 SELECT="$2"

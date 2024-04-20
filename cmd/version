@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["COMPONENT ..."] :: print versions
+# INFO | ["COMPONENT ..."] | print versions
 . mmlib
 
 each_machine_ssh_list component_version "%-10s %s" "COMPONENT VERSION" "$@"

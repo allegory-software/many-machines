@@ -1,5 +1,5 @@
 #!/bin/bash
-# make ssh work directly with machines and deployments by name
+# SSH || make ssh work directly with machines and deployments by name
 . mmlib
 
 remove_line '# added by mm' /etc/hosts

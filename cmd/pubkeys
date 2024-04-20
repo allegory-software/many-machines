@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] ["KEYNAME1 ..."] ["USER1 ..."] :: list ssh public keys
+# SSH | ["KEYNAME1 ..."] ["USER1 ..."] | list ssh public keys
 . mmlib
 
 MDS="$1"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# upload a SSL certificate to deploy machine(s)
+# SSL || upload a SSL certificate to deploy machine(s)
 . mmlib
 
 NOT_ALL=1 each_deploy_with_domain acme_cert_upload

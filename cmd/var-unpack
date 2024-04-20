@@ -1,5 +1,5 @@
 #!/bin/bash
-# please :: decrypt and unpack var dir
+# TOOLS | please | decrypt and unpack var dir
 . mmlib
 
 [[ $1 == please ]] || die "Say please"

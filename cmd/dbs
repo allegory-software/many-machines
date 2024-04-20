@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: list MySQL databases
+# MYSQL || list MySQL databases
 . mmlib
 
 print_dbs() {
@@ -15,4 +15,4 @@ where
 \"
 "
 }
-each_machine "$1" print_dbs
+each_machine print_dbs

@@ -1,5 +1,5 @@
 #!/bin/bash
-# list machine info
+# INFO || list machine info
 . mmlib
 
 [ "$1" ] || {

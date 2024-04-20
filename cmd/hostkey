@@ -1,6 +1,6 @@
 #!/bin/bash
-# ["MD1 ..."] :: print ssh host fingerprint of machine(s)
+# SSH || print ssh host fingerprint of machine(s)
 . mmlib
 
 echo_ssh_hostkey() { ssh_hostkey "$1"; printf "%-10s %s\n" "$1" "$R1"; }
-QUIET=1 each_machine "$1" echo_ssh_hostkey
+QUIET=1 each_machine  echo_ssh_hostkey

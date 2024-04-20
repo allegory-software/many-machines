@@ -1,5 +1,5 @@
 #!/bin/bash
-# get CPU info
+# INFO || get CPU info
 . mmlib
 
 each_machine_custom_list "%-5s %-5s %-20s" "CPUS CORES CPU"

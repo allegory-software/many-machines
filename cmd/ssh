@@ -1,5 +1,5 @@
 #!/bin/bash
-# [COMMAND ARGS...] :: exec remote commands (or drop to shell)
+# SSH | [COMMAND ...] | exec remote commands (or drop to shell)
 . mmlib
 
 [ "$1" ] || MM_SSH_TTY=1

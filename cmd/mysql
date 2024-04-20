@@ -1,4 +1,4 @@
 #!/bin/bash
-# ["MD1 ..."] [mysql opts...] :: get a mysql remote terminal
+# MYSQL | [MYSQL-ARGS...] | get a mysql remote terminal
 MD="$1"; shift
 mm ssh-tty "$MD" mysql "$@"

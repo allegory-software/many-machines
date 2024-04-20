@@ -1,5 +1,5 @@
 #!/bin/bash
-# run a quick I/O load and time it
+# TEST || run a quick I/O load and time it
 MM_LIBS="iotest"
 . mmlib
 

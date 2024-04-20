@@ -1,5 +1,5 @@
 #!/bin/bash
-# TABLE :: list MySQL columns
+# MYSQL | TABLE | list MySQL columns
 . mmlib
 
 TABLE="$1"

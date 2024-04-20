@@ -1,5 +1,5 @@
 #!/bin/bash
-# [PACKAGE] :: install a package
+# UPDATE | [PACKAGE] | install a package
 . mmlib
 
 [[ $2 ]] || {

@@ -1,5 +1,5 @@
 #!/bin/bash
-# SERVICE :: start a service
+# SERVICES | SERVICE | start a service
 . mmlib
 
 [[ $2 ]] || {

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: update mc config on machines
+# UPDATE || update mc config on machines
 . mmlib
 
 each_machine "$1" mc_conf_upload

@@ -1,0 +1,32 @@
+#!/bin/bash
+# make all var symlinks relative
+. mmlib
+
+fix_symlink() {
+	local symlink="$1"
+	local parent_dir="$(dirname "$symlink")"
+	local target="$(readlink "$symlink")"
+	local abs_target="$(readlink -f "$symlink")"
+	local rel_target="$(realpath --relative-to="$parent_dir" "$abs_target")"
+	[ "$target" == "$rel_target" ] && return 0
+	printf "%-35s: %-35s -> %-35s\n" "$symlink" "$target" "$rel_target"
+	# TODO: why doesn't `ln -sf` work here??
+	must rm "$symlink"
+	must ln -s "$rel_target" "$symlink"
+}
+
+fix_symlinks() {
+	local dir="$1"
+	shopt -s dotglob
+	set +o noglob
+	for f in "$dir"/*; do
+		if [ -L "$f" ]; then
+			fix_symlink "$f"
+		elif [ -d "$f" ]; then
+			fix_symlinks "$f"
+		fi
+	done
+}
+
+fix_symlinks var
+fix_symlinks help

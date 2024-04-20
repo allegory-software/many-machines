@@ -1,5 +1,5 @@
 #!/bin/bash
-# list available RAM & HDD
+# INFO || list available RAM & HDD
 . mmlib
 
 each_machine_custom_list \

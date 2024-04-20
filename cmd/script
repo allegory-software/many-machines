@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] "bash commands..." :: exec bash script remotely
+# SSH | "bash commands..." | exec bash script remotely
 . mmlib
 
 MD="$1"; shift

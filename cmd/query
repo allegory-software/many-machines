@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["DEPLOY1 ..."] "SQL" :: query MySQL database(s)
+# MYSQL | "SQL" | query MySQL database(s)
 . mmlib
 
 DEPLOYS="$1"

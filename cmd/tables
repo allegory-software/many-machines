@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["DEPLOY1 ..."] :: list MySQL tables
+# MYSQL || list MySQL tables
 . mmlib
 
 list_tables() {

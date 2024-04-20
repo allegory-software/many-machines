@@ -1,5 +1,5 @@
 #!/bin/bash
-# get machine location info
+# INFO || get machine location info
 MM_LIBS="iotest"
 . mmlib
 

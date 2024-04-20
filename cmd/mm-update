@@ -1,5 +1,5 @@
 #!/bin/bash
-# ["MD1 ..."] :: install/update mm on machines
+# UPDATE || install/update mm on machines
 . /opt/mm/lib/all
 
 each_machine ssh_script "mm_update"
