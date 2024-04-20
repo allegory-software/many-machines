@@ -1,3 +1,4 @@
 #!/bin/bash
 # SSH | [COMMAND ...] | run ssh command that needs tty
-MM_SSH_TTY=1 mm ssh "$@"
+
+NOALL=1 MM_SSH_TTY=1 mm ssh "$@"

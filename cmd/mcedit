@@ -1,5 +1,3 @@
 #!/bin/bash
 # TOOLS || run mcedit on machine(s)
-. mmlib
-
-QUIET=1 AS_DEPLOY=1 MM_SSH_TTY=1 each_deploy_or_machine ssh_to mcedit "$@"
+mm ssh-tty mcedit "$@"

@@ -1,4 +1,3 @@
 #!/bin/bash
 # TOOLS || run mc on machine(s)
-MD="$1"; shift
-mm ssh-tty "$MD" mc "$@"
+mm ssh-tty mc "$@"

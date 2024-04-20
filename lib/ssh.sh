@@ -20,11 +20,11 @@ ssh_cmd() { # MACHINE= HOST=
 }
 
 ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= COMMAND ARGS...
+	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
+	[[ $1 ]] || local MM_SSH_TTY=1
 	ssh_cmd; local cmd=("${R1[@]}")
 	quote_args "$@"; local args=("${R1[@]}")
-	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
-	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -u $AS_USER" || sudo="su - $AS_USER"; }
-	[[ $1 ]] || local MM_SSH_TTY=1
+	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -i -u $AS_USER" || sudo="su - $AS_USER"; }
 	run "${cmd[@]}" $sudo "${args[@]}" || die "MACHINE=$MACHINE ssh_to: [$?]"
 }
 
