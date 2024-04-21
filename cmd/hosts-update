@@ -1,5 +1,10 @@
 #!/bin/bash
-# SSH || make ssh work directly with machines and deployments by name
+# SSH || update /etc/hosts and set up SSH for direct access
+#
+# TODO: this doesn't work because:
+# 1. SSH's HostKeyAlgorithms != rsa-sha2-256 and SSH tries ECDSA only and gives up.
+# 2. StrictHostKeyChecking=yes, and we're connecting by hostname.
+#
 . mmlib
 
 remove_line '# added by mm' /etc/hosts
@@ -9,7 +14,7 @@ update_host() {
 	printf -v s "%-20s %-20s %s\n" "$IP" "${DEPLOY:-$MACHINE}" "# added by mm"
 	append "$s" /etc/hosts
 	must catfile var/machines/$MACHINE/ssh_hostkey
-	remove_line "$R1" ~/.ssh/known_hosts
+	ssh-keygen -f ~/.ssh/known_hosts -R $IP
 	append "$R1"$'\n' ~/.ssh/known_hosts
 }
 each_machine update_host

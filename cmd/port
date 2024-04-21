@@ -1,5 +1,5 @@
 #!/bin/bash
-# DIAG | [PORT] | check if port is open
+# DIAG | [PORT] | check if a port is open from this machine
 . mmlib
 
 PORT=${1:-22}
