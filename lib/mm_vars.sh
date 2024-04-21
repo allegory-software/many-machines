@@ -13,7 +13,7 @@ varfile() { # DIR VAR
 }
 
 cat_varfile() { # DIR VAR [DEFAULT]
-	varfile "$1" "$2" || return 1
+	varfile "$1" "$2" || { R1=$3; return 1; }
 	catfile $R1 "$3"
 }
 

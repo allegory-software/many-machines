@@ -1,18 +1,26 @@
-# apt wrappers
+# remote package installer with pre/post install hooks executed on the mm machine.
 
-package_install() { # PACKAGE1 ...
+_package_install() { # PACKAGE1 ...
 	local pkg
 	for pkg in "$@"; do
-		if declare -F "install_${pkg}" > /dev/null; then
-			install_${pkg}
-		else
-			apt_get_install "$pkg"
+		if declare -F "${prefix}install_${pkg}" > /dev/null; then
+			${prefix}install_${pkg}
+		elif [[ ! $prefix ]]; then
+			apt_get_install $pkg
 		fi
 	done
 }
+package_install() { # PACKAGE1 ...
+	prefix=pre _package_install "$@"
+	ssh_script_machine "prefix= _package_install" "$@"
+	prefix=post _package_install "$@"
+}
+
+# apt wrappers
 
 install_apt() {
 	save "APT::Quiet "2";" /etc/apt/apt.conf.d/10quiet
+	apt_get_update
 }
 
 apt_get() { # ...

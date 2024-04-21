@@ -67,9 +67,7 @@ save 'net.ipv4.ip_unprivileged_port_start=0' \
 	/etc/sysctl.d/50-unprivileged-ports.conf
 must sysctl --system >/dev/null
 
-#say; install_libssl1
-say; install_git
-say; mm_update
+#say; package_install libssl1
 
 package_install $PACKAGES
 }

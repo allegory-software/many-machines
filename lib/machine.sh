@@ -1,9 +1,13 @@
 # machine lib: programs running as root on a machine administered by mm.
 
-is_listening() {
+is_listening() { # IP=|MACHINE= PORT
 	local PORT=$1
-	checkvars PUBLIC_IP PORT
-	nc -zw1 $PUBLIC_IP $1
+	[[ $IP ]] || {
+		must machine_var PUBLIC_IP
+		local IP=$R1
+	}
+	checkvars IP PORT
+	nc -zw1 $IP $PORT
 }
 
 # machine info ---------------------------------------------------------------

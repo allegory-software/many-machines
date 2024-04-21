@@ -1,0 +1,8 @@
+#!/bin/bash
+# SSL | [acme.sh options] | check/renew SSL certificates for deployment(s)
+. mmlib
+
+_f() {
+	ssh_script_deploy 'acme_sh --renew -d $DOMAIN' "$@"
+}
+each_deploy_with_domain _f "$@"

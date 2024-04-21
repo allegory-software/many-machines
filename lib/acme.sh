@@ -3,6 +3,10 @@
 ACME_DIR=/opt/mm/var/.acme.sh.etc
 ACME_EMAIL=cosmin.apreutesei@gmail.com
 
+preinstall_acme() {
+	acme_ca_upload
+}
+
 install_acme() {
 	say "Installing acme.sh..."
 
@@ -23,11 +27,6 @@ acme_sh() {
 	run $cmd_args "$@"
 	local ret=$?; [ $ret == 2 ] && ret=0 # skipping gets exit code 2.
 	[ $ret == 0 ] || die "$cmd_args $@ [$ret]"
-}
-
-acme_check() {
-	say "Checking SSL certificate with acme.sh ... "
-	acme_sh --cron
 }
 
 acme_ca_upload() {

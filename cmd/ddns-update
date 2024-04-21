@@ -1,0 +1,5 @@
+#!/bin/bash
+# DNS || update IP for a domain at namecheap.com
+. mmlib
+
+NOALL=1 each_deploy_with_domain ddns_update_ip

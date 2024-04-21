@@ -5,10 +5,9 @@
 PORT=${1:-22}
 FMT="%-10s %-16s %-5s %-5s\n"
 _f() {
-	must machine_var PUBLIC_IP
-	local PUBLIC_IP=$R1
-	is_listening $PORT && OPEN=YES || OPEN=NO
-	printf "$FMT" "$MACHINE" "$PUBLIC_IP" "$PORT" "$OPEN"
+	must machine_var PUBLIC_IP; local IP=$R1
+	IP=$IP is_listening $PORT && OPEN=YES || OPEN=NO
+	printf "$FMT" "$MACHINE" "$IP" "$PORT" "$OPEN"
 }
-printf "$FMT" "MACHINE" "PUBLIC_IP" "PORT" "OPEN"
+printf "$FMT" "MACHINE" "IP" "PORT" "OPEN"
 QUIET=1 each_machine _f

@@ -118,6 +118,7 @@ each_deploy() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES="" DEPLOYS= COMMAND ARG
 	fi
 	local CMD=$1; shift
 	for DEPLOY in $DEPLOYS; do
+		active_deploys
 		machine_of $DEPLOY
 		[[ $QUIET ]] || say "On deploy $DEPLOY:"
 		if [[ $NOSUBPROC ]]; then

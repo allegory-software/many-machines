@@ -9,8 +9,7 @@ nag "Checking for offline machines (port 22) ..."
 ONLINE=
 OFFLINE=
 _f() {
-	machine_var PUBLIC_IP
-	if PUBLIC_IP=$R1 is_listening 22; then
+	if is_listening 22; then
 		ONLINE+=" $MACHINE"
 	else
 		OFFLINE+=" $MACHINE"

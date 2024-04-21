@@ -7,6 +7,8 @@ mc_conf_upload() { # MACHINE=
 	ssh_script "mc_conf_spread"
 }
 
+postinstall_mc() { mc_conf_upload; }
+
 mc_conf_spread() {
 	local USER
 	for USER in `ls -1 /home`; do
