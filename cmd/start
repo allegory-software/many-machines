@@ -2,9 +2,12 @@
 # SERVICES | SERVICE | start a service
 . mmlib
 
-[[ ! $1 ]] && {
-	functions_with_prefix start_
-	printf "%s\n" $R1
-	exit
+_f() {
+	if [[ ! $1 ]]; then # list services
+		must machine_var SERVICES
+		say "Services on $MACHINE: $R1"
+	else
+		ssh_script "service_start $1"
+	fi
 }
-each_machine ssh_script "service_start $1"
+each_machine _f "$@"
