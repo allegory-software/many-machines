@@ -1,0 +1,11 @@
+#!/bin/bash
+# INFO | [netstat args...] | show open TCP, UDP and RAW ports
+. mmlib
+
+_f() {
+	ssh_to netstat -ltuwn "$@" 2>&1 | while IFS=$' ' read s1 s2 s2 s4 s5; do
+		[[ $s1 == Proto || $s1 == Active ]] && continue
+		printf "%-10s %-10s %-20s\n" "$MACHINE" "$s1" "$s4"
+	done
+}
+QUIET=1 each_machine _f "$@"

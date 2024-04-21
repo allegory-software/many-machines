@@ -28,5 +28,4 @@ fix_symlinks() {
 	done
 }
 
-fix_symlinks var
-fix_symlinks help
+fix_symlinks .
