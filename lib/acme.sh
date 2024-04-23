@@ -47,8 +47,7 @@ acme_cert_upload() {
 }
 
 acme_cert_download() {
-	local MACHINE="$1"
-	local DOMAIN="$2"
+	local MACHINE=$1 DOMAIN=$2
 	check_machine "$MACHINE"
 	checkvars DOMAIN
 	say "Uploading SSL cert files for domain '$DOMAIN' to '$MACHINE' ..."
@@ -66,6 +65,6 @@ acme_issue_cert() { # DOMAIN
 	local keyfile=$ACME_DIR/${DOMAIN}_ecc/$DOMAIN.key
 	deploy_nginx_config_acme
 	acme_sh --issue -d $DOMAIN --stateless --force
-	[ -f $keyfile ] || die "SSL certificate was NOT created: $keyfile."
 	deploy_nginx_config
+	[[ -f $keyfile ]] || die "SSL certificate was NOT created: $keyfile."
 }

@@ -3,6 +3,8 @@
 . mmlib
 
 _f() {
-	ssh_script_deploy 'acme_sh --renew -d $DOMAIN' "$@"
+	ssh_script_deploy '
+		deploy_nginx_config
+		acme_sh --renew -d $DOMAIN' "$@"
 }
 each_deploy_with_domain _f "$@"
