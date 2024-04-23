@@ -63,7 +63,7 @@ cat_varfiles() { # [LOCAL="local "] DIR [VAR1 ...]
 
 machine_vars() { # MACHINE= [VAR1 ...]
 	checkvars MACHINE
-	cat_varfiles var/machines/$MACHINE/vars "$@"
+	cat_varfiles var/machines/$MACHINE "$@"
 }
 
 deploy_vars() { # DEPLOY= [VAR1 ...]

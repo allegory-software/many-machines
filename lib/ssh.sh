@@ -4,11 +4,11 @@ ssh_cmd_opt() { # MACHINE=
 	R1=(ssh
 -o ConnectTimeout=3
 -o PreferredAuthentications=publickey
--o UserKnownHostsFile=var/machines/$MACHINE/ssh_hostkey
+-o UserKnownHostsFile=var/machines/$MACHINE/.ssh_hostkey
 -o ControlMaster=auto
 -o ControlPath=~/.ssh/control-%h-%p-%r
 -o ControlPersist=600
--i var/machines/$MACHINE/ssh_key-mm-$HOSTNAME
+-i var/machines/$MACHINE/.ssh_key-mm-$HOSTNAME
 )
 	[ "$MM_SSH_TTY" ] && R1+=(-t) || R1+=(-o BatchMode=yes)
 }
@@ -83,13 +83,13 @@ $SCRIPT" "$@"
 
 ssh_hostkey() {
 	ip_of "$1"; local MACHINE=$R2
-	catfile var/machines/$MACHINE/ssh_hostkey
+	catfile var/machines/$MACHINE/.ssh_hostkey
 }
 
 ssh_hostkey_update() {
 	ip_of "$MACHINE"; local IP=$R1; local MACHINE=$R2
 	say "Updating SSH host fingerprint for machine: $MACHINE ..."
-	must ssh-keyscan -4 -T 2 -t rsa $IP > var/machines/$MACHINE/ssh_hostkey
+	must ssh-keyscan -4 -T 2 -t rsa $IP > var/machines/$MACHINE/.ssh_hostkey
 }
 
 ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
