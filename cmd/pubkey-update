@@ -18,7 +18,7 @@ _f() {
 		say "SSH public key '$KEYNAME' is there and it's the same."
 	else
 		ssh_script "ssh_pubkey_update" "$KEYNAME" "$PUBKEY" "$USERS"
-		cp_file $kf  var/machines/$MACHINE/ssh_key-$KEYNAME
+		cp_file $kf  var/machines/$MACHINE/.ssh_key-$KEYNAME
 	fi
 }
 each_machine _f
