@@ -1,3 +1,8 @@
+install_disable_cloudinit() {
+	say; say "Disabling cloud-init because it resets our changes on reboot..."
+	[[ -d /etc/cloud ]] && touch /etc/cloud/cloud-init.disabled
+}
+
 install_libssl1() {
 	os_version
 	say -n "Installing OpenSSL 1.1 ... "
@@ -12,8 +17,8 @@ install_libssl1() {
 	dpkg_i $pkg
 }
 
-machine_set_hostname() { # machine
-	local HOST=$1
+install_hostname() {
+	local HOST=$MACHINE
 	checkvars HOST
 	say "Setting machine hostname to: $HOST..."
 	must hostnamectl set-hostname $HOST
@@ -24,11 +29,36 @@ machine_set_hostname() { # machine
 " /etc/hosts
 }
 
-machine_set_timezone() { # tz
-	local TZ=$1
-	checkvars TZ
-	say "Setting machine timezone to: $TZ...."
-	must timedatectl set-timezone "$TZ" # sets /etc/localtime and /etc/timezone
+install_timezone() {
+	checkvars TIMEZONE
+	say "Setting machine timezone to: '$TIMEZONE' ...."
+	must timedatectl set-timezone "$TIMEZONE" # sets /etc/localtime and /etc/timezone
+}
+
+# remount /proc so we can pass in secrets via cmdline without them leaking.
+install_secure_proc() {
+	say; say "Remounting /proc with option to hide command line args..."
+	must mount -o remount,rw,nosuid,nodev,noexec,relatime,hidepid=2 /proc
+	# make that permanent...
+	must sed -i '/^proc/d' /etc/fstab
+	append "proc  /proc  proc  defaults,nosuid,nodev,noexec,relatime,hidepid=1  0  0" /etc/fstab
+}
+
+install_low_ports() {
+	say; say "Configuring kernel to allow binding to ports < 1024 by any user..."
+	save 'net.ipv4.ip_unprivileged_port_start=0' \
+		/etc/sysctl.d/50-unprivileged-ports.conf
+	must sysctl --system >/dev/null
+}
+
+install_nginx() {
+	apt_get_install nginx
+	say "Configuring nginx..."
+	# add dhparam.pem from mm (dhparam is public).
+	save "$DHPARAM" /etc/nginx/dhparam.pem
+	# remove nginx placeholder vhost.
+	must rm -f /etc/nginx/sites-enabled/default
+	is_running nginx && nginx -s reload
 }
 
 machine_rename() { # OLD_MACHINE NEW_MACHINE
@@ -36,38 +66,4 @@ machine_rename() { # OLD_MACHINE NEW_MACHINE
 	local NEW_MACHINE=$2
 	checkvars OLD_MACHINE NEW_MACHINE
 	machine_set_hostname "$NEW_MACHINE"
-}
-
-machine_prepare() {
-
-checkvars MACHINE PACKAGES- DHPARAM- GIT_HOSTS-
-
-say; say "Disabling cloud-init because it resets our changes on reboot..."
-[ -d /etc/cloud ] && touch /etc/cloud/cloud-init.disabled
-
-say; machine_set_hostname $MACHINE
-say; machine_set_timezone UTC
-
-# remount /proc so we can pass in secrets via cmdline without them leaking.
-say; say "Remounting /proc with option to hide command line args..."
-must mount -o remount,rw,nosuid,nodev,noexec,relatime,hidepid=2 /proc
-# make that permanent...
-must sed -i '/^proc/d' /etc/fstab
-append "proc  /proc  proc  defaults,nosuid,nodev,noexec,relatime,hidepid=1  0  0" /etc/fstab
-
-say; say "Configuring nginx..."
-# add dhparam.pem from mm (dhparam is public).
-save "$DHPARAM" /etc/nginx/dhparam.pem
-# remove nginx placeholder vhost.
-must rm -f /etc/nginx/sites-enabled/default
-is_running nginx && nginx -s reload
-
-say; say "Configuring kernel to allow binding to ports < 1024 by any user..."
-save 'net.ipv4.ip_unprivileged_port_start=0' \
-	/etc/sysctl.d/50-unprivileged-ports.conf
-must sysctl --system >/dev/null
-
-#say; package_install libssl1
-
-package_install $PACKAGES
 }

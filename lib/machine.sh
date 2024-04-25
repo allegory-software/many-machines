@@ -132,9 +132,8 @@ service_status() { # ["SERVICE1 ..."]
 	[[ $1 ]] && SERVICES=$1
 	for SERVICE in $SERVICES; do
 		local VERSION
-		if VERSION=`version_$SERVICE 2>/dev/null`; then
-			is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
-		fi
+		VERSION=`version_$SERVICE 2>/dev/null`
+		is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
 		printf "%s\n" $MACHINE $SERVICE "${STATUS:--}" "${VERSION:--}"
 	done
 }

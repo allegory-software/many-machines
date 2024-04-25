@@ -146,3 +146,7 @@ each_deploy_or_machine() {
 		each_machine "$@"
 	fi
 }
+
+each_machine_or_deploy() {
+	each_deploy_or_machine "$@"
+}

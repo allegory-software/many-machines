@@ -7,4 +7,4 @@
 	printf "%s\n" $R1
 	exit
 }
-each_machine_or_deploy md_install "$@"
+each_machine_or_deploy machine_or_deploy_uninstall "$@"

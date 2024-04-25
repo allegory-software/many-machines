@@ -60,7 +60,7 @@ $SCRIPT $ARGS
 	fi
 }
 
-ssh_script_machine() { # MACHINE= "SCRIPT" ARGS...
+ssh_script_machine() { # [VARS=] MACHINE= "SCRIPT" ARGS...
 	local SCRIPT=$1; shift
 	checkvars SCRIPT-
 	machine_vars
@@ -69,7 +69,7 @@ ${R1[*]}
 $SCRIPT" "$@"
 }
 
-ssh_script_deploy() { # DEPLOY= "SCRIPT" ARGS...
+ssh_script_deploy() { # [VARS=] DEPLOY= "SCRIPT" ARGS...
 	local SCRIPT=$1; shift
 	checkvars SCRIPT-
 	machine_of $DEPLOY; local MACHINE=$R1

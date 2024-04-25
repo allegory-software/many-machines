@@ -48,32 +48,31 @@ deploy_remove() { # DEPLOY DOMAIN=
 	say "Deploy removed."
 }
 
-deploy_prepare_mysql() {
+deploy_install_user() {
+	[[ -d /home/$DEPLOY ]] && return
+	user_create    $DEPLOY
+	user_lock_pass $DEPLOY
+}
+
+deploy_install_git_keys() {
+	git_keys_update $DEPLOY
+	git_config_user "mm@allegory.ro" "Many Machines"
+}
+
+deploy_install_mysql() {
+	checkvars DEPLOY MYSQL_PASS-
 	mysql_create_db     $DEPLOY
 	mysql_create_user   localhost $DEPLOY "$MYSQL_PASS"
 	mysql_grant_user_db localhost $DEPLOY $DEPLOY
 	mysql_gen_my_cnf    localhost $DEPLOY "$MYSQL_PASS" $DEPLOY
 }
 
-deploy_prepare() {
-	checkvars DEPLOY GIT_HOSTS-
-
-	user_create    $DEPLOY
-	user_lock_pass $DEPLOY
-
-	git_keys_update $DEPLOY
-	git_config_user "mm@allegory.ro" "Many Machines"
-
-	[[ $MYSQL_PASS ]] && deploy_prepare_mysql
-
-	say "Deploy prepare done."
-}
-
 deploy() {
 
-	checkvars DEPLOY REPO APP APP_VERSION
+	checkvars DEPLOY REPO APP APP_VERSION DEPLOY_MODULES
 
-	[ -d /home/$DEPLOY ] || deploy_prepare
+	deploy_stop $DEPLOY_MODULES
+	deploy_install $DEPLOY_MODULES
 
 	say
 	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION ..."

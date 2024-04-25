@@ -4,12 +4,12 @@
 
 _f() {
 
-	# apt is needed first: make it quiet and update sources.
-	# rsync also is needed first: to receive files via rsync in preinstall hooks.
-	say; package_install apt rsync $PACKAGES
+	# install prerequisite modules needed for preinstall hooks to work.
+	machine_install apt rsync
 
-	say; ssh_script_machine "machine_prepare"
-	say; say "Machine prepare done."
+	# install the rest of the modules.
+	checkvars MODULES
+	machine_install $MODULES
 
 }
 each_machine _f
