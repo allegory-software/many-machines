@@ -1,5 +1,5 @@
 #!/bin/bash
-# UPDATE | ["PACKAGE1 ..."] | install package(s)
+# UPDATE | [PACKAGE1 ...] | install package(s)
 . mmlib
 
 [[ $1 ]] || {
@@ -7,4 +7,4 @@
 	printf "%s\n" $R1
 	exit
 }
-each_machine ssh_script_machine "package_install ${1}"
+each_machine package_install "$@"
