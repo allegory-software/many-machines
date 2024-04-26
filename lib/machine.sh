@@ -1,5 +1,7 @@
 # machine lib: programs running as root on a machine administered by mm.
 
+# machine info ---------------------------------------------------------------
+
 is_listening() { # IP=|MACHINE= PORT
 	local PORT=$1
 	[[ $IP ]] || {
@@ -9,8 +11,6 @@ is_listening() { # IP=|MACHINE= PORT
 	checkvars IP PORT
 	nc -zw1 $IP $PORT
 }
-
-# machine info ---------------------------------------------------------------
 
 get_RAM()         { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_RAM()    { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG\n", $2/(1024*1024) }'; }
@@ -64,13 +64,7 @@ get_DEPLOYS() {
 	printf "%s\n" "${s//$'\n'/ }"
 }
 
-# components -----------------------------------------------------------------
-
-package_version() { # PACKAGE
-	local PACKAGE=$1
-	checkvars PACKAGE
-	grep -A 10 "^Package: $PACKAGE\$" /var/lib/dpkg/status | grep "^Version:" | cut -d' ' -f2
-}
+# versions -------------------------------------------------------------------
 
 version_os() {
 	cat /etc/os-release | grep PRETTY_NAME | cut -d'"' -f2

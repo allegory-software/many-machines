@@ -1,5 +1,7 @@
 # deploy lib: programs for deployments admin, running as root on a machine administered by mm.
 
+# deploy info ----------------------------------------------------------------
+
 # get it from github: slow.
 get_APP_WANT() {
 	checkvars REPO APP_VERSION
@@ -34,19 +36,7 @@ get_APP_STATUS() {
 	app running && echo RUNNING || echo DOWN!
 }
 
-deploy_remove() { # DEPLOY DOMAIN=
-	local DEPLOY="$1"
-	checkvars DEPLOY
-
-	user_remove $DEPLOY
-
-	mysql_drop_db $DEPLOY
-	mysql_drop_user localhost $DEPLOY
-
-	[ "$DOMAIN" ] && deploy_nginx_config_remove
-
-	say "Deploy removed."
-}
+# deploy modules -------------------------------------------------------------
 
 deploy_install_user() {
 	[[ -d /home/$DEPLOY ]] && return
@@ -65,6 +55,38 @@ deploy_install_mysql() {
 	mysql_create_user   localhost $DEPLOY "$MYSQL_PASS"
 	mysql_grant_user_db localhost $DEPLOY $DEPLOY
 	mysql_gen_my_cnf    localhost $DEPLOY "$MYSQL_PASS" $DEPLOY
+}
+
+deploy_gen_conf() {
+	checkvars MACHINE DEPLOY APP MYSQL_PASS SECRET
+	local conf=/home/$DEPLOY/$APP/${APP}.conf
+	save "\
+--deploy vars
+deploy = '$DEPLOY'
+machine = '$MACHINE'
+${ENV:+env = '$ENV'}
+${APP_VERSION:+version = '$APP_VERSION'}
+db_name = '$DEPLOY'
+db_user = '$DEPLOY'
+db_pass = '$MYSQL_PASS'
+secret = '$SECRET'
+
+--custom vars
+${HTTP_PORT:+http_port = $HTTP_PORT}
+${HTTP_COMPRESS:+http_compress = $HTTP_COMPRESS}
+${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
+${SMTP_HOST:+smtp_user = '$SMTP_USER'}
+${SMTP_HOST:+smtp_pass = '$SMTP_PASS'}
+${DOMAIN:+host = '$DOMAIN'}
+${NOREPLY_EMAIL:+noreply_email = '$NOREPLY_EMAIL'}
+${DEV_EMAIL:+dev_email = '$DEV_EMAIL'}
+${DEFAULT_COUNTRY:+default_country = '$DEFAULT_COUNTRY'}
+${SESSION_COOKIE_SECURE_FLAG:+session_cookie_secure_flag = $SESSION_COOKIE_SECURE_FLAG}
+
+log_host = '127.0.0.1'
+log_port = 5555
+https_addr = false
+" $conf $DEPLOY
 }
 
 deploy() {
@@ -110,40 +132,10 @@ deploy() {
 	say; say "Deploy done."
 }
 
+# deploy admin ---------------------------------------------------------------
+
 deploy_secret_gen() {
 	must openssl rand 46 | base64 # result is 64 chars
-}
-
-deploy_gen_conf() {
-	checkvars MACHINE DEPLOY APP MYSQL_PASS SECRET
-	local conf=/home/$DEPLOY/$APP/${APP}.conf
-	save "\
---deploy vars
-deploy = '$DEPLOY'
-machine = '$MACHINE'
-${ENV:+env = '$ENV'}
-${APP_VERSION:+version = '$APP_VERSION'}
-db_name = '$DEPLOY'
-db_user = '$DEPLOY'
-db_pass = '$MYSQL_PASS'
-secret = '$SECRET'
-
---custom vars
-${HTTP_PORT:+http_port = $HTTP_PORT}
-${HTTP_COMPRESS:+http_compress = $HTTP_COMPRESS}
-${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
-${SMTP_HOST:+smtp_user = '$SMTP_USER'}
-${SMTP_HOST:+smtp_pass = '$SMTP_PASS'}
-${DOMAIN:+host = '$DOMAIN'}
-${NOREPLY_EMAIL:+noreply_email = '$NOREPLY_EMAIL'}
-${DEV_EMAIL:+dev_email = '$DEV_EMAIL'}
-${DEFAULT_COUNTRY:+default_country = '$DEFAULT_COUNTRY'}
-${SESSION_COOKIE_SECURE_FLAG:+session_cookie_secure_flag = $SESSION_COOKIE_SECURE_FLAG}
-
-log_host = '127.0.0.1'
-log_port = 5555
-https_addr = false
-" $conf $DEPLOY
 }
 
 deploy_rename() { # OLD_DEPLOY NEW_DEPLOY [nosql]
@@ -160,6 +152,20 @@ deploy_rename() { # OLD_DEPLOY NEW_DEPLOY [nosql]
 		mysql_gen_my_cnf localhost $NEW_DEPLOY $MYSQL_PASS $NEW_DEPLOY
 
 	deploy_gen_conf
+}
+
+deploy_remove() { # DEPLOY DOMAIN=
+	local DEPLOY="$1"
+	checkvars DEPLOY
+
+	user_remove $DEPLOY
+
+	mysql_drop_db $DEPLOY
+	mysql_drop_user localhost $DEPLOY
+
+	[ "$DOMAIN" ] && deploy_nginx_config_remove
+
+	say "Deploy removed."
 }
 
 app() {

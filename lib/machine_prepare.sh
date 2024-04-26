@@ -4,9 +4,9 @@ install_disable_cloudinit() {
 }
 
 install_libssl1() {
-	os_version
 	say -n "Installing OpenSSL 1.1 ... "
 	dpkg-query -l libssl1.1 2>/dev/null >/dev/null && { say "already installed."; return 0; }
+	os_version
 	[[ $R1 == ubuntu && $R2 == 22.* ]] || { 
 		say "NYI for OS: $R1 $R2."
 		return 0
@@ -20,7 +20,7 @@ install_libssl1() {
 install_hostname() {
 	local HOST=$MACHINE
 	checkvars HOST
-	say "Setting machine hostname to: $HOST..."
+	say "Setting machine hostname to: '$HOST' ..."
 	must hostnamectl set-hostname $HOST
 	must sed -i '/^127.0.0.1/d' /etc/hosts
 	append "\

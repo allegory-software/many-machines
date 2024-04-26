@@ -8,8 +8,8 @@ _f() {
 	machine_install apt rsync
 
 	# install the rest of the modules.
-	checkvars MODULES
-	machine_install $MODULES
+	must machine_var modules
+	machine_install $R1
 
 }
 each_machine _f

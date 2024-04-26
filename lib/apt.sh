@@ -30,3 +30,9 @@ dpkg_i() {
 	say "Installing dpkg: $@ ..."
 	must dpkg -i --force-confold "$@"
 }
+
+package_version() { # PACKAGE
+	local PACKAGE=$1
+	checkvars PACKAGE
+	grep -A 10 "^Package: $PACKAGE\$" /var/lib/dpkg/status | grep "^Version:" | cut -d' ' -f2
+}
