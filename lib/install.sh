@@ -11,6 +11,7 @@ _on_each_module() { # action= MODULE1 ...
 				return
 			fi
 		fi
+		say "$action $mod ..."
 		$fn $mod
 	done
 }
