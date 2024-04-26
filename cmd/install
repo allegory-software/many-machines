@@ -7,4 +7,12 @@
 	printf "%s\n" $R1
 	exit
 }
-each_machine_or_deploy md_install "$@"
+
+_f() {
+	if [[ $MM_DEPLOY ]]; then
+		deploy_install "$@"
+	else
+		machine_install "$@"
+	fi
+}
+each_machine_or_deploy _f "$@"

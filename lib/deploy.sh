@@ -49,6 +49,11 @@ deploy_install_git_keys() {
 	git_config_user "mm@allegory.ro" "Many Machines"
 }
 
+deploy_preinstall_mysql() {
+	checkvars DEPLOY
+	mysql_pass_gen_once var/deploys/$DEPLOY/mysql_pass
+}
+
 deploy_install_mysql() {
 	checkvars DEPLOY MYSQL_PASS-
 	mysql_create_db     $DEPLOY
@@ -89,25 +94,38 @@ https_addr = false
 " $conf $DEPLOY
 }
 
-deploy() {
+deploy_stop_app() {
+	[[ -d /home/$DEPLOY/$APP ]] || return
+	(app running && must app stop)
+}
 
-	checkvars DEPLOY REPO APP APP_VERSION DEPLOY_MODULES
+deploy_start_app() {
+	say; say "Starting the app..."
+	must app start
+	must app status
+}
 
-	deploy_stop $DEPLOY_MODULES
-	deploy_install $DEPLOY_MODULES
+deploy_install_app() {
+
+	checkvars DEPLOY REPO APP APP_VERSION
 
 	say
 	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION ..."
 
 	say
-	[ -d /home/$DEPLOY/$APP ] && (app running && must app stop)
-
-	say
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app
+
+	must ln -sTf $APP /home/$DEPLOY/app
 
 	say
 	deploy_gen_conf
 
+	say; say "Installing the app..."
+	must app install forealz
+
+}
+
+deploy_install_nginx() {
 	[[ $HTTP_PORT && $DOMAIN ]] && {
 		local src=/home/$DEPLOY/$APP/www/5xx.html
 		local dst=/var/www/$DOMAIN/5xx.html
@@ -116,19 +134,15 @@ deploy() {
 		else
 			save "Server down!" $dst
 		fi
-		local ACME; [[ -f /opt/mm/var/.acme.sh.etc/$DOMAIN/$DOMAIN.cer ]] || ACME=1
+	}
+	[[ $DOMAIN ]] && {
+		local ACME; [[ -f /opt/mm/var/.acme.sh.etc/${DOMAIN}_ecc/$DOMAIN.cer ]] || ACME=1
 		ACME=$ACME deploy_nginx_config
 	}
+}
 
-	must ln -sTf $APP /home/$DEPLOY/app
-
-	say; say "Installing the app..."
-	must app install forealz
-
-	say; say "Starting the app..."
-	must app start
-	must app status
-
+deploy() {
+	deploy_install $DEPLOY_MODULES
 	say; say "Deploy done."
 }
 

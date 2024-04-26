@@ -32,6 +32,7 @@ deploy_install() { # [un=un] DEPLOY= MODULE1 ...
 		script_type=deploy action=deploy_start _each_module "$@"
 	fi
 }
+
 machine_install() { # [un=un] MACHINE= MODULE1 ...
 	checkvars MACHINE
 	say "${un^}Installing on machine '$MACHINE': $* ... "
@@ -39,13 +40,6 @@ machine_install() { # [un=un] MACHINE= MODULE1 ...
 	script_type=machine action=${un}install _each_module "$@"
 	if [[ ! $un ]]; then
 		script_type=machine action=start _each_module "$@"
-	fi
-}
-md_install() { # [un=un] MACHINE=|DEPLOY= MODULE1 ...
-	if [[ $MM_DEPLOY ]]; then
-		deploy_install "$@"
-	else
-		machine_install "$@"
 	fi
 }
 

@@ -3,15 +3,7 @@
 . mmlib
 
 _f() {
-
-	mysql_pass_gen_once var/deploys/$DEPLOY/mysql_pass
-
-	if deploy_var DOMAIN; then
-		local DOMAIN=$R1
-		acme_cert_upload $MACHINE $DOMAIN
-	fi
-
-	ssh_script_deploy "deploy"
-
+	must deploy_var deploy_modules
+	deploy_install $R1
 }
 each_deploy _f

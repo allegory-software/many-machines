@@ -1,5 +1,12 @@
 # deploy nginx config
 
+deploy_preinstall_nginx() {
+	if deploy_var DOMAIN; then
+		local DOMAIN=$R1
+		acme_cert_upload $MACHINE $DOMAIN
+	fi
+}
+
 deploy_nginx_config() { # DOMAIN= HTTP_PORT= [ACME=1] $0
 
 	checkvars ACME_THUMBPRINT

@@ -48,8 +48,8 @@ mysql_config() { # NAME CONFIG
 	local name="$1"
 	local s="$2"
 	checkvars name
-	save "[myqld]
-$s" /etc/mysql/mysql.conf.d/mm-$name
+	save "[mysqld]
+$s" /etc/mysql/mysql.conf.d/mm-$name.cnf
 }
 
 # TODO: install percona's monitoring and management tool and see if it's
