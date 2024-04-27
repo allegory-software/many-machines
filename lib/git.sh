@@ -9,6 +9,7 @@ install_git() {
 	git_config_default_branch master
 	git_config_user "mm@allegory.ro" "Many Machines"
 	git_keys_update
+	git_install_git_up
 }
 
 git_config_default_branch() {
@@ -16,7 +17,7 @@ git_config_default_branch() {
 	git config --global init.defaultBranch $1
 }
 
-install_git_up() {
+git_install_git_up() {
 	say "Installing 'git up' command..."
 	local git_up=/usr/lib/git-core/git-up
 	local s='

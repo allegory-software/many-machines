@@ -48,7 +48,7 @@ deploy_uninstall_user() {
 	user_remove $DEPLOY
 }
 
-deploy_install_git_keys() {
+deploy_install_git() {
 	git_keys_update $DEPLOY
 	git_config_user "mm@allegory.ro" "Many Machines"
 }
