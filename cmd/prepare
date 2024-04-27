@@ -5,11 +5,11 @@
 _f() {
 
 	# install prerequisite modules needed for preinstall hooks to work.
-	machine_install apt rsync
+	md_install apt rsync
 
 	# install the rest of the modules.
-	must machine_var modules
-	machine_install $R1
+	must machine_var MODULES
+	md_install $R1
 
 }
 each_machine _f

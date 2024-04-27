@@ -141,11 +141,6 @@ deploy_install_nginx() {
 	}
 }
 
-deploy() {
-	deploy_install $DEPLOY_MODULES
-	say; say "Deploy done."
-}
-
 # deploy admin ---------------------------------------------------------------
 
 deploy_secret_gen() {

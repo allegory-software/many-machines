@@ -1,9 +1,0 @@
-#!/bin/bash
-# DEPLOY || deploy an app on its target machine
-. mmlib
-
-_f() {
-	must deploy_var deploy_modules
-	deploy_install $R1
-}
-each_deploy _f

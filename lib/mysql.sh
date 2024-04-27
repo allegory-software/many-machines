@@ -1,5 +1,5 @@
 # mysql lib: mysql wrapper for install, admin and querying.
-# query works without prompt on both a root shell and a $DPELOY user shell.
+# query works without prompt on both a root shell and a $DEPLOY user shell.
 
 # mysql install --------------------------------------------------------------
 
