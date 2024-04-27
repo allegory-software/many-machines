@@ -1,6 +1,7 @@
 # ssh lib: ssh config and operation wrappers.
 
 ssh_cmd_opt() { # MACHINE=
+	checkvars MACHINE
 	R1=(ssh
 -o ConnectTimeout=3
 -o PreferredAuthentications=publickey
@@ -50,6 +51,7 @@ $SCRIPT $ARGS
 		# faster but doesn't report line numbers correctly on errors in lib code.
 		run ssh_to bash -s <<< "
 $VARS
+cd /opt/mm || exit 1
 set -f # disable globbing
 set -o pipefail
 $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
@@ -205,36 +207,40 @@ ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
 
 # rsync ----------------------------------------------------------------------
 
-# SRC_DIR= [DST_DIR=] [LINK_DIR=] [SRC_MACHINE=] [DST_MACHINE=] [PROGRESS=1] [DRY] [VERBOSE] rsync_cmd
+# SRC_DIR= [DST_DIR=] [LINK_DIR=] [SRC_MACHINE=] [DST_MACHINE=] [PROGRESS=1] [DRY] [MOVE] [VERBOSE] rsync_cmd
 rsync_cmd() {
-	[ "$DST_DIR" ] || DST_DIR="$SRC_DIR"
+	[[ $DST_DIR ]] || DST_DIR=$SRC_DIR
 	checkvars SRC_DIR DST_DIR
-	[ "$LINK_DIR" ] && {
-		LINK_DIR="$(realpath "$LINK_DIR")" # --link-dest path must be absolute!
+	[[ $LINK_DIR ]] && {
+		LINK_DIR=$(realpath "$LINK_DIR") # --link-dest path must be absolute!
 		checkvars LINK_DIR
 	}
 
-	[ "$SRC_MACHINE" ] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
-	[ "$DST_MACHINE" ] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
+	[[ $SRC_MACHINE ]] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
+	[[ $DST_MACHINE ]] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
+	[[ $SRC_MACHINE && $DST_MACHINE ]] && die "Can't copy between two remotes."
+	local MACHINE=$SRC_MACHINE$DST_MACHINE
 
 	say -n "Sync'ing${DRY:+ DRY}: '$SRC_DIR' -> '$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
-	[ "$DRY" ] && local VERBOSE=1
+	[[ $DRY ]] && local VERBOSE=1
+	[[ $PROGRESS ]] && say
 
-	MACHINE=$DST_MACHINE ssh_cmd_opt; local ssh_cmd=("${R1[@]}")
+	local ssh_cmd; [[ $MACHINE ]] && ssh_cmd_opt; ssh_cmd=("${R1[@]}")
 
 	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
 	R1=(rsync ${DELETE:+--delete} --relative --timeout=5
 		${PROGRESS:+--info=progress2}
 		${LINK_DIR:+--link-dest="$LINK_DIR"}
+		${MOVE:+--remove-source-files}
 		${DRY:+--dry-run}
 		${VERBOSE:+-v}
-		-e "${ssh_cmd[*]}"
-		-aHR "$SRC_DIR" "$DST_DIR"
 	)
+	[[ $ssh_cmd ]] && R1+=(-e "${ssh_cmd[*]}")
+	R1+=(-aHR "$SRC_DIR" "$DST_DIR")
 }
 
 rsync_dir() {
 	rsync_cmd
 	must "${R1[@]}"
-	say OK
+	[[ $PROGRESS ]] || say OK
 }

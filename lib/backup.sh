@@ -1,4 +1,4 @@
-# backup lib: programs running as root on machines that mm administers.
+# backup lib
 
 bkp_dir() { # machine|deploy [BKP] [files|mysql]
 	[ "$1" ] || die
@@ -31,7 +31,6 @@ machine_backup_files() { # BACKUP_DIR [PARENT_BACKUP_DIR]
 
 	sync_dir /home $dir/home "$parent_dir"
 	sync_dir /root/.acme.sh/ $dir "$parent_dir"
-
 }
 
 machine_restore_files() { # BKP_DIR

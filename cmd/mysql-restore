@@ -1,0 +1,13 @@
+#!/bin/bash
+# MYSQL ADMIN | DB | restore a database
+. mmlib
+
+DB=$1; checkvars DB
+
+_f() {
+	SRC_MACHINE= DST_MACHINE=$MACHINE SRC_DIR=/opt/mm/backups/./$DB.qp DST_DIR=/opt/mm/tmp/$DB.$$.qp PROGRESS=1 MOVE=1 rsync_dir
+	must mv -v --backup=numbered backups/$DEPLOY.$$.qp backups/$DEPLOY.qp
+	ssh_script "mysql_restore_db $DEPLOY /root"
+	[[ $1 ]] && SRC_DIR=/root/$DEPLOY.qb DST_MACHINE=$1 DST_DIR=/ rsync_dir
+}
+NOALL=1 each_deploy _f "$@"
