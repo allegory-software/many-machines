@@ -1,12 +1,10 @@
 #!/bin/bash
-# UPDATE | [please|MODULE1 ...] | purge modules
+# UPDATE | [all or MODULE1 ...] | purge modules
 . mmlib
 
 _f() {
 	if [[ ! $1 ]]; then
 		md_list_modules
-	elif [[ $1 == please ]]; then
-		md_uninstall
 	else
 		md_uninstall "$@"
 	fi

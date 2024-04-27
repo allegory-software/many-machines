@@ -1,12 +1,10 @@
 #!/bin/bash
-# UPDATE | [please|MODULE1 ...] | install modules
+# UPDATE | [all or MODULE1 ...] | install modules
 . mmlib
 
 _f() {
 	if [[ ! $1 ]]; then
 		md_list_modules
-	elif [[ $1 == please ]]; then
-		md_install
 	else
 		md_install "$@"
 	fi
