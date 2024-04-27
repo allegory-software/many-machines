@@ -2,6 +2,6 @@
 # SERVICES | ["SERVICE1 ..."] | print service(s) status
 . mmlib
 
-each_machine_ssh_list service_status \
+each_md_ssh_list md_status \
 	"%-10s %-10s %s" \
 	"SERVICE STATUS VERSION" "$@"

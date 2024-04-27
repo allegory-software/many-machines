@@ -7,4 +7,4 @@ _f() {
 	checkvars DB
 	AS_DEPLOY=1 ssh_script "MYSQL_PRETTY=1 query_on $DB 'show tables'"
 }
-each_deploy_or_machine _f
+each_md _f

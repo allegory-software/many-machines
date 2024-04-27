@@ -5,4 +5,4 @@
 _f() {
 	MM_SSH_TTY=1 ssh_to mysql ${DB:-$DEPLOY} "$@"
 }
-AS_DEPLOY=1 each_deploy_or_machine _f "$@"
+AS_DEPLOY=1 each_md _f "$@"

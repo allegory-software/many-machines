@@ -2,12 +2,5 @@
 # SERVICES | SERVICE | start a service
 . mmlib
 
-_f() {
-	if [[ ! $1 ]]; then # list services
-		must machine_var SERVICES
-		say "Services on $MACHINE: $R1"
-	else
-		ssh_script "service_start $1"
-	fi
-}
-each_machine_or_deploy _f "$@"
+[[ $1 ]] || QUIET=1
+each_md md_start "$@"

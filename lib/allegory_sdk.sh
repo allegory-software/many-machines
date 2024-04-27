@@ -30,6 +30,11 @@ deploy_stop_app() {
 	(app running && must app stop)
 }
 
+deploy_is_running_app() {
+	[[ -d /home/$DEPLOY/$APP ]] || return
+	(app running)
+}
+
 deploy_install_app() {
 
 	checkvars DEPLOY REPO APP APP_VERSION

@@ -32,7 +32,8 @@ cat_all_varfiles() { # [LOCAL="local "] DIR
 	checkvars DIR
 	declare -A R2
 	_add_varfiles $DIR
-	local INC; for INC in `find -L $DIR -maxdepth 10 -name '.?*'`; do
+	# NOTE: this dives into the `machine` symlink and includes all machine vars!
+	local INC; for INC in `find -L $DIR -maxdepth 10 -name '.?*'`; do 
 		[ -d $INC ] || continue
 		_add_varfiles $INC
 	done
@@ -67,7 +68,7 @@ machine_vars() { # MACHINE= [VAR1 ...]
 }
 
 deploy_vars() { # DEPLOY= [VAR1 ...]
-	machine_of_deploy "$DEPLOY"; local MACHINE=$R1
+	checkvars DEPLOY
 	cat_varfiles var/deploys/$DEPLOY "$@"
 }
 

@@ -2,12 +2,5 @@
 # UPDATE | [all or MODULE1 ...] | purge modules
 . mmlib
 
-_f() {
-	if [[ ! $1 ]]; then
-		md_list_modules
-	else
-		md_uninstall "$@"
-	fi
-}
 [[ $1 ]] || QUIET=1
-each_machine_or_deploy _f "$@"
+each_md md_uninstall "$@"

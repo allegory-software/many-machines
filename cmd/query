@@ -10,4 +10,4 @@ _f() {
 	checkvars DB
 	ssh_script "query_on $DB" "$SQL"
 }
-QUIET=1 each_deploy_or_machine _f
+QUIET=1 each_md _f

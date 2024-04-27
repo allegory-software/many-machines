@@ -72,7 +72,6 @@ $SCRIPT" "$@"
 ssh_script_deploy() { # [VARS=] DEPLOY= "SCRIPT" ARGS...
 	local SCRIPT=$1; shift
 	checkvars SCRIPT-
-	machine_of $DEPLOY; local MACHINE=$R1
 	deploy_vars
 	VARS="DEPLOY $VARS" ssh_script "
 ${R1[*]}

@@ -151,16 +151,12 @@ each_deploy_with_domain() {
 	each_deploy _each_deploy_with_domain "$@"
 }
 
-each_deploy_or_machine() {
+each_md() {
 	if [[ $MM_DEPLOY ]]; then
 		each_deploy "$@"
 	else
 		each_machine "$@"
 	fi
-}
-
-each_machine_or_deploy() {
-	each_deploy_or_machine "$@"
 }
 
 # machine & deploy ops -------------------------------------------------------

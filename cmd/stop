@@ -2,12 +2,5 @@
 # SERVICES | SERVICE | stop a service
 . mmlib
 
-_f() {
-	if [[ ! $1 ]]; then # list services
-		must machine_var SERVICES
-		say "Services on $MACHINE: $R1"
-	else
-		ssh_script "service_stop $1"
-	fi
-}
-each_machine _f "$@"
+[[ $1 ]] || QUIET=1
+each_md md_stop "$@"

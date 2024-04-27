@@ -81,9 +81,8 @@ service_stop() {
 service_status() { # ["SERVICE1 ..."]
 	local SERVICES=${1:-$SERVICES}
 	for SERVICE in $SERVICES; do
-		local VERSION
-		VERSION=`version_$SERVICE 2>/dev/null`
-		service_is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
+		local VERSION=`version_$SERVICE 2>/dev/null`
+		local STATUS; service_is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
 		printf "%s\n" $MACHINE $SERVICE "${STATUS:--}" "${VERSION:--}"
 	done
 }
