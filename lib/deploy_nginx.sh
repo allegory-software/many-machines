@@ -118,9 +118,7 @@ deploy_nginx_config_acme() {
 	ACME=1 deploy_nginx_config
 }
 
-deploy_nginx_config_remove() {
-	local DOMAIN="$1"
-	[ "$DOMAIN" ] || return 0
+deploy_uninstall_nginx() {
+	[[ $DOMAIN ]] || return 0
 	rm_file /etc/nginx/sites-enabled/$DOMAIN
 }
-

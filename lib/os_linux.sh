@@ -78,9 +78,14 @@ get_REGION()  { wget -q -T10 -O- ipinfo.io/region; }
 # installers -----------------------------------------------------------------
 
 install_disable_cloudinit() {
-	say; say "Disabling cloud-init because it resets our changes on reboot..."
-	[[ -d /etc/cloud ]] && touch /etc/cloud/cloud-init.disabled
-	return 0
+	say; say "Disabling cloud-init because it resets our changes on reboot ..."
+	[[ -d /etc/cloud ]] || return 0
+	touch /etc/cloud/cloud-init.disabled
+}
+uninstall_disable_cloudinit() {
+	say; say "Removing cloud-init.disabled ..."
+	[[ -d /etc/cloud ]] || return 0
+	rm_file /etc/cloud/cloud-init.disabled
 }
 
 set_hostname() { # HOST
@@ -98,25 +103,38 @@ set_hostname() { # HOST
 install_hostname() {
 	set_hostname $MACHINE
 }
+uninstall_hostname() {
+	set_hostname local
+}
 
 install_timezone() {
 	checkvars TIMEZONE
 	say; say "Setting machine timezone to: '$TIMEZONE' ...."
 	must timedatectl set-timezone "$TIMEZONE" # sets /etc/localtime and /etc/timezone
 }
+uninstall_timezone() { true; }
 
 # remount /proc so we can pass in secrets via cmdline without them leaking.
 install_secure_proc() {
-	say; say "Remounting /proc with option to hide command line args..."
+	say; say "Remounting /proc with option to hide command line args ..."
 	must mount -o remount,rw,nosuid,nodev,noexec,relatime,hidepid=2 /proc
 	# make that permanent...
 	must sed -i '/^proc/d' /etc/fstab
 	append "proc  /proc  proc  defaults,nosuid,nodev,noexec,relatime,hidepid=1  0  0" /etc/fstab
 }
+uninstall_secure_proc() {
+	# TODO
+	true
+}
 
 install_low_ports() {
-	say; say "Configuring kernel to allow binding to ports < 1024 by any user..."
+	say; say "Configuring kernel to allow binding to ports < 1024 by any user ..."
 	save 'net.ipv4.ip_unprivileged_port_start=0' \
 		/etc/sysctl.d/50-unprivileged-ports.conf
+	must sysctl --system >/dev/null
+}
+uninstall_low_ports() {
+	say; say "Removing kernel config that allows binding to ports < 1024 by any user ..."
+	rm_file /etc/sysctl.d/50-unprivileged-ports.conf
 	must sysctl --system >/dev/null
 }

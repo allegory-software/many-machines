@@ -44,6 +44,10 @@ deploy_install_user() {
 	user_lock_pass $DEPLOY
 }
 
+deploy_uninstall_user() {
+	user_remove $DEPLOY
+}
+
 deploy_install_git_keys() {
 	git_keys_update $DEPLOY
 	git_config_user "mm@allegory.ro" "Many Machines"
@@ -60,6 +64,11 @@ deploy_install_mysql() {
 	mysql_create_user   localhost $DEPLOY "$MYSQL_PASS"
 	mysql_grant_user_db localhost $DEPLOY $DEPLOY
 	mysql_gen_my_cnf    localhost $DEPLOY "$MYSQL_PASS" $DEPLOY
+}
+
+deploy_uninstall_mysql() {
+	mysql_drop_db $DEPLOY
+	mysql_drop_user localhost $DEPLOY
 }
 
 deploy_gen_conf() {
@@ -92,37 +101,6 @@ log_host = '127.0.0.1'
 log_port = 5555
 https_addr = false
 " $conf $DEPLOY
-}
-
-deploy_stop_app() {
-	[[ -d /home/$DEPLOY/$APP ]] || return
-	(app running && must app stop)
-}
-
-deploy_start_app() {
-	say; say "Starting the app..."
-	must app start
-	must app status
-}
-
-deploy_install_app() {
-
-	checkvars DEPLOY REPO APP APP_VERSION
-
-	say
-	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION ..."
-
-	say
-	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app
-
-	must ln -sTf $APP /home/$DEPLOY/app
-
-	say
-	deploy_gen_conf
-
-	say; say "Installing the app..."
-	must app install forealz
-
 }
 
 deploy_install_nginx() {
@@ -163,27 +141,6 @@ deploy_rename() { # OLD_DEPLOY NEW_DEPLOY [nosql]
 	deploy_gen_conf
 }
 
-deploy_remove() { # DEPLOY DOMAIN=
-	local DEPLOY="$1"
-	checkvars DEPLOY
-
-	user_remove $DEPLOY
-
-	mysql_drop_db $DEPLOY
-	mysql_drop_user localhost $DEPLOY
-
-	[ "$DOMAIN" ] && deploy_nginx_config_remove
-
-	say "Deploy removed."
-}
-
-app() {
-	checkvars DEPLOY
-	must pushd /home/$DEPLOY/app
-	VARS="DEBUG VERBOSE" must run_as $DEPLOY ./`readlink ../app` "$@"
-	popd
-}
-
 test_task() {
 	local n=0
 	while true; do
@@ -192,20 +149,4 @@ test_task() {
 		echo "Testing $n (O)"
 		sleep .5
 	done
-}
-
-start() {
-	if [ -d /home/$1/app ]; then
-		DEPLOY=$1 app start
-	else
-		service_start $1
-	fi
-}
-
-stop() {
-	if [ -d /home/$1/app ]; then
-		DEPLOY=$1 app stop
-	else
-		service_stop $1
-	fi
 }

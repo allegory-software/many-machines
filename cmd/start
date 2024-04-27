@@ -10,4 +10,4 @@ _f() {
 		ssh_script "service_start $1"
 	fi
 }
-each_machine _f "$@"
+each_machine_or_deploy _f "$@"

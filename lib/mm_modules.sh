@@ -25,11 +25,15 @@ _each_module() { # action= MODULE1 ...
 				continue
 			fi
 		fi
-		$fn $mod
+		echo $fn $mod
 	done
 }
 _md_install() { # [un=un] [MODULE1 ...]
-	local MODULES="$*"; [[ $MODULES == all ]] && { md_modules; MODULES=$R1; }
+	local MODULES="$*"
+	if [[ $MODULES == all ]]; then
+		md_modules; MODULES=$R1
+		[[ $un ]] && MODULES=`awk '{for(i=NF;i>0;i--) printf("%s ",$i)}' <<<"$MODULES"`
+	fi
 	local d; [[ $MM_DEPLOY ]] && d=deploy_
 	local s; [[ $MM_DEPLOY ]] && s=deploy || s=machine
 	action=${d}pre${un}install _each_module $MODULES
