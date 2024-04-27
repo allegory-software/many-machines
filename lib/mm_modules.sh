@@ -29,7 +29,7 @@ _each_module() { # action= MODULE1 ...
 	done
 }
 _md_install() { # [un=un] [MODULE1 ...]
-	local MODULES="$*"; [[ $MODULES == all ]] || { md_modules; MODULES=$R1; }
+	local MODULES="$*"; [[ $MODULES == all ]] && { md_modules; MODULES=$R1; }
 	local d; [[ $MM_DEPLOY ]] && d=deploy_
 	local s; [[ $MM_DEPLOY ]] && s=deploy || s=machine
 	action=${d}pre${un}install _each_module $MODULES
@@ -47,6 +47,9 @@ md_list_modules() { # DEPLOY=|MACHINE=
 		printf "%-10s %s\n" $MACHINE "${modules[*]}"
 	fi
 }
+
+default_install()   { package_install   "$1"; }
+default_uninstall() { package_uninstall "$1"; }
 
 # version reporting ----------------------------------------------------------
 

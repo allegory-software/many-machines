@@ -1,6 +1,6 @@
 # debian package installers
 
-# packages -------------------------------------------------------------------
+# apt wrappers ---------------------------------------------------------------
 
 install_apt() {
 	save "APT::Quiet "2";" /etc/apt/apt.conf.d/10quiet
@@ -13,12 +13,12 @@ apt_get() { # ...
 }
 
 apt_get_update() {
-	say "Updating apt package list ..."
+	say; say "Updating apt package list ..."
 	apt_get update --allow-releaseinfo-change
 }
 
 apt_get_install() { # ...
-	say "Installing apt packages: $@ ..."
+	say; say "Installing apt packages: $@ ..."
 	apt_get install $@
 }
 
@@ -37,6 +37,16 @@ apt_has_install() { # PACKAGE
 	apt-cache show "$1" &> /dev/null
 }
 
+# packages -------------------------------------------------------------------
+
+package_install() { # PACKAGE
+	apt_get_install "$1"
+}
+
+package_uninstall() { # PACKAGE
+	apt_get_purge "$1"
+}
+
 package_version() { # PACKAGE
 	local PACKAGE=$1
 	checkvars PACKAGE
@@ -47,23 +57,25 @@ package_version() { # PACKAGE
 
 service_is_installed() {
 	local SERVICE=$1; checkvars SERVICE
-	systemctl status "$SERVICE" &> /dev/null
+	systemctl status $SERVICE &> /dev/null
+	[[ $? != 4 ]]
 }
 
-is_running() {
-	systemctl -q is-active "$1"
+service_is_running() {
+	local SERVICE=$1; checkvars SERVICE
+	systemctl -q is-active $SERVICE
 }
 
 service_start() {
 	local SERVICE=$1; checkvars SERVICE
 	say "Starting $SERVICE..."
-	must service "$SERVICE" start
+	must service $SERVICE start
 }
 
 service_stop() {
 	local SERVICE=$1; checkvars SERVICE
 	say "Stopping $SERVICE..."
-	must service "$SERVICE" stop
+	must service $SERVICE stop
 }
 
 service_status() { # ["SERVICE1 ..."]
@@ -71,38 +83,12 @@ service_status() { # ["SERVICE1 ..."]
 	for SERVICE in $SERVICES; do
 		local VERSION
 		VERSION=`version_$SERVICE 2>/dev/null`
-		is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
+		service_is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
 		printf "%s\n" $MACHINE $SERVICE "${STATUS:--}" "${VERSION:--}"
 	done
 }
 
-# package modules ------------------------------------------------------------
-
-default_install() {
-	apt_get_install "$1"
-}
-
-default_uninstall() {
-	apt_get_purge "$1"
-}
-
 # installers -----------------------------------------------------------------
-
-version_cron() {
-	# this is too slow...
-	#apt show cron 2>/dev/null | grep Version: | cut -d' ' -f2
-	package_version cron
-}
-
-install_nginx() {
-	apt_get_install nginx
-	say "Configuring nginx..."
-	# add dhparam.pem from mm (dhparam is public).
-	save "$DHPARAM" /etc/nginx/dhparam.pem
-	# remove nginx placeholder vhost.
-	must rm -f /etc/nginx/sites-enabled/default
-	is_running nginx && nginx -s reload
-}
 
 install_libssl1() {
 	say; say -n "Installing OpenSSL 1.1 ... "
@@ -159,10 +145,9 @@ log_bin_trust_function_creators = 1
 
 install_tarantool() { # tarantool 3.0
 	say; say "Installing Tarantool..."
-	is_running tarantool && { say "Tarantool is running. Stop it first."; return 0; }
 	must curl -L https://tarantool.io/oBlHHAA/release/3/installer.sh | bash
 	apt_get_install tarantool
-	# remove it or it breaks apt-get. this means no updates, just fresh installs every time.
+	# remove the source repo or it breaks apt-get. this means no updates, just fresh installs every time.
 	rm_dir /etc/apt/sources.list.d/tarantool_3.list
 	say "Tarantool install done."
 }

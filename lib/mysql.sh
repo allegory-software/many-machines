@@ -3,6 +3,8 @@
 
 # mysql install --------------------------------------------------------------
 
+has_mysql() { which mysql >/dev/null; }
+
 version_mysql() {
 	has_mysql && mysql --version | awk '{print $3}'
 }
@@ -21,120 +23,6 @@ $s" /etc/mysql/mysql.conf.d/mm-$name.cnf
 # worth having it running.
 mysql_set_pool_size() {
 	query "set global innodb_buffer_pool_size = $1"
-}
-
-# xtrabackup backups ---------------------------------------------------------
-
-# https://www.percona.com/doc/percona-xtrabackup/8.0/xtrabackup_bin/incremental_backups.html
-# https://www.percona.com/doc/percona-xtrabackup/8.0/backup_scenarios/incremental_backup.html
-
-xbkp() {
-	must xtrabackup --user=root "$@" # password is read from ~/.my.cnf
-}
-
-mysql_backup_all() { # BKP_DIR [PARENT_BKP_DIR]
-	local BKP_DIR="$1"
-	local PARENT_BKP_DIR="$2"
-	checkvars BKP_DIR
-
-	must mkdir -p $BKP_DIR
-
-	xbkp --backup --target-dir=$BKP_DIR \
-		--rsync --parallel=$(nproc) --compress --compress-threads=$(nproc) \
-		${PARENT_BKP_DIR:+--incremental-basedir=$PARENT_BKP_DIR}
-
-	[ "$PARENT_BKP_DIR" ] && \
-		must ln -s $PARENT_BKP_DIR $BKP_DIR-parent
-}
-
-mysql_restore_all() { # BKP_DIR
-
-	local BKP_DIR="$1"
-	checkvars BKP_DIR
-
-	# walk up the parent chain and collect dirs in reverse.
-	# BKP_DIR becomes the last parent, i.e. the non-incremental backup.
-	local BKP_DIRS="$BKP_DIR"
-	while true; do
-		local PARENT_BKP_DIR="$(readlink $BKP_DIR-parent)"
-		[ "$PARENT_BKP_DIR" ] || break
-		BKP_DIRS="$PARENT_BKP_DIR $DIRS"
-		BKP_DIR="$PARENT_BKP_DIR"
-	done
-
-	local RESTORE_DIR=/root/mm-machine-restore/mysql
-
-	# prepare base backup and all incrementals in order without doing rollbacks.
-	sync_dir "$BKP_DIR" "$RESTORE_DIR"
-	local PARENT_BKP_DIR=""
-	for BKP_DIR in $BKP_DIRS; do
-		xbkp --prepare --target-dir=$RESTORE_DIR --apply-log-only \
-			--rsync --parallel=$(nproc) --decompress --decompress-threads=$(nproc) $O \
-			${PARENT_BKP_DIR:+--incremental-dir=$BKP_DIR}
-		PARENT_BKP_DIR=$BKP_DIR
-	done
-
-	# perform rollbacks.
-	xbkp --prepare --target-dir=$RESTORE_DIR
-
-	mysql_stop
-
-	rm_dir /var/lib/mysql
-	must mkdir -p /var/lib/mysql
-	xbkp --move-back --target-dir=$RESTORE_DIR
-	must chown -R mysql:mysql /var/lib/mysql
-	rm_dir $RESTORE_DIR
-
-	mysql_start
-
-}
-
-# mysqldump backups ----------------------------------------------------------
-
-mysql_backup_db() { # DB BACKUP_DIR
-	local db="$1"
-	local dir="$2"
-	checkvars db dir
-	must mkdir -p "$dir"
-	say -n "mysqldump'ing $db to $dir ... "
-
-	must mysqldump -u root \
-		--no-create-db \
-		--extended-insert \
-		--order-by-primary \
-		--triggers \
-		--routines \
-		--skip_add_locks \
-		--skip-lock-tables \
-		--quick \
-		"$db" | qpress -i dump.sql "$dir/dump.qp"
-
-	say "OK. $(stat --printf="%s" "$dir/dump.qp" | numfmt --to=iec) bytes written."
-}
-
-# rename user in DEFINER clauses in a mysqldump, in order to be able to
-# restore the dump into a different db name.
-# NOTE: All clauses containing **any user** are renamed!
-mysqldump_fix_user() { # USER
-	local user="$1"
-	checkvars user
-	sed "s/\`[^\`]*\`@\`localhost\`/\`$user\`@\`localhost\`/g"
-}
-
-mysql_restore_db() { # DB BACKUP_DIR
-	local db="$1"
-	local dir="$2"
-	checkvars db dir
-
-	mysql_drop_db   $db
-	mysql_create_db $db
-	(
-		set -o pipefail
-		must qpress -do "$dir/dump.qp" | mysqldump_fix_user $db | must mysql $db
-	) || exit $?
-
-	mysql_create_user   localhost $db localhost $db
-	mysql_grant_user_db localhost $db $db
 }
 
 # mysql password -------------------------------------------------------------
@@ -184,8 +72,6 @@ ${db:+database=$db}
 }
 
 # mysql queries --------------------------------------------------------------
-
-has_mysql() { which mysql >/dev/null; }
 
 MYSQL_OPTS_SCRIPT="-N -B"
 MYSQL_OPTS_PRETTY="-G -t"

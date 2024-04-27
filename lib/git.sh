@@ -4,6 +4,7 @@
 export GIT_SSH_COMMAND="ssh -o ConnectTimeout=3 -o ControlMaster=auto -o ControlPath=~/.ssh/control-%h-%p-%r -o ControlPersist=600"
 
 install_git() {
+	package_install git
 	say; say "Configuring git for pushing..."
 	git_config_default_branch master
 	git_config_user "mm@allegory.ro" "Many Machines"

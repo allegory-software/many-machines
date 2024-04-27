@@ -15,6 +15,10 @@ version_kernel() {
 	uname -r
 }
 
+version_cron() {
+	package_version cron
+}
+
 is_listening() { # IP=|MACHINE= PORT
 	local PORT=$1
 	[[ $IP ]] || {

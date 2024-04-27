@@ -38,8 +38,12 @@ rm_file() { # FILE
 	checkvars file
 	check_abs_filepath "$file"
 	say -n "Removing file: $file ... "
-	[ "$DRY" ] || must rm -f "$file"
-	say OK
+	if [[ ! -f $file ]]; then
+		say "not found"
+	else
+		[ "$DRY" ] || must rm -f "$file"
+		say OK
+	fi
 }
 
 mv_file_with_backup() { # OLD NEW
