@@ -4,9 +4,9 @@
 
 FMT="%-10s %-10s %-10s %-10s %-10s\n"
 _f() {
-	deploy_var APP; local APP=$R1
-	deploy_var ENV; local ENV=$R1
-	deploy_var APP_VERSION; local APP_VERSION=$R1
+	md_var APP; local APP=$R1
+	md_var ENV; local ENV=$R1
+	md_var APP_VERSION; local APP_VERSION=$R1
 	printf "$FMT" "$MACHINE" "$DEPLOY" "$APP" "$ENV" "$APP_VERSION"
 }
 printf "$FMT" MACHINE DEPLOY APP ENV APP_VERSION

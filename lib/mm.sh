@@ -31,17 +31,20 @@ check_deploy() { # DEPLOY
 	[ -d var/deploys/$1 ] || die "Deployment unknown: $1"
 }
 
-machine_of_deploy() { # DEPLOY
+try_machine_of_deploy() {
 	check_deploy "$1"
-	R1=$(basename $(readlink var/deploys/$1/machine))
+	R1=$(basename $(readlink var/deploys/$1/machine) 2>/dev/null)
+}
+machine_of_deploy() { # DEPLOY
+	try_machine_of_deploy "$@"
 	[ "$R1" ] || die "No machine set for deploy: $1."
 }
 
 machine_of() { # MACHINE|DEPLOY -> MACHINE, , [DEPLOY]
 	checknosp "$1" "MACHINE or DEPLOY required"
-	if [ -d var/deploys/$1 ]; then
+	if [[ -d var/deploys/$1 ]]; then
 		machine_of_deploy $1; R3=$1
-	elif [ -d var/machines/$1 ]; then
+	elif [[ -d var/machines/$1 ]]; then
 		R1=$1
 	else
 		die "No MACHINE or DEPLOY named: '$1'"
@@ -55,12 +58,12 @@ ip_of() { # MD -> IP, MACHINE, [DEPLOY]
 }
 
 machine_is_active() {
-	machine_var ACTIVE 0
+	DEPLOY= md_var ACTIVE 0
 	[[ $R1 != 0 ]]; return $?
 }
 
 deploy_is_active() {
-	deploy_var ACTIVE 0
+	md_var ACTIVE 0
 	[[ $R1 != 0 ]]; return $?
 }
 
@@ -130,19 +133,18 @@ each_deploy() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES="" DEPLOYS= COMMAND ARG
 	fi
 	local CMD=$1; shift
 	for DEPLOY in $DEPLOYS; do
-		active_deploys
-		machine_of $DEPLOY
+		try_machine_of_deploy $DEPLOY; local MACHINE=$R1
 		[[ $QUIET ]] || say "On deploy $DEPLOY:"
 		if [[ $NOSUBPROC ]]; then
-			MACHINE=$R1 "$CMD" "$@"
+			"$CMD" "$@"
 		else
-			(MACHINE=$R1 "$CMD" "$@")
+			("$CMD" "$@")
 		fi
 	done
 }
 
 _each_deploy_with_domain() {
-	if deploy_var DOMAIN; then
+	if md_var DOMAIN; then
 		local DOMAIN=$R1
 		(DOMAIN=$DOMAIN "$@")
 	fi

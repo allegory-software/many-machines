@@ -3,7 +3,7 @@
 . mmlib
 
 _f() {
-	must machine_var PUBLIC_IP
+	must md_var PUBLIC_IP
 	ping "$@" $R1
 }
 each_machine _f "$@"

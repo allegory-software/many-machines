@@ -2,4 +2,4 @@
 # INFO || list deployed deployments
 . mmlib
 
-each_machine_custom_list "%-10s %s" "DEPLOYS"
+md_custom_list "%-10s %s" "DEPLOYS"

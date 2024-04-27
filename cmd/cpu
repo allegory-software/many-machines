@@ -2,6 +2,6 @@
 # INFO || get CPU info
 . mmlib
 
-each_machine_custom_list \
+m_custom_list \
 	"%-5s %-5s %-10s %-10s %-5s %-20s"\
 	"CPUS CORES CPU_CACHE CPU_FREQ AES CPU"

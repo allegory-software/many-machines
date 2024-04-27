@@ -22,7 +22,7 @@ version_cron() {
 is_listening() { # IP=|MACHINE= PORT
 	local PORT=$1
 	[[ $IP ]] || {
-		must machine_var PUBLIC_IP
+		must md_var PUBLIC_IP
 		local IP=$R1
 	}
 	checkvars IP PORT

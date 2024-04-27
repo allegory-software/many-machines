@@ -78,15 +78,6 @@ service_stop() {
 	must service $SERVICE stop
 }
 
-service_status() { # ["SERVICE1 ..."]
-	local SERVICES=${1:-$SERVICES}
-	for SERVICE in $SERVICES; do
-		local VERSION=`version_$SERVICE 2>/dev/null`
-		local STATUS; service_is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
-		printf "%s\n" $MACHINE $SERVICE "${STATUS:--}" "${VERSION:--}"
-	done
-}
-
 # installers -----------------------------------------------------------------
 
 install_libssl1() {

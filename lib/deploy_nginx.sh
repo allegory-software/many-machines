@@ -1,7 +1,7 @@
 # deploy nginx config
 
 deploy_preinstall_nginx() {
-	if deploy_var DOMAIN; then
+	if md_var DOMAIN; then
 		local DOMAIN=$R1
 		acme_cert_upload $MACHINE $DOMAIN
 	fi

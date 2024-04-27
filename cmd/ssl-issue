@@ -4,6 +4,6 @@
 
 _f() {
 	acme_ca_upload
-	ssh_script_deploy 'acme_issue_cert $DOMAIN'
+	md_ssh_script 'acme_issue_cert $DOMAIN'
 }
 each_deploy_with_domain _f

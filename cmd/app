@@ -2,4 +2,4 @@
 # DEPLOY | ... | run the deployed app
 . mmlib
 
-each_deploy ssh_script_deploy app "$@"
+each_deploy md_ssh_script app "$@"

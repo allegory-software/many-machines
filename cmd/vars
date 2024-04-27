@@ -1,9 +1,9 @@
 #!/bin/bash
-# INFO | [VAR1 ...] | list machine env vars
+# INFO | [VAR1 ...] | list env vars
 . mmlib
 
 _f() {
-	machine_vars "$@"
+	md_vars "$@"
 	printf "%s" "${R1[@]}"
 }
 each_machine _f "$@"

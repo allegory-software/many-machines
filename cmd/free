@@ -2,7 +2,7 @@
 # INFO || list available RAM & HDD
 . mmlib
 
-each_machine_custom_list \
+md_custom_list \
 	"%-5s %-5s %-10s %-10s %-10s %-10s %-10s %-10s" \
 	"CPUS CORES RAM FREE_RAM HDD FREE_HDD SWAP FREE_SWAP" \
 	"$@"

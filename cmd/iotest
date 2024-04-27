@@ -3,4 +3,4 @@
 MM_LIBS="iotest"
 . mmlib
 
-each_machine_custom_list "%-10s" "IO_SPEED"
+m_custom_list "%-10s" "IO_SPEED"

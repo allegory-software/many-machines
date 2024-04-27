@@ -8,7 +8,7 @@ _f() {
 	md_install apt rsync
 
 	# install the rest of the modules.
-	must machine_var MODULES
+	must md_var MODULES
 	md_install $R1
 
 }
