@@ -1,10 +1,15 @@
 #!/bin/bash
-# UPDATE | [PACKAGE1 ...] | install package(s)
+# UPDATE | [please|MODULE1 ...] | purge modules
 . mmlib
 
-[[ $1 ]] || {
-	functions_with_prefix ${MM_DEPLOY:+deploy_}install_
-	printf "%s\n" $R1
-	exit
+_f() {
+	if [[ ! $1 ]]; then
+		md_list_modules
+	elif [[ $1 == please ]]; then
+		md_uninstall
+	else
+		md_uninstall "$@"
+	fi
 }
-each_machine_or_deploy machine_or_deploy_uninstall "$@"
+[[ $1 ]] || QUIET=1
+each_machine_or_deploy _f "$@"

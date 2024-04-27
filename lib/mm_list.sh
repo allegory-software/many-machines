@@ -25,7 +25,7 @@ _deploy_ssh_list() {
 	local FUNC=$1 FMT=$2 FIELDS=$3; shift 3
 	local VALS
 	(
-	if VALS=$(VARS=FIELDS ssh_script_deploy $FUNC "$@"); then
+	if VALS=$(VARS="MM_DEPLOY FIELDS" ssh_script_deploy $FUNC "$@"); then
 		local IFS0="$IFS"; IFS=$'\n'
 		printf "%-10s %-10s $FMT\n" $VALS
 		IFS="$IFS0"
@@ -40,6 +40,14 @@ each_deploy_ssh_list() { # LIST_FUNC FMT "FIELD1 ..." LIST_FUNC_ARGS...
 	checkvars FUNC FMT- FIELDS-
 	printf "%-10s %-10s $FMT\n" MACHINE DEPLOY $FIELDS
 	QUIET=1 each_deploy _deploy_ssh_list "$@"
+}
+
+each_md_ssh_list() {
+	if [[ $MM_DEPLOY ]]; then
+		each_deploy_ssh_list "$@"
+	else
+		each_machine_ssh_list "$@"
+	fi
 }
 
 # listings with configurable field lists -------------------------------------

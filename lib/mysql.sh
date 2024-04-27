@@ -42,6 +42,10 @@ say "MySQL install done."
 
 }
 
+version_mysql() {
+	has_mysql && mysql --version | awk '{print $3}'
+}
+
 # mysql admin ----------------------------------------------------------------
 
 mysql_config() { # NAME CONFIG

@@ -22,6 +22,10 @@ install_acme() {
 	say "acme.sh install done."
 }
 
+version_acme() {
+	/root/.acme.sh/acme.sh -v | tail -1
+}
+
 acme_sh() {
 	local cmd_args="/root/.acme.sh/acme.sh --config-home $ACME_DIR"
 	run $cmd_args "$@"

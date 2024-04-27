@@ -1,5 +1,7 @@
 # die harder, see https://github.com/capr/die which this extends.
 
+# printing, tracing & error handling
+
 say()       { echo "$@" >&2; }
 say_ln()    { printf '=%.0s\n' {1..72}; }
 die()       { say -n "ABORT: "; say "$@"; exit 1; }
@@ -52,9 +54,14 @@ checkvars() { # VARNAME1[-] ...
 	return 0
 }
 
-trim() { # VARNAME
-	read -rd '' $1 <<<"${!1}"
-	return 0
+checkvar_in() { # VARNAME VAL1 ...
+	local var=$1; shift
+	local val=${!var}
+	local v; for v in "$@"; do
+		[[ $val == $v ]] && return 0
+	done
+	local s="$*"; s=${s// /|}
+	die "${FUNCNAME[1]}: $var: invalid: $val, expected: $s"
 }
 
 # quoting args, vars and bash code for passing scripts through sudo and ssh.
@@ -109,5 +116,19 @@ functions_with_prefix() { # PREFIX
 		if [[ $func_name == "$prefix"* ]]; then
 			R1+=" ${func_name#$prefix}"
 		fi
+	done
+}
+
+# data manipulation
+
+trim() { # VARNAME
+	read -rd '' $1 <<<"${!1}"
+	return 0
+}
+
+to_keys() { # MAP KEY1 ...
+	local -n map=$1; shift
+	local s; for s in "$@"; do
+		map[$s]=1
 	done
 }

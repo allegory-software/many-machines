@@ -1,5 +1,7 @@
 # mm lib: functions reading var/machines and var/deploys on the mm machine.
 
+# mm module ------------------------------------------------------------------
+
 install_mm() {
 	git_clone_for root git@github.com:allegory-software/many-machines2 /opt/mm master mm
 	# install globally
@@ -9,6 +11,15 @@ install_mm() {
 	remove_line /opt/mm/mm-autocomplete.sh /root/.bashrc
 	append ". /opt/mm/mm-autocomplete.sh" /root/.bashrc
 }
+
+version_mm() {
+	(
+	must cd /opt/mm
+	must git rev-parse --short HEAD
+	)
+}
+
+# machines and deploys db ----------------------------------------------------
 
 check_machine() { # MACHINE
 	checknosp "$1" "MACHINE required"
@@ -71,7 +82,8 @@ active_deploys() {
 	R1=$S
 }
 
-# NOTE: set NOALL=1 in scripts for dangerous commands. User will set ALL=1 to override.
+# NOTE: set NOALL=1 for dangerous commands. User will set ALL=1 to override.
+# NOTE: set NOSUBPROC=1 to break on first error.
 each_machine() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS...
 	declare -A mm
 	local M D
@@ -149,4 +161,13 @@ each_deploy_or_machine() {
 
 each_machine_or_deploy() {
 	each_deploy_or_machine "$@"
+}
+
+# machine & deploy ops -------------------------------------------------------
+
+machine_rename() { # OLD_MACHINE NEW_MACHINE
+	local OLD_MACHINE=$1
+	local NEW_MACHINE=$2
+	checkvars OLD_MACHINE NEW_MACHINE
+	set_hostname $NEW_MACHINE
 }

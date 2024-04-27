@@ -1,18 +1,15 @@
 #!/bin/bash
-# UPDATE | [PACKAGE1 ...] | install package(s)
+# UPDATE | [please|MODULE1 ...] | install modules
 . mmlib
 
-[[ $1 ]] || {
-	functions_with_prefix ${MM_DEPLOY:+deploy_}install_
-	printf "%s\n" $R1
-	exit
-}
-
 _f() {
-	if [[ $MM_DEPLOY ]]; then
-		deploy_install "$@"
+	if [[ ! $1 ]]; then
+		md_list_modules
+	elif [[ $1 == please ]]; then
+		md_install
 	else
-		machine_install "$@"
+		md_install "$@"
 	fi
 }
+[[ $1 ]] || QUIET=1
 each_machine_or_deploy _f "$@"

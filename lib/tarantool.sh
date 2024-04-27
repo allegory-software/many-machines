@@ -9,3 +9,7 @@ install_tarantool() { # tarantool 3.0
 	rm_dir /etc/apt/sources.list.d/tarantool_3.list
 	say "Tarantool install done."
 }
+
+version_tarantool() {
+	tarantool --version | head -1
+}
