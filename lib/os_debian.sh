@@ -67,7 +67,7 @@ service_stop() {
 }
 
 service_status() { # ["SERVICE1 ..."]
-	[[ $1 ]] && SERVICES=$1
+	local SERVICES=${1:-$SERVICES}
 	for SERVICE in $SERVICES; do
 		local VERSION
 		VERSION=`version_$SERVICE 2>/dev/null`
@@ -86,19 +86,12 @@ default_uninstall() {
 	apt_get_purge "$1"
 }
 
-# custom packages ------------------------------------------------------------
+# installers -----------------------------------------------------------------
 
 version_cron() {
 	# this is too slow...
 	#apt show cron 2>/dev/null | grep Version: | cut -d' ' -f2
 	package_version cron
-}
-
-install_low_ports() {
-	say; say "Configuring kernel to allow binding to ports < 1024 by any user..."
-	save 'net.ipv4.ip_unprivileged_port_start=0' \
-		/etc/sysctl.d/50-unprivileged-ports.conf
-	must sysctl --system >/dev/null
 }
 
 install_nginx() {
@@ -115,7 +108,7 @@ install_libssl1() {
 	say; say -n "Installing OpenSSL 1.1 ... "
 	dpkg-query -l libssl1.1 2>/dev/null >/dev/null && { say "already installed."; return 0; }
 	os_version
-	[[ $R1 == ubuntu && $R2 == 22.* ]] || { 
+	[[ $R1 == ubuntu && $R2 == 22.* ]] || {
 		say "NYI for OS: $R1 $R2."
 		return 0
 	}
@@ -123,4 +116,53 @@ install_libssl1() {
 	local pkg=libssl1.1_1.1.1f-1ubuntu2.22_amd64.deb
 	must wget -q http://nz2.archive.ubuntu.com/ubuntu/pool/main/o/openssl/$pkg
 	dpkg_i $pkg
+	rm $pkg
+}
+
+install_mysql() {
+
+	checkvars MYSQL_ROOT_PASS
+
+	say; say "Installing MySQL (Percona latest)..."
+	service_stop mysql
+
+	apt_get_install gnupg2 lsb-release
+
+	must wget -nv https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb -O percona.deb
+	dpkg_i percona.deb
+	apt_get install --fix-broken
+
+	must rm percona.deb
+	must percona-release setup -y pxc80
+	apt_get_install percona-xtradb-cluster percona-xtrabackup-80 qpress
+	rm percona.deb
+
+	mysql_config default "
+
+# amazing that this is not the default...
+bind-address = 127.0.0.1
+mysqlx-bind-address = 127.0.0.1
+
+# our binlog is row-based, but we still get an error when creating procs.
+log_bin_trust_function_creators = 1
+
+"
+
+	service_start mysql
+
+	mysql_update_pass localhost root $MYSQL_ROOT_PASS
+	mysql_gen_my_cnf  localhost root $MYSQL_ROOT_PASS
+
+	say "MySQL install done."
+
+}
+
+install_tarantool() { # tarantool 3.0
+	say; say "Installing Tarantool..."
+	is_running tarantool && { say "Tarantool is running. Stop it first."; return 0; }
+	must curl -L https://tarantool.io/oBlHHAA/release/3/installer.sh | bash
+	apt_get_install tarantool
+	# remove it or it breaks apt-get. this means no updates, just fresh installs every time.
+	rm_dir /etc/apt/sources.list.d/tarantool_3.list
+	say "Tarantool install done."
 }
