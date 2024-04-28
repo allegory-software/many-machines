@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ADMIN || restart MySQL in skip-grant-tables mode
+# MYSQL ADMIN ;; restart MySQL in skip-grant-tables mode
 . mmlib
 
 _f() {

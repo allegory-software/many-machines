@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ADMIN | FILE or latest DST_MACHINE [DST_DB] | restore a database to a machine
+# MYSQL ADMIN ; FILE|latest DST_MACHINE [DST_DB] ; restore a database to a machine
 . mmlib
 
 list_backups() {

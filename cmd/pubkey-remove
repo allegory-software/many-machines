@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSH | [KEYNAME] ["USER1 ..."] | remove mm's public key on root and all deploy users
+# SSH ; [KEYNAME] ["USER1 ..."] ; remove mm's public key on root and all deploy users
 . mmlib
 
 KEYNAME=${1:-mm-$HOSTNAME}

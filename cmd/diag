@@ -1,5 +1,5 @@
 #!/bin/bash
-# DIAG || find and report problems
+# DIAG ;; find and report problems
 . mmlib
 
 MIN_FREE_HDD_KB=$((1024 * 1000)) # 1 GB

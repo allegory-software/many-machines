@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ADMIN | backup a database and bring it here
+# MYSQL ADMIN ;; backup a database and bring it here
 . mmlib
 
 locally=$1

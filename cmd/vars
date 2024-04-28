@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO | [VAR1 ...] | list env vars
+# INFO ; [VAR1 ...] ; list env vars
 . mmlib
 
 _f() {

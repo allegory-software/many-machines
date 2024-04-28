@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ADMIN | DB please | drop database
+# MYSQL ADMIN ; DB please ; drop database
 . mmlib
 
 DB=$1; checkvars DB

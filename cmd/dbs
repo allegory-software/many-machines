@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL || list MySQL databases
+# MYSQL ;; list MySQL databases
 . mmlib
 
 _f() {

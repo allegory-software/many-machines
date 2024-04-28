@@ -91,27 +91,11 @@ md_status() { # ["SERVICE1 ..."]
 
 # version reporting ----------------------------------------------------------
 
-machine_component_version() { # ["COMPONENT1 ..."]
-	local COMPS=$1; [[ $COMPS ]] || { functions_with_prefix version_; COMPS=$R1; }
+md_component_version() { # DEPLOY= [COMPONENT1 ...]
+	local d=${DEPLOY:+deploy_}
+	local COMPS=$*; [[ $COMPS ]] || { functions_with_prefix ${d}version_; COMPS=$R1; }
 	for COMP in $COMPS; do
-		local VERSION=`version_$COMP 2>/dev/null`
-		printf "%s\n" "$MACHINE" "*" "$COMP" "${VERSION:--}"
+		local VERSION=`${d}version_$COMP 2>/dev/null`
+		printf "%s\n" $MACHINE ${DEPLOY:-*} $COMP "${VERSION:--}"
 	done
-}
-
-deploy_component_version() { # DEPLOY= ["COMPONENT1 ..."]
-	checkvars DEPLOY
-	local COMPS=$1; [[ $COMPS ]] || { functions_with_prefix deploy_version_; COMPS=$R1; }
-	for COMP in $COMPS; do
-		local VERSION=`deploy_version_$COMP 2>/dev/null`
-		printf "%s\n" $MACHINE $DEPLOY $COMP "${VERSION:--}"
-	done
-}
-
-md_component_version() {
-	if [[ $DEPLOY ]]; then
-		deploy_component_version "$@"
-	else
-		machine_component_version "$@"
-	fi
 }

@@ -1,5 +1,5 @@
 #!/bin/bash
-# SERVICES | SERVICE | stop a service
+# SERVICES ; SERVICE ; stop a service
 . mmlib
 
 [[ $1 ]] || QUIET=1

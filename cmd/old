@@ -1,4 +1,4 @@
 #!/bin/bash
-# DIAG || list deployments that need updating
+# DIAG ;; list deployments that need updating
 
 mm d-st | grep !

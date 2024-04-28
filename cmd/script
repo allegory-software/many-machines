@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSH | "SCRIPT" ARGS... | exec bash script remotely
+# SSH ; "SCRIPT" ARGS... ; exec bash script remotely
 . mmlib
 
 AS_DEPLOY=1 each_md ssh_script "$@"

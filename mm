@@ -56,7 +56,7 @@ for CMD in `ls -1 cmd`; do
 	exec 3<&-
 	# split line into parts.
 	local SECTION ARGS DESCR
-	IFS="|" read -r SECTION ARGS DESCR <<< "$s"
+	IFS=";" read -r SECTION ARGS DESCR <<< "$s"
 	trim SECTION; trim ARGS; trim DESCR
 	# add help line to its section.
 	printf -v s "mm ${WHITE}%-20s${ENDCOLOR} %s\n" "${CMD} $ARGS" "$DESCR"

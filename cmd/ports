@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO | [IP or port] | list bound IP & ports
+# INFO ; [IP|port] ; list bound IP & ports
 . mmlib
 
 _f() {

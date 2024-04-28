@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ADMIN | NEW_DB | clone a database
+# MYSQL ADMIN ; NEW_DB ; clone a database
 . mmlib
 
 NEW_DB=$1

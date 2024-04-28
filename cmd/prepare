@@ -1,5 +1,5 @@
 #!/bin/bash
-# UPDATE || prepare a machine for deployments
+# UPDATE ;; prepare a machine for deployments
 . mmlib
 
 _f() {

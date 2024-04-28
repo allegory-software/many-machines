@@ -1,4 +1,4 @@
 #!/bin/bash
-# SSH | [COMMAND ...] | run ssh command that needs tty
+# SSH ; [COMMAND ...] ; run ssh command that needs tty
 
 NOALL=1 MM_SSH_TTY=1 mm ssh "$@"

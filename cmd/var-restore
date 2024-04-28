@@ -1,5 +1,5 @@
 #!/bin/bash
-# BACKUP | please | restore previous var dir
+# BACKUP ; please ; restore previous var dir
 . mmlib
 
 [[ $1 == please ]] || die "Say please"

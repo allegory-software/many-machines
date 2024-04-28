@@ -1,5 +1,5 @@
 #!/bin/bash
-# DEPLOY | ... | run the deployed app
+# DEPLOY ; ... ; run the deployed app
 . mmlib
 
 each_deploy md_ssh_script app "$@"

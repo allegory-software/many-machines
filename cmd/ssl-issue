@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSL || issue SSL certificates for deployment(s)
+# SSL ;; issue SSL certificates for deployment(s)
 . mmlib
 
 _f() {

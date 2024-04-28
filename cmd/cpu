@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO || get CPU info
+# INFO ;; get CPU info
 . mmlib
 
 m_custom_list \

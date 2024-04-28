@@ -1,5 +1,5 @@
 #!/bin/bash
-# TOOLS | DIR | print dir's lean size
+# TOOLS ; DIR ; print dir's lean size
 . mmlib
 
 dir_lean_size "$1"

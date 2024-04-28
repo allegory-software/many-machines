@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSH | [KEYNAME] | generate a new ssh key
+# SSH ; [KEYNAME] ; generate a new ssh key
 . mmlib
 
 KEYNAME=${1:-mm-$HOSTNAME}

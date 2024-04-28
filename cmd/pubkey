@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSH | [KEYNAME] [USER] | print a ssh public key
+# SSH ; [KEYNAME] [USER] ; print a ssh public key
 . mmlib
 
 KEYNAME=${1:-mm-$HOSTNAME}
