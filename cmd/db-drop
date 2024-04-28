@@ -1,12 +1,12 @@
 #!/bin/bash
-# MYSQL ADMIN | [DB=] | drop database
+# MYSQL ADMIN | DB please | drop database
 . mmlib
 
+DB=$1; checkvars DB
+[[ $2 == please ]] || die "Say please"
 _f() {
-	checkvars MACHINE
-	local DB=${DB:-$DEPLOY}
 	ssh_script "
 mysql_drop_db $DB
 "
 }
-NOALL=1 each_md _f
+NOALL=1 each_machine _f

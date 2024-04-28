@@ -132,3 +132,18 @@ to_keys() { # MAP KEY1 ...
 		map[$s]=1
 	done
 }
+
+# formatting
+
+timeago() { # TIME
+	local t=$1
+	local now=`date +%s`
+	local d=$((now - t))
+	if   ((d < 2 * 60           )); then R1="$d seconds ago"
+	elif ((d < 2 * 60*60        )); then R1="$(( d / (60) )) minutes ago"
+	elif ((d < 2 * 60*60*24     )); then R1="$(( d / (60*60) )) hours ago"
+	elif ((d < 2 * 60*60*24*30  )); then R1="$(( d / (60*60*24) )) days ago"
+	elif ((d < 2 * 60*60*24*365 )); then R1="$(( d / (60*60*24*30) )) months ago"
+	else                                 R1="$(( d / (60*60*24*365) )) years ago"
+	fi
+}

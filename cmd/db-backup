@@ -6,8 +6,12 @@ locally=$1
 
 _f() {
 	checkvars MACHINE
-	ssh_script "mysql_backup_db $DEPLOY tmp/$DEPLOY.$$.qp"
-	SRC_MACHINE=$MACHINE DST_MACHINE= SRC_DIR=/opt/mm/tmp/./$DEPLOY.$$.qp DST_DIR=/opt/mm/backups/$DEPLOY.$$.qp PROGRESS=1 MOVE=1 rsync_dir
-	must mv -v --backup=numbered backups/$DEPLOY.$$.qp backups/$DEPLOY.qp
+	backup_date; local DATE=$R1
+	ssh_script "mysql_backup_db $DEPLOY tmp/$DEPLOY-$DATE.qp"
+	SRC_MACHINE=$MACHINE DST_MACHINE= \
+		SRC_DIR=/opt/mm/tmp/./$DEPLOY-$DATE.qp \
+		DST_DIR=/opt/mm/backups/$DEPLOY-$DATE.qp \
+		PROGRESS=1 MOVE=1 rsync_dir
+	(must cd backups; must ln -sf $DEPLOY-$DATE.qp $DEPLOY-latest.qp) || exit
 }
 NOALL=1 each_deploy _f

@@ -59,7 +59,7 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 	must git -c advice.detachedHead=false checkout $QUIET -B "$VERSION" "origin/$VERSION"
 	local commit=$(must git rev-parse --short HEAD)
 	say "Done. Now at: $commit"
-	[ "$SUBMODULES" ] && {
+	[[ $SUBMODULES ]] && {
 		local SUB_PATH
 		for SUB_PATH in $SUBMODULES; do
 			must innermost_subpath_with_file .gitmodules $PWD/$SUB_PATH
@@ -69,14 +69,14 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 			must git submodule update $QUIET --init --remote $R2
 			local commit=$(must cd $R2; must git rev-parse --short HEAD)
 			say "Done. Now at: $commit"
-			) || exit $?
+			) || exit
 		done
 	}
 	exit 0
 	)
 	local ret=$?
 	must chown -R $USER:$USER $DIR
-	[ $ret != 0 ] && exit
+	[ $ret != 0 ] && exit $ret
 }
 
 install_mgit() {

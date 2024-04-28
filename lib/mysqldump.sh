@@ -4,7 +4,7 @@ mysql_backup_db() { # DB FILE
 	local db=$1 file=$2
 	checkvars db file
 	must mkdir -p $(dirname $file)
-	say -n "mysqldump'ing $db to $file ... "
+	say -n "Dumping MySQL database '$MACHINE:$db' to file '$file' ... "
 
 	must mysqldump -u root \
 		--no-create-db \
@@ -35,8 +35,7 @@ mysql_restore_db() { # DB FILE
 
 	mysql_drop_db   $db
 	mysql_create_db $db
-	(must qpress -do $file | mysqldump_fix_user $db | must mysql $db) || exit $?
-
-	mysql_create_user   localhost $db localhost $db
-	mysql_grant_user_db localhost $db $db
+	say -n "Restoring MySQL database '$MACHINE:$db' from file '$file' ... "
+	must qpress -do $file | mysqldump_fix_user $db | must mysql $db
+	say OK
 }

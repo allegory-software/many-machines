@@ -1,5 +1,23 @@
 # backup lib
 
+backup_date() {
+	R1=`date -u +%Y-%m-%d-%H-%M-%S`
+}
+
+parse_backup_date() { # FILE -> TIME
+	local s=${1%.*} # remove extension
+	s=${s: -19} # keep date-time part
+	local d=${s:0:10} # date part
+	local t=${s:11} # time part
+	t=${t//-/:}
+	R1=`date -d "$d $t" +%s`
+}
+
+rel_backup_date() { # FILE
+	parse_backup_date "$1"
+	timeago $R1
+}
+
 bkp_dir() { # machine|deploy [BKP] [files|mysql]
 	[ "$1" ] || die
 	[ "$2" ] || return
