@@ -1,0 +1,21 @@
+#!/bin/bash
+# MYSQL ADMIN | FILE DST_MACHINE [DST_DB] | restore a database to a machine
+. mmlib
+
+FILE=$1 MD=$2 DST_DB=${3:-1}
+[[ $FILE ]] || {
+	ls -1lch backups
+	exit
+}
+checkvars FILE DST_DB
+machine_of "$MD"; MACHINE=$R1
+checkfile backups/$FILE
+
+SRC_MACHINE= DST_MACHINE=$MACHINE \
+	SRC_DIR=/opt/mm/backups/./$FILE \
+	DST_DIR=/opt/mm/tmp/$DST_DB.$$.qp \
+	PROGRESS=1 rsync_dir
+ssh_script "
+mysql_restore_db $DST_DB tmp/$DST_DB.$$.qp
+must rm tmp/$DST_DB.$$.qp
+"

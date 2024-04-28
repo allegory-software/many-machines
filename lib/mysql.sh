@@ -97,6 +97,12 @@ query() { # SQL
 	_must_mysql -e "$1"
 }
 
+ssh_query() { # SQL
+	local DB=${DB:-$DEPLOY} SQL=$1
+	checkvars DB SQL-
+	AS_DEPLOY=1 ssh_script "MYSQL_PRETTY=1 query_on $DB" "$SQL"
+}
+
 mysql_exec_on() { # DB SQL
 	[ "$DRY" ] && { echo "DRY mysql_exec_on $1 [[$2]]"; return; }
 	query_on "$@"

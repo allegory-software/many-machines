@@ -4,10 +4,4 @@
 
 SQL="$1"
 checkvars SQL-
-
-_f() {
-	local DB=${DB:-DEPLOY}
-	checkvars DB
-	ssh_script "query_on $DB" "$SQL"
-}
-QUIET=1 each_md _f
+QUIET=1 each_md ssh_query "$SQL"

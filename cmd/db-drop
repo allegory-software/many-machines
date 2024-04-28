@@ -1,0 +1,12 @@
+#!/bin/bash
+# MYSQL ADMIN | [DB=] | drop database
+. mmlib
+
+_f() {
+	checkvars MACHINE
+	local DB=${DB:-$DEPLOY}
+	ssh_script "
+mysql_drop_db $DB
+"
+}
+NOALL=1 each_md _f

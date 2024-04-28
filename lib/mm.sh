@@ -23,12 +23,12 @@ version_mm() {
 
 check_machine() { # MACHINE
 	checknosp "$1" "MACHINE required"
-	[ -d var/machines/$1 ] || die "Machine unknown: $1"
+	[[ -d var/machines/$1 ]] || die "Machine unknown: $1"
 }
 
 check_deploy() { # DEPLOY
 	checknosp "$1" "DEPLOY required"
-	[ -d var/deploys/$1 ] || die "Deployment unknown: $1"
+	[[ -d var/deploys/$1 ]] || die "Deployment unknown: $1"
 }
 
 try_machine_of_deploy() {
@@ -37,7 +37,7 @@ try_machine_of_deploy() {
 }
 machine_of_deploy() { # DEPLOY
 	try_machine_of_deploy "$@"
-	[ "$R1" ] || die "No machine set for deploy: $1."
+	[[ $R1 ]] || die "No machine set for deploy: $1."
 }
 
 machine_of() { # MACHINE|DEPLOY -> MACHINE, , [DEPLOY]

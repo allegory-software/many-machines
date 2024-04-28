@@ -4,10 +4,4 @@
 
 TABLE="$1"
 checkvars TABLE
-
-list_cols() {
-	local DB=${DB:-$DEPLOY}
-	checkvars DB
-	ssh_script "MYSQL_PRETTY=1 query_on $DB 'show columns from $TABLE'"
-}
-each_md list_cols $TABLE
+each_md ssh_query "show columns from $TABLE"

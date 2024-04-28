@@ -1,0 +1,15 @@
+#!/bin/bash
+# MYSQL | [DB=] [where expr] | select from session table
+. mmlib
+
+WHERE=${1:-1=1}
+checkvars WHERE-
+
+each_md ssh_query "
+select
+	token, usr, 
+	expires, clientip, ctime
+	from sess
+	where $WHERE
+	order by ctime desc
+"

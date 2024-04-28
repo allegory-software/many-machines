@@ -1,6 +1,8 @@
 #!/bin/bash
-# MYSQL ADMIN | backup a database to this machine
+# MYSQL ADMIN | backup a database and bring it here
 . mmlib
+
+locally=$1
 
 _f() {
 	checkvars MACHINE
