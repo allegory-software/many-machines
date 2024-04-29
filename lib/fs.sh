@@ -100,11 +100,9 @@ sha_dir() { # DIR
 dir_lean_size() { # DIR
 	local DIR="$1"
 	checkvars DIR
-	local s
-	s=$(find $DIR -type f -links 1 -printf "%s\n" | awk '{s=s+$1} END {printf "%d\n", s}' | numfmt --to=iec) \
-		 || die "dir_lean_size: [$ret]"
-	[ "$s" ] || s=0
-	echo "$s"
+	R1=`find $DIR -type f -links 1 -printf "%s\n" | awk '{s=s+$1} END {printf "%d\n", s}'` \
+		|| die "dir_lean_size: [$?]"
+	[[ $R1 ]] || R1=0
 }
 
 append() { # S FILE
@@ -178,7 +176,8 @@ sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
 	# NOTE: the dot syntax cuts out the path before it as a way to make the path relative.
 	[ "$DRY" ] || must rsync --delete -aHR ${LINK_DIR:+--link-dest=$LINK_DIR} $SRC_DIR/./. $DST_DIR
 
-	say "OK. $(dir_lean_size $dst_dir | numfmt --to=iec) bytes in destination."
+	dir_lean_size $DST_DIR; kbytes $R1
+	say "OK. $R1 bytes in destination."
 }
 
 innermost_subpath_with_file() { # FILE DIR

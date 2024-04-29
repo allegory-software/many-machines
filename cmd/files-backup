@@ -1,0 +1,16 @@
+#!/bin/bash
+# BACKUP ;; backup deploy files here
+. mmlib
+
+_f() {
+	checkvars MACHINE
+	backup_date; local DATE=$R1
+	varfile var/deploys/$DEPLOY backup_files; local backup_files_file=$R1
+	FILE_LIST_FILE=$backup_files_file SRC_MACHINE=$MACHINE DST_MACHINE= \
+		SRC_DIR=/home/$DEPLOY \
+		DST_DIR=/opt/mm/backups/$DEPLOY-$DATE \
+		LINK_DIR=/opt/mm/backups/$DEPLOY-latest \
+		PROGRESS=1 rsync_dir
+	(must cd backups; must ln -sf $DEPLOY-$DATE $DEPLOY-latest) || exit
+}
+NOALL=1 each_deploy _f

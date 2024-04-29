@@ -1,5 +1,5 @@
 #!/bin/bash
-# BACKUP ;; backup a database and bring it here
+# MYSQL ADMIN ;; backup a database and bring it here
 . mmlib
 
 _f() {
@@ -10,6 +10,6 @@ _f() {
 		SRC_DIR=/opt/mm/tmp/./$DEPLOY-$DATE.qp \
 		DST_DIR=/opt/mm/backups/$DEPLOY-$DATE.qp \
 		PROGRESS=1 MOVE=1 rsync_dir
-	(must cd backups; must ln -sf $DEPLOY-$DATE.qp $DEPLOY-latest.qp) || exit
+	#(must cd backups; must ln -sf $DEPLOY-$DATE.qp $DEPLOY-latest.qp) || exit
 }
-NOALL=1 each_deploy _f
+NOALL=1 each_md _f

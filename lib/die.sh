@@ -147,3 +147,7 @@ timeago() { # TIME
 	else                                 R1="$(( d / (60*60*24*365) )) years ago"
 	fi
 }
+
+kbytes() { # BYTES
+	R1=`numfmt --to=iec <<<"$1"`
+}

@@ -207,11 +207,11 @@ ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
 
 # rsync ----------------------------------------------------------------------
 
-# SRC_DIR= [DST_DIR=] [LINK_DIR=] [SRC_MACHINE=] [DST_MACHINE=] [PROGRESS=1] [DRY] [MOVE] [VERBOSE] rsync_cmd
+# SRC_DIR= [FILE_LIST_FILE=] [DST_DIR=] [LINK_DIR=] [SRC_MACHINE=] [DST_MACHINE=] [PROGRESS=1] [DRY] [MOVE] [VERBOSE] rsync_cmd
 rsync_cmd() {
 	[[ $DST_DIR ]] || DST_DIR=$SRC_DIR
 	checkvars SRC_DIR DST_DIR
-	[[ $LINK_DIR ]] && {
+	[[ $LINK_DIR && -d $LINK_DIR ]] && {
 		LINK_DIR=$(realpath "$LINK_DIR") # --link-dest path must be absolute!
 		checkvars LINK_DIR
 	}
@@ -228,10 +228,12 @@ rsync_cmd() {
 	local ssh_cmd; [[ $MACHINE ]] && ssh_cmd_opt; ssh_cmd=("${R1[@]}")
 
 	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
-	R1=(rsync ${DELETE:+--delete} --relative --timeout=5
+	R1=(rsync
+		${DELETE:+--delete} --relative --timeout=5
 		${PROGRESS:+--info=progress2}
 		${LINK_DIR:+--link-dest="$LINK_DIR"}
 		${MOVE:+--remove-source-files}
+		${FILE_LIST_FILE+--files-from="$FILE_LIST_FILE"}
 		${DRY:+--dry-run}
 		${VERBOSE:+-v}
 	)

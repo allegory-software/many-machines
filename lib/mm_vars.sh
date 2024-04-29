@@ -82,3 +82,5 @@ md_var() { # MACHINE=|DEPLOY= VAR [DEFAULT]
 		cat_varfile var/machines/$MACHINE $VAR "$DEFAULT"
 	fi
 }
+
+mm_var() { cat_varfile var/mm $1; }
