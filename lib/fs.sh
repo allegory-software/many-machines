@@ -13,6 +13,11 @@ checkfile() {
 	R1=$1
 }
 
+checkdir() {
+	[[ -d $1 ]] || die "Dir not found: $1"
+	R1=$1
+}
+
 # NOTE: trims content!
 catfile() { # FILE [DEFAULT]
 	local FILE=$1 DEFAULT=$2; checkvars FILE
@@ -46,15 +51,20 @@ rm_file() { # FILE
 	fi
 }
 
+ln_file() {
+	local FILE=$1 LINK=$2
+	checkvars FILE LINK
+	must ln -sfTv $FILE $LINK
+}
+
 mv_file_with_backup() { # OLD NEW
-	local OLD="$1"
-	local NEW="$2"
+	local OLD=$1 NEW=$2
 	checkvars OLD NEW
 	if cmp -s $OLD $NEW; then
 		say "renaming '$OLD' -> '$NEW' ... files are the same. "
 		must rm $OLD
 	else
-		must mv -v --backup=numbered $OLD $NEW
+		must mv -Tv --backup=numbered $OLD $NEW
 	fi
 }
 

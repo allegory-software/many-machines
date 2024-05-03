@@ -38,7 +38,7 @@ while [[ $# > 0 ]]; do
 	fi
 done
 
-# no command given but machines and/or deploys given, drop to shell.
+# no command given but machines and/or deploys given, drop to shell on each.
 if [[ $DEPLOYS || $MACHINES ]]; then
 	cmd/ssh
 	exit

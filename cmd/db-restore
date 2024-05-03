@@ -1,5 +1,5 @@
 #!/bin/bash
-# BACKUP ; FILE DST_MACHINE [DST_DB] ; restore a database to a machine
+# BACKUP ; FILE DST_MACHINE [DST_DB] ; restore a database
 . mmlib
 
 list_backups() {

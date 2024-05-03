@@ -43,14 +43,13 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 	local REPO="$2"
 	local DIR="$3"
 	local VERSION="$4"
-	local LABEL="$5"
 	checkvars USER REPO DIR
 	[ "$VERSION" ] || VERSION=master
 	say "Pulling $DIR $VERSION ..."
 	(
 	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	must mkdir -p $DIR
-	must chown -R root:root $DIR
+	must chown -RH root:root $DIR
 	must cd $DIR
 	[ -d .git ] || must git init $QUIET
 	run  git remote rm  origin 2>/dev/null

@@ -8,4 +8,4 @@ latest=$(printf "%s\n" var.~*~ | sort -V | tail -1)
 set -f
 [[ $latest && -d $latest ]] || die "No backup found."
 say "Restoring 'var' from '$latest' ..."
-must mv -T --backup=numbered "$latest" var
+mv_file_with_backup "$latest" var

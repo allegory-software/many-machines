@@ -11,6 +11,6 @@ _f() {
 		DST_DIR=/opt/mm/backups/$DEPLOY-$DATE \
 		LINK_DIR=/opt/mm/backups/$DEPLOY-latest \
 		PROGRESS=1 rsync_dir
-	(must cd backups; must ln -sf $DEPLOY-$DATE $DEPLOY-latest) || exit
+	ln_file $DEPLOY-$DATE backups/$DEPLOY-latest
 }
 NOALL=1 each_deploy _f

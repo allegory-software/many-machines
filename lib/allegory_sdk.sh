@@ -26,12 +26,12 @@ deploy_start_app() {
 }
 
 deploy_stop_app() {
-	[[ -d /home/$DEPLOY/$APP ]] || return
+	[[ -d /home/$DEPLOY/qpp ]] || return
 	(app running && must app stop)
 }
 
 deploy_is_running_app() {
-	[[ -d /home/$DEPLOY/$APP ]] || return
+	[[ -d /home/$DEPLOY/app ]] || return
 	(app running)
 }
 
@@ -43,9 +43,7 @@ deploy_install_app() {
 	say "Deploying APP=$APP ENV=$ENV VERSION=$APP_VERSION ..."
 
 	say
-	git_clone_for $DEPLOY $REPO /home/$DEPLOY/$APP "$APP_VERSION" app
-
-	must ln -sTf $APP /home/$DEPLOY/app
+	git_clone_for $DEPLOY $REPO /home/$DEPLOY/app "$APP_VERSION"
 
 	say
 	deploy_gen_conf
@@ -58,5 +56,5 @@ deploy_install_app() {
 deploy_uninstall_app() {
 	deploy_stop app
 	checkvars DEPLOY APP
-	rm_dir /home/$DEPLOY/$APP
+	rm_dir /home/$DEPLOY/app
 }

@@ -11,7 +11,7 @@ md_modules() {
 	must md_var ${DEPLOY:+DEPLOY_}MODULES
 }
 md_services() {
-	must md_var ${DEPLOY:+DEPLOY_}_SERVICES
+	must md_var ${DEPLOY:+DEPLOY_}SERVICES
 }
 
 _md_list() { # LIST= DEPLOY=|MACHINE=
@@ -33,7 +33,7 @@ _each() { # ACTION= NAME1 ...
 				continue
 			fi
 		fi
-		echo $fn $name
+		$fn $name
 	done
 }
 _md_action() { # ACTION= [REMOTE=] LIST= [un=] NAME1 ...
@@ -47,15 +47,14 @@ _md_action() { # ACTION= [REMOTE=] LIST= [un=] NAME1 ...
 		$LIST; NAMES=$R1
 		[[ $un ]] && NAMES=`awk '{for(i=NF;i>0;i--) printf("%s ",$i)}' <<<"$NAMES"`
 	fi
+	local ACTION=$ACTION
 	if [[ $DEPLOY ]]; then
-		local cmd="action=deploy_$action _each"
-	else
-		local cmd="action=$action _each"
+		ACTION=deploy_$ACTION
 	fi
 	if [[ $REMOTE ]]; then
-		md_ssh_script $cmd $@
+		VARS=ACTION md_ssh_script _each $@
 	else
-		$cmd $@
+		_each $@
 	fi
 }
 _md_install() { # [un=un] [MODULE1 ...]

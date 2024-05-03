@@ -39,7 +39,6 @@ get_APP_STATUS() {
 # deploy modules -------------------------------------------------------------
 
 deploy_install_user() {
-	[[ -d /home/$DEPLOY ]] && return
 	user_create    $DEPLOY
 	user_lock_pass $DEPLOY
 }

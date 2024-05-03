@@ -1,22 +1,9 @@
-. mmlib
-
 _mm_completion() {
-	set -f
-	set -o pipefail
-	pushd /opt/mm
 	local names
-	active_deploys; names="$R1"
-	active_machines; names+=" $R1"
-	names+=" $(ls cmd)"
+	names+=" $(ls -1 /opt/mm/var/machines)"
+	names+=" $(ls -1 /opt/mm/var/deploys)"
+	names+=" $(ls /opt/mm/cmd)"
 	COMPREPLY=($(compgen -W "$names" -- "$2"))
-	popd
-	set +f
-	set +o pipefail
 }
 complete -F _mm_completion mm
 complete -F _mm_completion mmd
-
-set +f
-set +o pipefail
-
-must cd $PWD0
