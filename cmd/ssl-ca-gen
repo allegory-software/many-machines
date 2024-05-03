@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ;; gen SSL CA
+# ADMIN DOMAIN ;; gen SSL CA
 . mmlib
 
 tfile=var/acme_thumbprint

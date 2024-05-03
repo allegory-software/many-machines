@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; [COMPONENT1 ...] ; list versions
+# SEE ; [COMPONENT1 ...] ; list versions
 . mmlib
 
 md_ssh_list md_component_version "%-10s %s" "COMPONENT VERSION" "$@"

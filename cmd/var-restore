@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; please ; restore previous var dir
+# ADMIN MM ; please ; restore previous var dir
 . mmlib
 
 [[ $1 == please ]] || die "Say please"

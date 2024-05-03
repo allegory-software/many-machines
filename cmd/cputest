@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ;; run a quick CPU load and time it
+# TEST ;; run a quick CPU load and time it
 . mmlib
 
 md_custom_list \

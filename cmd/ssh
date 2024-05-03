@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; [COMMAND ...] ; exec remote commands (or drop to shell)
+# COMMAND ; [COMMAND ...] ; exec remote commands (or drop to shell)
 . mmlib
 
 AS_DEPLOY=1 each_md ssh_to "$@"

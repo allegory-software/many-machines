@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; [PORT] ; check if a port is open from this machine
+# SEE ; [PORT] ; check if a port is open from this machine
 . mmlib
 
 PORT=${1:-22}

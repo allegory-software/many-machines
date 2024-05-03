@@ -25,8 +25,9 @@ ENDCOLOR="\e[0m"
 
 say()       { printf "%b\n" "$*" >&2; }
 sayn()      { printf "%b"   "$*" >&2; }
+sayf()      { printf "$@" >&2; }
 say_ln()    { printf '=%.0s\n' {1..72}; }
-die()       { sayn "${RED}ABORT:$ENDCOLOR $*"; exit 1; }
+die()       { say "${RED}ABORT:$ENDCOLOR $*"; exit 1; }
 debug()     { if [[ $DEBUG ]]; then sayn "$CYAN"; say  "$*$ENDCOLOR"; fi; }
 debugn()    { if [[ $DEBUG ]]; then sayn "$CYAN"; sayn "$*$ENDCOLOR"; fi; }
 run()       { debug "\nEXEC: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || debug "[$ret]"; return $ret; }
@@ -41,7 +42,7 @@ _on_exit() {
 trap _on_exit EXIT
 on_exit()  { # CMD ARGS ...
 	quote_args "$@"
-	_ON_EXIT+="${R1[@]}\n"
+	_ON_EXIT+="${R1[@]}"$'\n'
 }
 
 # arg checking and sanitizing

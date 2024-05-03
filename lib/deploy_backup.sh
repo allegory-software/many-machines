@@ -46,13 +46,14 @@ deploy_db_backup() { # BACKUP_FILE
 		PROGRESS=1 MOVE=1 rsync_dir
 }
 
-deploy_db_restore() { # BACKUP_FILE= DST_MACHINE DST_DB
+deploy_db_restore() { # BACKUP_FILE DST_MACHINE DST_DB
+	local BACKUP_FILE=$1 DST_MACHINE=$2 DST_DB=$3
 	checkvars BACKUP_FILE DST_MACHINE DST_DB
 	checkfile $BACKUP_FILE
 	machine_of "$DST_MACHINE"; local DST_MACHINE=$R1
 
 	SRC_MACHINE= \
-		SRC_DIR=$BACKUP_FILE \
+		SRC_DIR="$(dirname $BACKUP_FILE)/./$(basename $BACKUP_FILE)" \
 		DST_DIR=/opt/mm/tmp/$DST_DB.$$.qp \
 		PROGRESS=1 rsync_dir
 
@@ -75,8 +76,8 @@ deploy_files_backup() { # MACHINE= DEPLOY= BACKUP_DIR [PREV_BACKUP_DIR]
 		PROGRESS=1 rsync_dir
 }
 
-deploy_files_restore() { # DST_MACHINE= DST_DEPLOY= BACKUP_DIR
-	local BACKUP_DIR=$1
+deploy_files_restore() { # BACKUP_DIR DST_MACHINE DST_DB
+	local BACKUP_DIR=$1 DST_MACHINE=$2 DST_DB=$3
 	checkvars BACKUP_DIR DST_MACHINE DST_DEPLOY
 	checkdir $BACKUP_DIR
 	machine_of "$DST_MACHINE"; local DST_MACHINE=$R1
@@ -98,19 +99,18 @@ deploy_backup() {
 	R1=$DATE
 }
 
-deploy_restore() { # DEPLOY= DATE= DST_MACHINE= [DST_DEPLOY=]
+deploy_restore() { # DEPLOY= DATE= [DST_DEPLOY=]
 	local DST_DEPLOY=${DST_DEPLOY:-$DEPLOY}
 	local DATE=$DATE
 	if [[ $DATE == latest ]]; then
 		DATE=`readlink backups/$DEPLOY/latest` \
 			|| die "No latest backup for deploy '$DEPLOY'"
 	fi
-	checkvars DEPLOY DATE DST_MACHINE DST_DEPLOY
-	machine_of "$DST_MACHINE"; local DST_MACHINE=$R1
+	checkvars DEPLOY DATE DST_DEPLOY
+	machine_of "$DST_DEPLOY"; local DST_MACHINE=$R1
 	local DIR=backups/$DEPLOY/$DATE
-	MACHINE=$DST_MACHINE ssh_script deploy_install
-	deploy_db_restore    $DIR/db.qp
-	deploy_files_restore $DIR/files
+	deploy_db_restore    $DIR/db.qp $DST_MACHINE $DST_DEPLOY
+	deploy_files_restore $DIR/files $DST_MACHINE $DST_DEPLOY
 }
 
 # remove old backups according to configured retention policy.
@@ -166,6 +166,8 @@ deploy_clone() { # DEPLOY= [LATEST=1] DST_MACHINE= DST_DEPLOY=
 		var/deploys/$DEPLOY \
 		var/deploys/$DST_DEPLOY
 	ln_file ../machines/$DST_MACHINE var/deploys/$DST_DEPLOY/machine
+	rm_file var/deploys/$DST_DEPLOY/secret
+	rm_file var/deploys/$DST_DEPLOY/mysql_pass
 
 	# install the deploy.
 	DEPLOY=$DST_DEPLOY MACHINE=$DST_MACHINE md_install all

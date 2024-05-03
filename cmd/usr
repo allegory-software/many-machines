@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; [DB=] [where expr] ; select from usr table
+# SEE DB APP ; [DB=] [where expr] ; select from usr table
 . mmlib
 
 WHERE=${1:-1=1}

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; please ; decrypt and unpack var.tar.gz to var dir
+# ADMIN MM ; please ; decrypt and unpack var.tar.gz to var dir
 . mmlib
 
 [[ $1 == please ]] || die "Say please"

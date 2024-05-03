@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; [DB=] "col1,... from ..." ; select on a MySQL database
+# COMMAND ; [DB=] "col1,... from ..." ; select on a MySQL database
 . mmlib
 
 SELECT=$1

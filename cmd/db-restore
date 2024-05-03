@@ -1,6 +1,6 @@
 #!/bin/bash
-# ADMIN ; BACKUP_FILE DST_MACHINE DST_DB ; restore database from backup
+# ADMIN DB ; BACKUP_FILE DST_MACHINE DST_DB ; restore database from backup
 . mmlib
 
 [[ $1 ]] ||  "Usage: mm db-restore BACKUP_FILE DST_MACHINE [DST_DB]"
-DST_MACHINE=$2 DST_DB=$3 deploy_db_restore "$1"
+deploy_db_restore "$@"

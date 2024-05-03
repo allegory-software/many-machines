@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ;; update /etc/hosts and set up SSH for direct access
+# ADMIN SSH ;; update /etc/hosts and set up SSH for direct access
 #
 # TODO: this doesn't work because:
 # 1. SSH's HostKeyAlgorithms != rsa-sha2-256 and SSH tries ECDSA only and gives up.

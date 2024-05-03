@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; [DB=] "SQL" ; query MySQL database(s)
+# COMMAND ; [DB=] "SQL" ; query MySQL database(s)
 . mmlib
 
 SQL="$1"

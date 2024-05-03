@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ;; list ssh host fingerprint SHA of machine(s)
+# ADMIN SSH ;; list ssh host fingerprint SHA of machine(s)
 . mmlib
 
 _f(){

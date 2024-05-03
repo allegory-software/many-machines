@@ -1,0 +1,5 @@
+#!/bin/bash
+# COMMAND ; DIR ; compute file or dir SHA
+. mmlib
+
+sha_dir "$1"

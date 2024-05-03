@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ; [KEYNAME] ["USER1 ..."] ; update a ssh public key into machine(s)
+# ADMIN SSH ; [KEYNAME] ["USER1 ..."] ; update a ssh public key into machine(s)
 . mmlib
 
 KEYNAME=${1:-mm-$HOSTNAME}

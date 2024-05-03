@@ -1,5 +1,0 @@
-#!/bin/bash
-# ADMIN ; DIR ; compute dir SHA
-. mmlib
-
-sha_dir "$1"

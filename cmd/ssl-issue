@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ;; issue SSL certificates for deployment(s)
+# ADMIN DOMAIN ;; issue SSL certificates for deployment(s)
 . mmlib
 
 _f() {

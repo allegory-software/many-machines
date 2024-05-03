@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ;; list MySQL databases
+# SEE DB ;; list MySQL databases
 . mmlib
 
 _f() {
