@@ -11,7 +11,7 @@ export MACHINES
 
 usage() {
 	say
-	say "Usage: mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS..."
+	say "Usage: ${WHITE}mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS...$ENDCOLOR"
 	say
 }
 
@@ -35,7 +35,7 @@ while [[ $# > 0 ]]; do
 		local CMD=$1; shift
 		if [[ $# == 0 ]]; then # check if cmd has non-optional args
 			cmd_metadata
-			[[ $ARGS =~ ^\[.*\]$ ]] || die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
+			[[ ! $ARGS || $ARGS =~ ^\[.*\]$ ]] || die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 		fi
 		cmd/$CMD "$@"
 		exit
