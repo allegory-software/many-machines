@@ -32,7 +32,7 @@ is_listening() { # IP=|MACHINE= PORT
 machine_deploys() {
 	local USER
 	for USER in `ls -1 /home`; do
-		[[ -L /home/$USER/app ]] && printf "%s\n" $USER
+		[[ -d /home/$USER/app ]] && printf "%s\n" $USER
 	done
 }
 

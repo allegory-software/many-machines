@@ -215,11 +215,11 @@ rsync_cmd() {
 	local DST_DIR=${DST_DIR:-$SRC_DIR}
 	local PROGRESS=$PROGRESS; [[ $TERM ]] || PROGRESS=
 	checkvars SRC_DIR DST_DIR
-	local LNK_DIR=$LNK_DIR
-	[[ $LINK_DIR && -d $LINK_DIR ]] && {
+	local LINK_DIR=$LINK_DIR
+	if [[ $LINK_DIR && -d $LINK_DIR ]]; then
 		LINK_DIR=$(realpath "$LINK_DIR") # --link-dest path must be absolute!
 		checkvars LINK_DIR
-	}
+	fi
 
 	local SRC_MACHINE=$SRC_MACHINE; [[ $SRC_MACHINE ]] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
 	local DST_MACHINE=$DST_MACHINE; [[ $DST_MACHINE ]] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
@@ -234,7 +234,8 @@ rsync_cmd() {
 
 	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
 	R1=(rsync
-		${DELETE:+--delete} --recursive --relative --links --perms --times --devices --specials --hard-links --timeout=5
+		--recursive --relative --links --perms --times --devices --specials --hard-links --timeout=5
+		${DELETE:+--delete}
 		${PROGRESS:+--info=progress2}
 		${LINK_DIR:+--link-dest="$LINK_DIR"}
 		${MOVE:+--remove-source-files}

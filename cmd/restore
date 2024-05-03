@@ -1,0 +1,13 @@
+#!/bin/bash
+# DEPLOY ; DEPLOY DATE|latest DST_MACHINE [DST_DEPLOY] ; restore deploy from backup
+. mmlib
+
+[[ $1 ]] || {
+	say
+	say "Usage: mm db-restore DEPLOY DATE|latest DST_MACHINE [DST_DEPLOY]"
+	say
+	list_deploy_backups
+	say
+	exit
+}
+DEPLOY=$1 DATE=$2 DST_MACHINE=$3 DST_DEPLOY=$4 deploy_db_restore

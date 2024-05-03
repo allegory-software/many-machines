@@ -1,15 +1,6 @@
 #!/bin/bash
-# BACKUP ; BACKUP_FILE DST_MACHINE [DST_DEPLOY] ; restore deploy files from backup
+# ADMIN ; BACKUP_DIR DST_MACHINE DST_DEPLOY ; restore deploy files from backup
 . mmlib
 
-[[ $1 ]] || {
-	say
-	say "Usage: mm files-restore BACKUP_FILE DST_MACHINE [DST_DEPLOY]"
-	say
-	list_deploy_files_backups
-	say
-	exit
-}
-BACKUP=$1 MD=$2 DST_DEPLOY=$3
-machine_of "$MD"
-DST_MACHINE=$R1 deploy_files_restore
+[[ $1 ]] || die "Usage: mm files-restore BACKUP_DIR DST_MACHINE DST_DEPLOY"
+DST_MACHINE=$2 DST_DEPLOY=$3 deploy_files_restore "$1"

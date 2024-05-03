@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO ;; list deployments as found locally and on the git remote
+# DEPLOY ;; list deployments
 . mmlib
 
 FMT="%-10s %-10s %-10s %-10s %-10s\n"

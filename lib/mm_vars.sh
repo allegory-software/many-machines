@@ -60,27 +60,30 @@ cat_varfiles() { # [LOCAL="local "] DIR [VAR1 ...]
 	fi
 }
 
-# var tables -----------------------------------------------------------------
+# machine & deploy vars ------------------------------------------------------
 
-md_vars() { # MACHINE=|DEPLOY= [VAR1 ...]
+md_vardir() { # MACHINE=|DEPLOY=
 	if [[ $DEPLOY ]]; then
 		checkvars DEPLOY
-		cat_varfiles var/deploys/$DEPLOY "$@"
+		R1=var/deploys/$DEPLOY
 	else
 		checkvars MACHINE
-		cat_varfiles var/machines/$MACHINE "$@"
+		R1=var/machines/$MACHINE
 	fi
+}
+
+md_varfile() { # MACHINE=|DEPLOY= VAR
+	md_vardir; varfile $R1 "$1"
+}
+
+md_vars() { # MACHINE=|DEPLOY= [VAR1 ...]
+	md_vardir; cat_varfiles $R1 "$@"
 }
 
 md_var() { # MACHINE=|DEPLOY= VAR [DEFAULT]
 	local VAR=$1 DEFAULT=$2
-	if [[ $DEPLOY ]]; then
-		checkvars DEPLOY VAR
-		cat_varfile var/deploys/$DEPLOY $VAR "$DEFAULT"
-	else
-		checkvars MACHINE VAR
-		cat_varfile var/machines/$MACHINE $VAR "$DEFAULT"
-	fi
+	checkvars VAR
+	md_vardir; cat_varfile $R1 $VAR "$DEFAULT"
 }
 
 mm_var() { cat_varfile var/mm $1; }

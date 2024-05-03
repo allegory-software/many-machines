@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO ;; get machine location info
+# ADMIN ;; get machine location info
 MM_LIBS="iotest"
 . mmlib
 

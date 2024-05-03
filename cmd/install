@@ -1,5 +1,5 @@
 #!/bin/bash
-# UPDATE ; [all|MODULE1 ...] ; install modules
+# ADMIN ; [all|MODULE1 ...] ; install machine or deploy modules
 . mmlib
 
 [[ $1 ]] || QUIET=1

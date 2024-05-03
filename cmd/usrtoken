@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ; [DB=] [where expr] ; select from usrtoken table
+# ADMIN ; [DB=] [where expr] ; select from usrtoken table
 . mmlib
 
 WHERE=${1:-1=1}

@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO ;; list machines
+# ADMIN ;; list machines
 . mmlib
 
 FMT="%-10s %-6s %-15s\n"

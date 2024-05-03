@@ -1,5 +1,5 @@
 #!/bin/bash
-# TOOLS ; FUNC ... ; run a mmlib function
+# ADMIN ; FUNC ... ; run a mmlib function
 . mmlib
 
 FUNC_=$1; shift

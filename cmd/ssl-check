@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSL ; [acme.sh options] ; check/renew SSL certificates for deployment(s)
+# ADMIN ; [acme.sh options] ; check/renew SSL certificates for deployment(s)
 . mmlib
 
 _f() {

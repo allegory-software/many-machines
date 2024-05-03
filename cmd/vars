@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO ; [VAR1 ...] ; list env vars
+# ADMIN ; [VAR1 ...] ; list machine/deploy env vars
 . mmlib
 
 _f() {

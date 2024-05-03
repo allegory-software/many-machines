@@ -111,7 +111,6 @@ install_mysql() {
 	must rm percona.deb
 	must percona-release setup -y pxc80
 	apt_get_install percona-xtradb-cluster percona-xtrabackup-80 qpress
-	rm percona.deb
 
 	mysql_config default "
 

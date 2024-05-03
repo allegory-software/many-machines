@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSH ; ["USER1 ..."] ; update git ssh keys on machine(s)
+# ADMIN ; ["USER1 ..."] ; update git ssh keys on machine(s)
 . mmlib
 
 USERS="$1"

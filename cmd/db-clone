@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ADMIN ; NEW_DB ; clone a database
+# ADMIN ; NEW_DB ; clone a database
 . mmlib
 
 NEW_DB=$1
@@ -9,8 +9,9 @@ _f() {
 	checkvars MACHINE
 	ssh_script "
 mysql_backup_db $DEPLOY tmp/$DEPLOY.$$.qp
+trap \"must rm tmp/$DEPLOY.$$.qp\" EXIT
 mysql_restore_db $NEW_DB tmp/$DEPLOY.$$.qp
-must rm tmp/$DEPLOY.$$.qp
+return $ret
 "
 }
 NOALL=1 each_deploy _f

@@ -1,5 +1,5 @@
 #!/bin/bash
-# BACKUP ;; pack and encrypt var dir to var.tar.gz
+# ADMIN ;; pack and encrypt var dir to var.tar.gz
 . mmlib
 
 must chmod 440 var-secret

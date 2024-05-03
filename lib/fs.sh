@@ -61,7 +61,7 @@ mv_file_with_backup() { # OLD NEW
 	local OLD=$1 NEW=$2
 	checkvars OLD NEW
 	if cmp -s $OLD $NEW; then
-		say "renaming '$OLD' -> '$NEW' ... files are the same. "
+		say "Renaming '$OLD' -> '$NEW' ... files are the same. "
 		must rm $OLD
 	else
 		must mv -Tv --backup=numbered $OLD $NEW

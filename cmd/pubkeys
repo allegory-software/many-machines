@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSH ; ["KEYNAME1 ..."] ["USER1 ..."] ; list ssh public keys
+# ADMIN ; ["KEYNAME1 ..."] ["USER1 ..."] ; list ssh public keys
 . mmlib
 
 KEYNAMES=$1 USERS=$2

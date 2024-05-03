@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ADMIN ;; restart MySQL in normal mode
+# ADMIN ;; restart MySQL in normal mode
 . mmlib
 
 _f()

@@ -1,0 +1,5 @@
+#!/bin/bash
+# DEPLOY ;; (re)install a deployment (mmd install all)
+. mmlib
+
+each_deploy md_install all

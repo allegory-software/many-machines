@@ -1,5 +1,5 @@
 #!/bin/bash
-# UPDATE ;; prepare a machine for deployments
+# ADMIN ;; install a machine
 . mmlib
 
 _f() {

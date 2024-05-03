@@ -1,5 +1,5 @@
 #!/bin/bash
-# MYSQL ADMIN ;; generate a MySQL password for a deployment
+# ADMIN ;; generate a MySQL password for a deployment
 . mmlib
 
 _f() {

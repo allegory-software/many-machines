@@ -1,5 +1,5 @@
 #!/bin/bash
-# INFO ;; list deployments as found on machines
+# DEPLOY ;; deploy status
 . mmlib
 
 d_custom_list \

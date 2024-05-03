@@ -1,3 +1,3 @@
 #!/bin/bash
-# TOOLS ;; run htop on machine(s)
+# ADMIN ;; run htop on machine(s)
 mm ssh-tty htop "$@"

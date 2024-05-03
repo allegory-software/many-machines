@@ -1,5 +1,5 @@
 #!/bin/bash
-# UPDATE ; [all|MODULE1 ...] ; purge modules
+# ADMIN ; [all|MODULE1 ...] ; purge machine/deploy modules
 . mmlib
 
 [[ $1 ]] || QUIET=1

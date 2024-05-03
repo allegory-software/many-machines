@@ -1,12 +1,7 @@
 #!/bin/bash
-# MYSQL ADMIN ; DB please ; drop database
+# ADMIN ; DB please ; drop database
 . mmlib
 
 DB=$1; checkvars DB
 [[ $2 == please ]] || die "Say please"
-_f() {
-	ssh_script "
-mysql_drop_db $DB
-"
-}
-NOALL=1 each_machine _f
+NOALL=1 each_machine ssh_script mysql_drop_db $DB

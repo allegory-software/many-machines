@@ -1,15 +1,5 @@
 #!/bin/bash
-# BACKUP ;; backup a deploy here
+# DEPLOY ;; backup a deploy here
 . mmlib
 
-_f() {
-	checkvars MACHINE
-	backup_date; local DATE=$R1
-	ssh_script "mysql_backup_db $DEPLOY tmp/$DEPLOY-$DATE.qp"
-	SRC_MACHINE=$MACHINE DST_MACHINE= \
-		SRC_DIR=/opt/mm/tmp/./$DEPLOY-$DATE.qp \
-		DST_DIR=/opt/mm/backups/$DEPLOY-$DATE.qp \
-		PROGRESS=1 MOVE=1 rsync_dir
-	#(must cd backups; must ln -sf $DEPLOY-$DATE.qp $DEPLOY-latest.qp) || exit
-}
-NOALL=1 each_md _f
+NOALL=1 each_deploy deploy_backup

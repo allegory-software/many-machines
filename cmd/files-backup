@@ -1,5 +1,5 @@
 #!/bin/bash
-# BACKUP ;; backup deploy files here
+# ADMIN ; BACKUP_DIR [PREV_BACKUP_DIR] ; backup deploy files here
 . mmlib
 
-NOALL=1 each_deploy deploy_files_backup
+NOALL=1 each_deploy deploy_files_backup "$@"

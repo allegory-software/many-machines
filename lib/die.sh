@@ -34,6 +34,16 @@ must()      { debug "\nMUST: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || die "$*
 dry()       { if [[ $DRY ]]; then say "DRY: $*"; else "$@"; fi; }
 nag()       { [[ $VERBOSE ]] || return 0; say "$@"; }
 
+_ON_EXIT=
+_on_exit() {
+	eval $_ON_EXIT
+}
+trap _on_exit EXIT
+on_exit()  { # CMD ARGS ...
+	quote_args "$@"
+	_ON_EXIT+="${R1[@]}\n"
+}
+
 # arg checking and sanitizing
 
 checknosp() { # VAL [ERROR...]
