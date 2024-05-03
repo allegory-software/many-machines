@@ -9,7 +9,7 @@ user_exists() { # USER
 user_create() { # USER
 	local user="$1"
 	checkvars user
-	say -n "Creating user $user ... "
+	sayn "Creating user $user ... "
 	user_exists $user || must useradd -m $user
 	must chsh -s /bin/bash $user
 	must chmod 750 /home/$user
@@ -19,7 +19,7 @@ user_create() { # USER
 user_lock_pass() { # USER
 	local user="$1"
 	checkvars user
-	say -n "Locking password for user $user ... "
+	sayn "Locking password for user $user ... "
 	must passwd -l $user >/dev/null
 	say OK
 }
@@ -33,7 +33,7 @@ user_remove() { # USER
 	checkvars user
 	user_check_can_remove $user
 
-	say -n "Removing user $user ... "
+	sayn "Removing user $user ... "
 	user_exists $user && must userdel $user
 	say OK
 
@@ -44,7 +44,7 @@ user_rename() { # OLD_USER NEW_USER
 	local old_user=$1
 	local new_user=$2
 	checkvars old_user new_user
-	say -n "Renaming user $old_user to $new_user ... "
+	sayn "Renaming user $old_user to $new_user ... "
 	user_exists $old_user || die "User not found: $old_user"
 	user_exists $new_user && die "User already exists: $new_user"
 	user_check_can_remove $old_user

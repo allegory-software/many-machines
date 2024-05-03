@@ -1,35 +1,15 @@
 #!/bin/bash
-# BACKUP ; BACKUP_FILE DST_MACHINE [DST_DEPLOY] ; restore deploy files
+# BACKUP ; BACKUP_FILE DST_MACHINE [DST_DEPLOY] ; restore deploy files from backup
 . mmlib
 
-list_backups() {
-	local FMT="%-10s %-20s %s\n"
-	printf "$FMT" DEPLOY AGE BACKUP_FILE
-	for f in `ls -r backups`; do
-		[[ -L backups/$f ]] && continue
-		[[ ! -d backups/$f ]] && continue
-		rel_backup_date "$f"; local d=$R1
-		local s=${f::-20} # remove date-time part
-		printf "$FMT" "$s" "$d" "$f"
-	done
-}
-
-DIR=$1 MD=$2 DST_DEPLOY=$3
-[[ $DIR ]] || {
+[[ $1 ]] || {
 	say
 	say "Usage: mm files-restore BACKUP_FILE DST_MACHINE [DST_DEPLOY]"
 	say
-	list_backups
+	list_deploy_files_backups
 	say
 	exit
 }
-checkvars DIR DST_DEPLOY
-machine_of "$MD"; MACHINE=$R1
-checkdir backups/$DIR
-
-checkvars MACHINE
-SRC_MACHINE= DST_MACHINE=$MACHINE \
-	SRC_DIR=/opt/mm/backups/$DIR/./. \
-	DST_DIR=/home/$DST_DEPLOY \
-	DST_USER=$DST_DEPLOY
-	PROGRESS=1 rsync_dir
+BACKUP=$1 MD=$2 DST_DEPLOY=$3
+machine_of "$MD"
+DST_MACHINE=$R1 deploy_files_restore

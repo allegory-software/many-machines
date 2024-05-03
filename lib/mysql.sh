@@ -126,13 +126,13 @@ _mysql_create_or_alter_user() { # create|alter HOST USER PASS
 }
 
 mysql_create_user() { # HOST USER PASS
-	say -n "Creating MySQL user $2@$1 ... "
+	sayn "Creating MySQL user $2@$1 ... "
 	_mysql_create_or_alter_user "create user if not exists" "$@"
 	say OK
 }
 
 mysql_update_pass() { # HOST USER PASS
-	say -n "Updating password for MySQL user $2@$1 ... "
+	sayn "Updating password for MySQL user $2@$1 ... "
 	_mysql_create_or_alter_user "alter user" "$@"
 	say OK
 }
@@ -141,7 +141,7 @@ mysql_drop_user() { # HOST USER
 	local host="$1"
 	local user="$2"
 	checkvars host user
-	say -n "Dropping MySQL user $user@$host ... "
+	sayn "Dropping MySQL user $user@$host ... "
 	mysql_exec "drop user if exists '$user'@'$host'; flush privileges;"
 	say OK
 }
@@ -149,7 +149,7 @@ mysql_drop_user() { # HOST USER
 mysql_create_db() { # DB
 	local db="$1"
 	checkvars db
-	say -n "Creating MySQL database $db ... "
+	sayn "Creating MySQL database $db ... "
 	mysql_exec "
 		create database if not exists \`$db\`
 			character set utf8mb4
@@ -161,7 +161,7 @@ mysql_create_db() { # DB
 mysql_drop_db() { # DB
 	local db="$1"
 	checkvars db
-	say -n "Dropping MySQL database $db ... "
+	sayn "Dropping MySQL database $db ... "
 	mysql_exec "drop database if exists \`$db\`"
 	say OK
 }
@@ -171,7 +171,7 @@ mysql_grant_user_db() { # HOST USER DB
 	local user="$2"
 	local db="$3"
 	checkvars host user db
-	say -n "Granting all rights on MySQL database $db to user $user ... "
+	sayn "Granting all rights on MySQL database $db to user $user ... "
 	mysql_exec "
 		grant all privileges on \`$db\`.* to '$user'@'$host';
 		flush privileges;
@@ -185,7 +185,7 @@ mysql_rename_user() { # OLD_HOST OLD_USER NEW_HOST NEW_USER
 	local new_host="$3"
 	local new_user="$4"
 	checkvars old_host old_user new_host new_user
-	say -n "Renaming MySQL user $old_user to $new_user ... "
+	sayn "Renaming MySQL user $old_user to $new_user ... "
 	mysql_exec "
 		rename user '$old_user'@'$old_host' to '$new_user'@'$new_host';
 		flush privileges;
@@ -216,7 +216,7 @@ mysql_move_tables() { # DB NEW_DB
 	local db="$1"
 	local new_db="$2"
 	checkvars db new_db
-	say -n "Moving all tables from $db to $new_db ... "
+	sayn "Moving all tables from $db to $new_db ... "
 	local sql="$(query "
 		select concat('RENAME TABLE \`', table_name, '\` TO \`$new_db\`.\`', table_name, '\`;') s
 		from information_schema.tables
@@ -229,7 +229,7 @@ mysql_move_tables() { # DB NEW_DB
 mysql_drop_views() { # DB
 	local db="$1"
 	checkvars db
-	say -n "Dropping all views from $db ... "
+	sayn "Dropping all views from $db ... "
 	local sql="$(query "
 		select concat('DROP VIEW \`', table_name, '\`;') s
 		from information_schema.views
@@ -242,7 +242,7 @@ mysql_drop_views() { # DB
 mysql_drop_triggers() { # DB
 	local db="$1"
 	checkvars db
-	say -n "Dropping all triggers from $db ... "
+	sayn "Dropping all triggers from $db ... "
 	local sql="$(query "
 		select concat ('DROP TRIGGER \`', trigger_name, '\`;')
 		from information_schema.triggers
@@ -254,7 +254,7 @@ mysql_drop_triggers() { # DB
 mysql_drop_procs_funcs() { # DB
 	local db="$1"
 	checkvars db
-	say -n "Dropping all procs & funcs from $db ... "
+	sayn "Dropping all procs & funcs from $db ... "
 	local sql="$(query "
 		select concat('DROP ', routine_type, ' \`', routine_name, '\`;') s
 		from information_schema.routines
@@ -296,7 +296,7 @@ mysql_rename_db() { # OLD_DB NEW_DB
 	# rename user in DEFINER clauses.
 	vtpf_sql="$(echo "$vtpf_sql" | mysqldump_fix_user $db1)"
 
-	say -n "Adding all views, triggers, procs & funcs from $db0 to $db1 ... "
+	sayn "Adding all views, triggers, procs & funcs from $db0 to $db1 ... "
 	mysql_exec_on $db1 "$vtpf_sql"
 	say OK
 

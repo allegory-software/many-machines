@@ -81,7 +81,7 @@ service_stop() {
 # installers -----------------------------------------------------------------
 
 install_libssl1() {
-	say; say -n "Installing OpenSSL 1.1 ... "
+	say; sayn "Installing OpenSSL 1.1 ... "
 	dpkg-query -l libssl1.1 2>/dev/null >/dev/null && { say "already installed."; return 0; }
 	os_version
 	[[ $R1 == ubuntu && $R2 == 22.* ]] || {

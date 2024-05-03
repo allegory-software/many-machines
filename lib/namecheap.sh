@@ -2,7 +2,7 @@
 ddns_update_ip() {
 	must md_var public_ip; local IP=$R1
 	must md_var .ddns_password; local DDNS_PASS=$R1
-	say -n "Updating IP for domain '$DOMAIN' to '$IP' at namecheap.com ... "
+	sayn "Updating IP for domain '$DOMAIN' to '$IP' at namecheap.com ... "
 	local s
 	s=$(must curl -s "https://dynamicdns.park-your-domain.com/update?host=@&domain=$DOMAIN&password=$DDNS_PASS&ip=$IP") \
 		|| die "curl: [$?]"

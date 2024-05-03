@@ -1,37 +1,15 @@
 #!/bin/bash
-# BACKUP ; BACKUP_FILE DST_MACHINE [DST_DB] ; restore a database
+# BACKUP ; BACKUP_FILE DST_MACHINE [DST_DB] ; restore database from backup
 . mmlib
 
-list_backups() {
-	local FMT="%-10s %-20s %s\n"
-	printf "$FMT" DEPLOY AGE BACKUP_FILE
-	for f in `ls -r backups`; do
-		[[ -L backups/$f ]] && continue
-		rel_backup_date "$f"; local d=$R1
-		local s=${f%.*} # remove extension
-		s=${s::-20} # remove date-time part
-		printf "$FMT" "$s" "$d" "$f"
-	done
-}
-
-FILE=$1 MD=$2 DST_DB=${3:-1}
-[[ $FILE ]] || {
+[[ $1 ]] || {
 	say
 	say "Usage: mm db-restore FILE DST_MACHINE [DST_DB]"
 	say
-	list_backups
+	list_deploy_db_backups
 	say
 	exit
 }
-checkvars FILE DST_DB
-machine_of "$MD"; MACHINE=$R1
-checkfile backups/$FILE
-
-SRC_MACHINE= DST_MACHINE=$MACHINE \
-	SRC_DIR=/opt/mm/backups/./$FILE \
-	DST_DIR=/opt/mm/tmp/$DST_DB.$$.qp \
-	PROGRESS=1 rsync_dir
-ssh_script "
-mysql_restore_db $DST_DB tmp/$DST_DB.$$.qp
-must rm tmp/$DST_DB.$$.qp
-"
+BACKUP=$1 MD=$2 DST_DB=${3:-1}
+machine_of "$MD"
+DST_MACHINE=$R1 deploy_db_restore

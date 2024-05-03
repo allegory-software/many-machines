@@ -1,16 +1,5 @@
 # die harder, see https://github.com/capr/die which this extends.
 
-# printing, tracing & error handling
-
-say()       { echo "$@" >&2; }
-say_ln()    { printf '=%.0s\n' {1..72}; }
-die()       { say -n "ABORT: "; say "$@"; exit 1; }
-debug()     { if [[ $DEBUG ]]; then say "$@"; fi; }
-run()       { debug -n "EXEC: $@ "; "$@"; local ret=$?; debug "[$ret]"; return $ret; }
-must()      { debug -n "MUST: $@ "; "$@"; local ret=$?; debug "[$ret]"; [[ $ret == 0 ]] || die "$@ [$ret]"; }
-dry()       { if [[ $DRY ]]; then say "DRY: $@"; else "$@"; fi; }
-nag()       { [[ $VERBOSE ]] || return 0; say "$@"; }
-
 # colors!
 
 [[ $TERM ]] && {
@@ -31,6 +20,19 @@ LIGHTCYAN="\e[96m"
 WHITE="\e[97m"
 ENDCOLOR="\e[0m"
 }
+
+# printing, tracing & error handling
+
+say()       { printf "%b\n" "$*" >&2; }
+sayn()      { printf "%b"   "$*" >&2; }
+say_ln()    { printf '=%.0s\n' {1..72}; }
+die()       { sayn "${RED}ABORT:$ENDCOLOR $*"; exit 1; }
+debug()     { if [[ $DEBUG ]]; then sayn "$CYAN"; say  "$*$ENDCOLOR"; fi; }
+debugn()    { if [[ $DEBUG ]]; then sayn "$CYAN"; sayn "$*$ENDCOLOR"; fi; }
+run()       { debug "\nEXEC: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || debug "[$ret]"; return $ret; }
+must()      { debug "\nMUST: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || die "$* [$ret]"; }
+dry()       { if [[ $DRY ]]; then say "DRY: $*"; else "$@"; fi; }
+nag()       { [[ $VERBOSE ]] || return 0; say "$@"; }
 
 # arg checking and sanitizing
 

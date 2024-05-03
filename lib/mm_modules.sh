@@ -35,6 +35,7 @@ _each() { # ACTION= NAME1 ...
 		fi
 		$fn $name
 	done
+	return 0
 }
 _md_action() { # ACTION= [REMOTE=] LIST= [un=] NAME1 ...
 	checkvars ACTION
@@ -57,6 +58,8 @@ _md_action() { # ACTION= [REMOTE=] LIST= [un=] NAME1 ...
 		_each $NAMES
 	fi
 }
+
+# executed both locally (pre/post functions) and remotely (main function).
 _md_install() { # [un=un] [MODULE1 ...]
 	ACTION=pre${un}install       LIST=md_modules _md_action $@
 	ACTION=${un}install REMOTE=1 LIST=md_modules _md_action $@
@@ -68,8 +71,9 @@ md_uninstall() { un=un _md_install "$@"; }
 default_install()   { package_install   "$1"; }
 default_uninstall() { package_uninstall "$1"; }
 
-md_start()  { ACTION=start REMOTE=1 LIST=md_services _md_action $@; }
-md_stop()   { ACTION=stop  REMOTE=1 LIST=md_services _md_action $@; }
+# executed remotely.
+md_start() { ACTION=start REMOTE=1 LIST=md_services _md_action $@; }
+md_stop()  { ACTION=stop  REMOTE=1 LIST=md_services _md_action $@; }
 
 default_start() { service_start "$@"; }
 default_stop()  { service_stop  "$@"; }

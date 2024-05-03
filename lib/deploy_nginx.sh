@@ -109,7 +109,7 @@ $acme_location
 fi
 
 	save "$nginx_conf" /etc/nginx/sites-enabled/$DOMAIN
-	say -n "Reloading nginx config... "
+	sayn "Reloading nginx config... "
 	must nginx -s reload
 	say "OK"
 }

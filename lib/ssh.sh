@@ -2,6 +2,8 @@
 
 ssh_cmd_opt() { # MACHINE=
 	checkvars MACHINE
+	local kf=var/machines/$MACHINE/.ssh_key-mm-$HOSTNAME
+	[[ -f $kf ]] || cp_file `realpath var/ssh_key-mm-$HOSTNAME` $kf
 	R1=(ssh
 -o ConnectTimeout=3
 -o PreferredAuthentications=publickey
@@ -9,7 +11,7 @@ ssh_cmd_opt() { # MACHINE=
 -o ControlMaster=auto
 -o ControlPath=~/.ssh/control-%h-%p-%r
 -o ControlPersist=600
--i var/machines/$MACHINE/.ssh_key-mm-$HOSTNAME
+-i $kf
 )
 	[ "$MM_SSH_TTY" ] && R1+=(-t) || R1+=(-o BatchMode=yes)
 }
@@ -92,7 +94,7 @@ ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
 	local KEYNAME=$3
 	local UNSTABLE_IP=$4
 	checkvars USER HOST KEYNAME
-	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER'..."
+	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER' ..."
 	must mkdir -p $HOME/.ssh
 	local CONFIG=$HOME/.ssh/config
 	touch "$CONFIG"
@@ -115,7 +117,7 @@ ssh_key_update_for_user() { # USER KEYNAME KEY HOSTKEY
 	local KEY=$3
 	local HOSTKEY=$4
 	checkvars USER KEYNAME KEY- HOSTKEY-
-	say "Updating SSH key '$KEYNAME' for user '$USER'..."
+	say "Updating SSH key '$KEYNAME' for user '$USER' ..."
 
 	must mkdir -p $HOME/.ssh
 
@@ -224,7 +226,7 @@ rsync_cmd() {
 	[[ $SRC_MACHINE && $DST_MACHINE ]] && die "Can't copy between two remotes."
 	local MACHINE=$SRC_MACHINE$DST_MACHINE
 
-	say -n "Sync'ing${DRY:+ DRY}: '$SRC_DIR' -> '$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
+	sayn "Sync'ing${DRY:+ DRY}: '$SRC_DIR' -> '$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
 	[[ $DRY ]] && local VERBOSE=1
 	[[ $PROGRESS ]] && say
 

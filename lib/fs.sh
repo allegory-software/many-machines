@@ -33,7 +33,7 @@ rm_dir() { # DIR
 	local dir="$1"
 	checkvars dir
 	check_abs_filepath "$dir"
-	say -n "Removing dir: $dir ... "
+	sayn "Removing dir: $dir ... "
 	[ "$DRY" ] || must rm -rf "$dir"
 	say OK
 }
@@ -42,7 +42,7 @@ rm_file() { # FILE
 	local file="$1"
 	checkvars file
 	check_abs_filepath "$file"
-	say -n "Removing file: $file ... "
+	sayn "Removing file: $file ... "
 	if [[ ! -f $file ]]; then
 		say "not found"
 	else
@@ -68,7 +68,8 @@ mv_file_with_backup() { # OLD NEW
 	fi
 }
 
-# modified cp that treats DST based on whether it ends with a / or not.
+# modified cp that treats DST based on whether it ends with a / or not,
+# and it also does the same thing regardless of what the situation is at the destination.
 _cp() { # WHAT SRC DST [USER] [MOD]
 	local what="$1"
 	local src="$2"
@@ -80,10 +81,10 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 	if [[ $dst == */ ]]; then # adjust $dst for chown and chmod
 		dst=$dst`basename $src`
 	fi
-	say -n "Copying $what: '$src' -> '$dst' ... "
+	sayn "Copying $what: '$src' -> '$dst' ... "
 	[[ -e $src ]] || die: "Missing: $src"
-	[[ $what == dir  ]] && { [[ -d $src ]] || die "src is not a dir."; }
-	[[ $what == file ]] && { [[ -f $src ]] || die "src is not a file."; }
+	[[ $what == dir  ]] && { [[ -d $src && ! -L $src ]] || die "src is not a dir."; }
+	[[ $what == file ]] && { [[ -f $src && ! -L $src ]] || die "src is not a file."; }
 	dry must mkdir -p `dirname $dst` # because cp doesn't do it for us
 	dry must rm -rf $dst # prevent copying _inside_ $dst if $dst is a dir
 	dry must cp -r $src $dst
@@ -119,8 +120,8 @@ append() { # S FILE
 	local s="$1"
 	local file="$2"
 	checkvars s- file
-	say -n "Appending ${#s} bytes to file $file ... "
-	debug -n "MUST: append \"$s\" $file "
+	sayn "Appending ${#s} bytes to file $file ... "
+	debugn "MUST: append \"$s\" $file "
 	if [ "$DRY" ] || printf "%s" "$s" >> "$file"; then
 		debug "[$?]"
 	else
@@ -133,7 +134,7 @@ remove_line() { # REGEX FILE
 	local regex="$1"
 	local file="$2"
 	checkvars regex- file
-	say -n "Removing lines containing pattern '$regex' from '$file' ... "
+	sayn "Removing lines containing pattern '$regex' from '$file' ... "
 	if grep -q "$regex" $file; then
 		grep -v "$regex" $file > $file.temp # exits with 1
 		must mv $file.temp $file
@@ -148,8 +149,8 @@ save() { # S FILE [USER]
 	local file="$2"
 	local user="$3"
 	checkvars s- file
-	say -n "Saving ${#s} bytes to file $file ... "
-	debug -n "MUST: save \"$s\" $file "
+	sayn "Saving ${#s} bytes to file $file ... "
+	debugn "MUST: save \"$s\" $file "
 	if [ "$DRY" ] || printf "%s" "$s" > "$file"; then
 		debug "[$?]"
 	else
@@ -181,7 +182,7 @@ sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
 		checkvars LINK_DIR
 	}
 
-	say -n "Sync'ing dir: '$SRC_DIR' -> '$PWD/$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
+	sayn "Sync'ing dir: '$SRC_DIR' -> '$PWD/$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
 
 	# NOTE: the dot syntax cuts out the path before it as a way to make the path relative.
 	[ "$DRY" ] || must rsync --delete -aHR ${LINK_DIR:+--link-dest=$LINK_DIR} $SRC_DIR/./. $DST_DIR

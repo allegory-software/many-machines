@@ -70,38 +70,6 @@ deploy_uninstall_mysql() {
 	mysql_drop_user localhost $DEPLOY
 }
 
-deploy_gen_conf() {
-	checkvars MACHINE DEPLOY APP MYSQL_PASS SECRET
-	local conf=/home/$DEPLOY/$APP/${APP}.conf
-	save "\
---deploy vars
-deploy = '$DEPLOY'
-machine = '$MACHINE'
-${ENV:+env = '$ENV'}
-${APP_VERSION:+version = '$APP_VERSION'}
-db_name = '$DEPLOY'
-db_user = '$DEPLOY'
-db_pass = '$MYSQL_PASS'
-secret = '$SECRET'
-
---custom vars
-${HTTP_PORT:+http_port = $HTTP_PORT}
-${HTTP_COMPRESS:+http_compress = $HTTP_COMPRESS}
-${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
-${SMTP_HOST:+smtp_user = '$SMTP_USER'}
-${SMTP_HOST:+smtp_pass = '$SMTP_PASS'}
-${DOMAIN:+host = '$DOMAIN'}
-${NOREPLY_EMAIL:+noreply_email = '$NOREPLY_EMAIL'}
-${DEV_EMAIL:+dev_email = '$DEV_EMAIL'}
-${DEFAULT_COUNTRY:+default_country = '$DEFAULT_COUNTRY'}
-${SESSION_COOKIE_SECURE_FLAG:+session_cookie_secure_flag = $SESSION_COOKIE_SECURE_FLAG}
-
-log_host = '127.0.0.1'
-log_port = 5555
-https_addr = false
-" $conf $DEPLOY
-}
-
 deploy_install_nginx() {
 	[[ $HTTP_PORT && $DOMAIN ]] && {
 		local src=/home/$DEPLOY/$APP/www/5xx.html
