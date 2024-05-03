@@ -1,10 +1,10 @@
 #!/bin/bash
-# BACKUP ; DIR DST_MACHINE [DST_DEPLOY] ; restore deploy files
+# BACKUP ; BACKUP_FILE DST_MACHINE [DST_DEPLOY] ; restore deploy files
 . mmlib
 
 list_backups() {
 	local FMT="%-10s %-20s %s\n"
-	printf "$FMT" DEPLOY AGE FILE
+	printf "$FMT" DEPLOY AGE BACKUP_FILE
 	for f in `ls -r backups`; do
 		[[ -L backups/$f ]] && continue
 		[[ ! -d backups/$f ]] && continue
@@ -17,7 +17,7 @@ list_backups() {
 DIR=$1 MD=$2 DST_DEPLOY=$3
 [[ $DIR ]] || {
 	say
-	say "Usage: mm files-restore DIR DST_MACHINE [DST_DEPLOY]"
+	say "Usage: mm files-restore BACKUP_FILE DST_MACHINE [DST_DEPLOY]"
 	say
 	list_backups
 	say

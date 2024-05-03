@@ -52,9 +52,9 @@ _md_action() { # ACTION= [REMOTE=] LIST= [un=] NAME1 ...
 		ACTION=deploy_$ACTION
 	fi
 	if [[ $REMOTE ]]; then
-		VARS=ACTION md_ssh_script _each $@
+		VARS=ACTION md_ssh_script _each $NAMES
 	else
-		_each $@
+		_each $NAMES
 	fi
 }
 _md_install() { # [un=un] [MODULE1 ...]
@@ -70,6 +70,9 @@ default_uninstall() { package_uninstall "$1"; }
 
 md_start()  { ACTION=start REMOTE=1 LIST=md_services _md_action $@; }
 md_stop()   { ACTION=stop  REMOTE=1 LIST=md_services _md_action $@; }
+
+default_start() { service_start "$@"; }
+default_stop()  { service_stop  "$@"; }
 
 md_status() { # ["SERVICE1 ..."]
 	if [[ $DEPLOY ]]; then

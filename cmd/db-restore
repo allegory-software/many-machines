@@ -1,10 +1,10 @@
 #!/bin/bash
-# BACKUP ; FILE DST_MACHINE [DST_DB] ; restore a database
+# BACKUP ; BACKUP_FILE DST_MACHINE [DST_DB] ; restore a database
 . mmlib
 
 list_backups() {
 	local FMT="%-10s %-20s %s\n"
-	printf "$FMT" DEPLOY AGE FILE
+	printf "$FMT" DEPLOY AGE BACKUP_FILE
 	for f in `ls -r backups`; do
 		[[ -L backups/$f ]] && continue
 		rel_backup_date "$f"; local d=$R1
