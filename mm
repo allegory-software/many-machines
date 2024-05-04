@@ -27,6 +27,7 @@ cmd_metadata() { # CMD= -> SECTION= ARGS= DESCR=
 	# split line into parts.
 	IFS=";" read -r SECTION ARGS DESCR <<< "$s"
 	trim SECTION; trim ARGS; trim DESCR
+	SECTION=${SECTION//\#[[:space:]]/}
 }
 
 main() {
@@ -36,13 +37,15 @@ while [[ $# > 0 ]]; do
 	if [[ -f cmd/$1 ]]; then
 		local CMD=$1; shift
 		if [[ $# == 0 ]]; then # check if cmd has non-optional args
-			cmd_metadata
-			[[ ! $ARGS || $ARGS =~ ^\[.*\]$ ]] || die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
+			local SECTION ARGS DESCR; cmd_metadata
+			[[ ! $ARGS || $ARGS =~ ^\[.*\]$ ]] \
+				|| die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 		elif [[ $# == 1 && $1 == help ]]; then # special arg help treated here
-			cmd_metadata
-			die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
+			local SECTION ARGS DESCR; cmd_metadata
+			say "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
+		else
+			run cmd/$CMD "$@"
 		fi
-		run cmd/$CMD "$@"
 		exit
 	elif [[ -d var/deploys/$1 ]]; then
 		[[ ! ${dm[$1]} ]] && { DEPLOYS+=" $1"; dm[$1]=1; }
@@ -75,21 +78,22 @@ usage
 declare -A help
 declare -A cmds
 for CMD in `ls -1 cmd`; do
-	local SECTION ARGS DESCR
-	cmd_metadata
+	local SECTION ARGS DESCR; cmd_metadata
 	# add help line to its section.
 	printf -v s "mm ${WHITE}%-20s${ENDCOLOR} %s\n" "${CMD} $ARGS" "$DESCR"
 	help[$SECTION]+="$s"
 	cmds[$SECTION]+="$CMD "
 done
 
-local s=$(printf "%s\n" "${!cmds[@]}" | sort)
+local s=$(printf "%s\n" "${!help[@]}" | sort)
 local SECTION
 IFS=$'\n'
 for SECTION in $s; do
 	if [[ $HELP ]]; then
-		say "$GREEN${SECTION}$ENDCOLOR"
-		say "${help[$SECTION]}"
+		[[ ! $1 || ${SECTION,,} == ${1,,} ]] && {
+			say "$GREEN${SECTION}$ENDCOLOR"
+			say "${help[$SECTION]}"
+		}
 	else
 		sayf "%-26b %s\n" "$GREEN${SECTION}$ENDCOLOR" "${cmds[$SECTION]}"
 	fi
