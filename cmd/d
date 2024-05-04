@@ -2,7 +2,7 @@
 # DEPLOY ;; list deployments
 . mmlib
 
-FMT="%-10s %-10s %-10s %-10s %-10s\n"
+FMT="$WHITE%-10s %-10s %-10s %-10s %-10s$ENDCOLOR\n"
 _f() {
 	md_var APP; local APP=$R1
 	md_var ENV; local ENV=$R1

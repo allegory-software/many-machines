@@ -17,7 +17,7 @@ _md_ssh_list() {
 md_ssh_list() { # LIST_FUNC FMT "FIELD1 ..." LIST_FUNC_ARGS...
 	local FUNC=$1 FMT=$2 FIELDS=$3
 	checkvars FUNC FMT- FIELDS-
-	printf "%-10s %-10s $FMT\n" MACHINE DEPLOY $FIELDS
+	printf "${WHITE}%-10s %-10s $FMT$ENDCOLOR\n" MACHINE DEPLOY $FIELDS
 	QUIET=1 each_md _md_ssh_list "$@"
 }
 

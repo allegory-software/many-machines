@@ -98,11 +98,11 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 cp_file() { _cp file "$@"; }
 cp_dir()  { _cp dir  "$@"; }
 
-sha_dir() { # DIR
+dir_sha() { # DIR
 	local DIR="$1"
 	checkvars DIR
 	[ -d $DIR ] || die "Dir not found: $DIR"
-	local sha=$(find $DIR -type f -print0 | LC_ALL=C sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1); local ret=$?
+	local sha=$(must cd $DIR; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1); local ret=$?
 	[ $ret != 0 ] && die "sha_dir: [$ret]"
 	echo "$sha"
 }

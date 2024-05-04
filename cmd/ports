@@ -2,14 +2,20 @@
 # SEE ; [IP|port] ; list bound IP & ports
 . mmlib
 
+printf "$WHITE%-10s %-11s %-23s %s$ENDCOLOR\n" MACHINE TYPE IP:PORT PID
 _f() {
-	local s; ssh_to netstat -ltuwnp 2>&1 | while read s; do
-		[[ $s == Proto* || $s == Active* ]] && continue
-		local stype=${s:0:11}
-		local ip_port=${s:20:23}; trim ip_port
-		local pid_bin=${s:80}
-		[[ $1 && $ip_port != *$1* ]] && continue
-		printf "%-10s %-11s %-23s %s\n" "$MACHINE" "$stype" "$ip_port" "$pid_bin"
-	done
+	local lines s
+	if lines=`ssh_to netstat -ltuwnp 2>&1`; then
+		printf "%b" "$lines" | while read s; do
+			[[ $s == Proto* || $s == Active* ]] && continue
+			local stype=${s:0:11}
+			local ip_port=${s:20:23}; trim ip_port
+			local pid_bin=${s:80}
+			[[ $1 && $ip_port != *$1* ]] && continue
+			printf "%-10s %-11s %-23s %s\n" "$MACHINE" "$stype" "$ip_port" "$pid_bin"
+		done
+	else
+		say "$lines"
+	fi
 }
 QUIET=1 each_machine _f "$@"

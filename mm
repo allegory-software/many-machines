@@ -9,6 +9,8 @@ export MACHINES
 
 . lib/die.sh
 
+on_exit sayn $ENDCOLOR
+
 usage() {
 	say
 	say "Usage: ${WHITE}mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS...$ENDCOLOR"
