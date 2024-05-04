@@ -53,7 +53,7 @@ _md_action() { # ACTION= [REMOTE=] LIST= [un=] NAME1 ...
 		ACTION=deploy_$ACTION
 	fi
 	if [[ $REMOTE ]]; then
-		VARS=ACTION md_ssh_script _each $NAMES
+		VARS="ACTION" md_ssh_script _each $NAMES
 	else
 		_each $NAMES
 	fi

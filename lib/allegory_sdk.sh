@@ -38,11 +38,18 @@ deploy_is_running_app() {
 deploy_install_app() {
 	checkvars DEPLOY REPO APP APP_VERSION
 	deploy_stop_app
+	[[ $FAST ]] && SUBMODULES=
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/app "$APP_VERSION"
 	deploy_gen_conf
-	say "Installing $APP ..."
-	must app install forealz
+	[[ ! $FAST ]] && {
+		say "Installing $APP ..."
+		must app install forealz
+	}
 	deploy_start_app
+}
+
+deploy_install_app_fast() {
+	FAST=1 deploy_install_app "$@"
 }
 
 deploy_uninstall_app() {

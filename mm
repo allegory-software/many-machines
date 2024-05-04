@@ -40,12 +40,13 @@ while [[ $# > 0 ]]; do
 			local SECTION ARGS DESCR; cmd_metadata
 			[[ ! $ARGS || $ARGS =~ ^\[.*\]$ ]] \
 				|| die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
-		elif [[ $# == 1 && $1 == help ]]; then # special arg help treated here
+		fi
+		if [[ $# == 1 && $1 == help ]]; then # special arg 'help' treated here
 			local SECTION ARGS DESCR; cmd_metadata
 			say "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
-		else
-			run cmd/$CMD "$@"
+			exit
 		fi
+		run cmd/$CMD "$@"
 		exit
 	elif [[ -d var/deploys/$1 ]]; then
 		[[ ! ${dm[$1]} ]] && { DEPLOYS+=" $1"; dm[$1]=1; }

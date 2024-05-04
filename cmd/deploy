@@ -2,4 +2,4 @@
 # DEPLOY ;; (re)install a deployment (mmd install all)
 . mmlib
 
-each_deploy md_install all
+NOALL=1 each_deploy md_install all
