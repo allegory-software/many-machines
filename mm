@@ -38,8 +38,11 @@ while [[ $# > 0 ]]; do
 		if [[ $# == 0 ]]; then # check if cmd has non-optional args
 			cmd_metadata
 			[[ ! $ARGS || $ARGS =~ ^\[.*\]$ ]] || die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
+		elif [[ $# == 1 && $1 == help ]]; then # special arg help treated here
+			cmd_metadata
+			die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 		fi
-		cmd/$CMD "$@"
+		run cmd/$CMD "$@"
 		exit
 	elif [[ -d var/deploys/$1 ]]; then
 		[[ ! ${dm[$1]} ]] && { DEPLOYS+=" $1"; dm[$1]=1; }

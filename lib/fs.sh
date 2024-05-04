@@ -83,11 +83,11 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 	fi
 	sayn "Copying $what: '$src' -> '$dst' ... "
 	[[ -e $src ]] || die: "Missing: $src"
-	[[ $what == dir  ]] && { [[ -d $src && ! -L $src ]] || die "src is not a dir."; }
-	[[ $what == file ]] && { [[ -f $src && ! -L $src ]] || die "src is not a file."; }
+	[[ $what == dir  ]] && { [[ -d $src ]] || die "src is not a dir."; }
+	[[ $what == file ]] && { [[ -f $src ]] || die "src is not a file."; }
 	dry must mkdir -p `dirname $dst` # because cp doesn't do it for us
 	dry must rm -rf $dst # prevent copying _inside_ $dst if $dst is a dir
-	dry must cp -r $src $dst
+	dry must cp -rL $src $dst
 	if [[ $user ]]; then
 		checkvars user
 		dry must chown -R $user:$user $dst

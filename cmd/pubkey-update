@@ -2,7 +2,7 @@
 # ADMIN SSH ; [KEYNAME] ["USER1 ..."] ; update a ssh public key into machine(s)
 . mmlib
 
-KEYNAME=${1:-mm-$HOSTNAME}
+KEYNAME=${1:-$HOSTNAME}
 USERS=$2
 kf=var/ssh_key-$KEYNAME
 [ -f $kf ] || {

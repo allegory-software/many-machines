@@ -2,8 +2,8 @@
 
 ssh_cmd_opt() { # MACHINE=
 	checkvars MACHINE
-	local kf=var/machines/$MACHINE/.ssh_key-mm-$HOSTNAME
-	[[ -f $kf ]] || cp_file `realpath var/ssh_key-mm-$HOSTNAME` $kf
+	local kf=var/machines/$MACHINE/.ssh_key-$HOSTNAME
+	[[ -f $kf ]] || cp_file var/ssh_key-$HOSTNAME $kf
 	R1=(ssh
 -o ConnectTimeout=3
 -o PreferredAuthentications=publickey
@@ -159,8 +159,8 @@ ssh_pubkeys() { # FMT [USERS] [KEYNAME] [MM_PUBKEY]
 			while read -r type key name; do
 				[ "$key" ] || continue
 				[ -z "$KEYNAME" -o "$name" == "$KEYNAME" ] || continue
-				local match=; [ "$line" == "$MM_PUBKEY" ] && match=YES
-				printf "$FMT" "$MACHINE" $USER "${key: -20}" $name $match
+				local match=; [ "$line" == "$MM_PUBKEY" ] && match='*'
+				printf "$FMT" "$MACHINE" "$USER" "${key: -20}" "$match" "$name"
 			done <<< "$line"
 		done < $kf
 	done

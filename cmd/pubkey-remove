@@ -2,6 +2,6 @@
 # ADMIN SSH ; [KEYNAME] ["USER1 ..."] ; remove mm's public key on root and all deploy users
 . mmlib
 
-KEYNAME=${1:-mm-$HOSTNAME}
+KEYNAME=${1:-$HOSTNAME}
 USERS=$2
 each_machine ssh_script "ssh_pubkey_update $KEYNAME --remove" "$USERS"

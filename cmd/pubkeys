@@ -3,7 +3,7 @@
 . mmlib
 
 KEYNAMES=$1 USERS=$2
-FMT="%-16s %-16s %-22s %-20s %-6s\n"
-printf "$FMT" MACHINE USER ...KEY KEYNAME mm-$HOSTNAME
-must catfile var/ssh_key-mm-$HOSTNAME.pub; MM_PUBKEY=$R1
+FMT="%-16s %-16s %-22s %1s %-20s\n"
+printf "$FMT" MACHINE USER ...KEY "" KEYNAME
+must catfile var/ssh_key-$HOSTNAME.pub; MM_PUBKEY=$R1
 QUIET=1 each_machine ssh_script "ssh_pubkeys" "$FMT" "$USERS" "$KEYNAMES" "$MM_PUBKEY"

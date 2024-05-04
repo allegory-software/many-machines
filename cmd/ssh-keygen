@@ -1,8 +1,8 @@
 #!/bin/bash
-# ADMIN SSH ; [KEYNAME] ; generate a new ssh key
+# ADMIN SSH ; [KEYNAME] ; generate a new ssh key for this host
 . mmlib
 
-KEYNAME=${1:-mm-$HOSTNAME}
+KEYNAME=${1:-$HOSTNAME}
 checkvars KEYNAME
 
 say "Generating a new ssh key labeled '$KEYNAME' ..."

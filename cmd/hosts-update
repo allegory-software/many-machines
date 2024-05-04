@@ -13,7 +13,7 @@ update_host() {
 	ip_of $MACHINE; local IP=$R1
 	printf -v s "%-20s %-20s %s\n" "$IP" "${DEPLOY:-$MACHINE}" "# added by mm"
 	append "$s" /etc/hosts
-	must catfile var/machines/$MACHINE/ssh_hostkey
+	must catfile var/machines/$MACHINE/.ssh_hostkey
 	ssh-keygen -f ~/.ssh/known_hosts -R $IP
 	append "$R1"$'\n' ~/.ssh/known_hosts
 }
@@ -21,4 +21,4 @@ each_machine update_host
 each_deploy  update_host
 
 # NOTE: For hosts that don't have the latest mm ssh pubkey, use `mm ssh` or run `mm pubkey-update`.
-cp_file var/ssh_key-mm-$HOSTNAME   ~/.ssh/id_rsa
+cp_file var/ssh_key-$HOSTNAME   ~/.ssh/id_rsa
