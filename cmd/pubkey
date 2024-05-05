@@ -1,7 +1,6 @@
 #!/bin/bash
-# ADMIN SSH ; [KEYNAME] [USER] ; print a ssh public key
+# ADMIN SSH ;; print ssh public key
 . mmlib
 
-KEYNAME=${1:-$HOSTNAME}
-USER=${2:-root}
-each_machine ssh_script "ssh_pubkey $USER $KEYNAME"
+ssh_keyfile; ssh_pubkey_from_keyfile $R1
+printf "%b\n" "$R1"

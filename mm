@@ -1,15 +1,17 @@
 #!/bin/bash
-cd /opt/mm || exit 1
-
-set -f # disable globbing
-set -o pipefail
+cd /opt/mm || { printf "ABORT: Could not chdir to '/opt/mm'.\n" >&2; exit 1; }
 
 export DEPLOYS
 export MACHINES
 
+set -f # disable globbing
+set -o pipefail
+
 . lib/die.sh
 
 on_exit sayn $ENDCOLOR
+
+[[ $UID == 0 ]] || die "Must be root."
 
 usage() {
 	say

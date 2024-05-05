@@ -3,14 +3,12 @@
 
 - ssh tunnels
 - sshfs mounts
-- rsync download, upload, copy in one command
 
 - m-rename
 - d-remove
 - d-rename
 
+- d-backups: copy
 - m-backups: list, backup, restore, copy
-- d-backups: list, backup, restore, copy
-
 
 - EPIC: add mm to mm2 repo and rewrite it to invoke mm2

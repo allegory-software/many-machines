@@ -1,9 +1,7 @@
 # ssh lib: ssh config and operation wrappers.
 
-ssh_cmd_opt() { # MACHINE=
+ssh_cmd_opt() { # MACHINE= [KEYFILE=]
 	checkvars MACHINE
-	local kf=var/machines/$MACHINE/.ssh_key-$HOSTNAME
-	[[ -f $kf ]] || cp_file var/ssh_key-$HOSTNAME $kf
 	R1=(ssh
 -o ConnectTimeout=3
 -o PreferredAuthentications=publickey
@@ -11,9 +9,9 @@ ssh_cmd_opt() { # MACHINE=
 -o ControlMaster=auto
 -o ControlPath=~/.ssh/control-%h-%p-%r
 -o ControlPersist=600
--i $kf
+-i ${KEYFILE:-var/machines/$MACHINE/.ssh_key}
 )
-	[ "$MM_SSH_TTY" ] && R1+=(-t) || R1+=(-o BatchMode=yes)
+	[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 }
 
 ssh_cmd() { # MACHINE= HOST=
@@ -135,31 +133,48 @@ ssh_host_key_update_for_user() { # USER HOST KEYNAME KEY HOSTKEY [unstable_ip]
 	ssh_host_update_for_user "$1" "$2" "$3" "$6"
 }
 
-ssh_pubkey() { # USER KEYNAME
-	local USER=$1
-	local KEYNAME=$2
-	checkvars USER KEYNAME
-	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	cat $HOME/.ssh/authorized_keys | grep " $KEYNAME\$"
+ssh_keyfile() { # [MACHINE=] -> FOUND_KEYFILE [MACHINE_KEYFILE]
+	R2=
+	[[ $MACHINE ]] && {
+		R1=var/machines/$MACHINE/.ssh_key
+		[[ -f $R1 ]] && return
+		R2=$R1 # machine key file
+	}
+	R1=var/ssh_key
+	[[ -f $R1 ]] && return
+	checkfile $HOME/.ssh/id_rsa
 }
 
-ssh_pubkeys() { # FMT [USERS] [KEYNAME] [MM_PUBKEY]
+ssh_pubkey_from_keyfile() { # KEYFILE
+	local KEYFILE=$1
+	checkvars KEYFILE
+	R1=`must ssh-keygen -y -f "$KEYFILE"` || exit
+}
+
+ssh_pubkey() { # USER MATCH_KEY
+       local USER=$1
+       local KEYNAME=$2
+       checkvars USER KEYNAME
+       local HOME=/home/$USER; [ $USER == root ] && HOME=/root
+       cat $HOME/.ssh/authorized_keys | grep "$MATCH_KEY"
+}
+
+ssh_pubkeys() { # FMT [USERS] [MATCH_PUBKEY] [MATCH_ONLY=1]
 	local FMT=$1
 	local USERS=$2
-	local KEYNAME=$3
-	local MM_PUBKEY=$4
+	local MATCH_PUBKEY=$3
 	checkvars FMT-
-	[ "$USERS" ] || USERS=`echo root; ls -1 /home`
+	[[ $USERS ]] || USERS=`echo root; ls -1 /home`
 	for USER in $USERS; do
-		local HOME=/home/$USER; [ $USER == root ] && HOME=/root
+		local HOME=/home/$USER; [[ $USER == root ]] && HOME=/root
 		local kf=$HOME/.ssh/authorized_keys
-		[ -f $kf ] || continue
+		[[ -f $kf ]] || continue
 		local line
 		while IFS= read -r line; do
 			while read -r type key name; do
-				[ "$key" ] || continue
-				[ -z "$KEYNAME" -o "$name" == "$KEYNAME" ] || continue
-				local match=; [ "$line" == "$MM_PUBKEY" ] && match='*'
+				[[ $key ]] || continue
+				local match=; [[ "$type $key" == $MATCH_PUBKEY ]] && match='*'
+				[[ $MATCH_ONLY && match == '*' ]] && continue
 				printf "$FMT" "$MACHINE" "$USER" "${key: -20}" "$match" "$name"
 			done <<< "$line"
 		done < $kf
@@ -184,13 +199,13 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY|--remove
 		must chown $USER:$USER -R $HOME/.ssh
 	}
 	local UP_PUBKEY=$(grep " $KEYNAME\$" $ak)
-	if [[ "$PUBKEY" == --remove && "$UP_PUBKEY" == "" ]]; then
+	if [[ $PUBKEY == --remove && $UP_PUBKEY == "" ]]; then
 		say "Key not found."
-	elif [[ "$PUBKEY" == "$UP_PUBKEY" ]]; then
+	elif [[ $PUBKEY == $UP_PUBKEY ]]; then
 		say "Key is the same."
 	else
 		remove_line "$KEYNAME\$" $ak
-		if [[ "$PUBKEY" != --remove ]]; then
+		if [[ $PUBKEY != --remove ]]; then
 			must append "$PUBKEY"$'\n' $ak
 		fi
 	fi

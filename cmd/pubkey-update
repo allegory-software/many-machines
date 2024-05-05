@@ -1,24 +1,24 @@
 #!/bin/bash
-# ADMIN SSH ; [KEYNAME] ["USER1 ..."] ; update a ssh public key into machine(s)
+# ADMIN SSH ; [DEVICE|"PUBKEY"] ["USER1 ..."] ; update a ssh public key into machine(s)
 . mmlib
 
-KEYNAME=${1:-$HOSTNAME}
-USERS=$2
-kf=var/ssh_key-$KEYNAME
-[ -f $kf ] || {
-	say "Key file $kf not found. Using ~/.ssh/id_rsa..."
-	cp_file ~/.ssh/id_rsa $kf
-	ssh-keygen -y -f $kf > $kf.pub
-}
-must catfile $kf.pub; PUBKEY="$R1"
+PUBKEY=$1 USERS=$2
+if [[ $PUBKEY ]]; then
+	if [[ -d "devices/$PUBKEY" ]]; then
+		catfile devices/$PUBKEY/ssh_pubkey; PUBKEY=$R1
+	fi
+else
+	ssh_keyfile; KEYFILE=$R1
+	ssh_pubkey_from_keyfile $KEYFILE; PUBKEY="$R1"
+fi
 
 _f() {
-	local UP_PUBKEY=$(must ssh_script $1 "ssh_pubkey root $KEYNAME; true")
+	local UP_PUBKEY=$(must ssh_script $1 "ssh_pubkey root; true")
 	if [[ $UP_PUBKEY == $PUBKEY ]]; then
 		say "SSH public key '$KEYNAME' is there and it's the same."
 	else
-		ssh_script "ssh_pubkey_update" "$KEYNAME" "$PUBKEY" "$USERS"
-		cp_file $kf  var/machines/$MACHINE/.ssh_key-$KEYNAME
+		ssh_keyfile; KEYFILE=$R1 ssh_script "ssh_pubkey_update" "$PUBKEY" "$USERS"
+		cp_file $KEYFILE  var/machines/$MACHINE/.ssh_key
 	fi
 }
 each_machine _f
