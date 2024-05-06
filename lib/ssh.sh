@@ -9,7 +9,7 @@ ssh_cmd_opt() { # MACHINE= [KEYFILE=]
 -o ControlMaster=auto
 -o ControlPath=~/.ssh/control-%h-%p-%r
 -o ControlPersist=600
--i ${KEYFILE:-var/machines/$MACHINE/.ssh_key}
+-i ${SSH_KEYFILE:-var/machines/$MACHINE/.ssh_key}
 )
 	[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 }
@@ -85,55 +85,40 @@ ssh_hostkey_update() {
 	must ssh-keyscan -4 -T 2 -t rsa $IP > var/machines/$MACHINE/.ssh_hostkey
 }
 
-ssh_host_update_for_user() { # USER HOST KEYNAME [unstable_ip]
-	local USER=$1
-	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	local HOST=$2
-	local KEYNAME=$3
-	local UNSTABLE_IP=$4
-	checkvars USER HOST KEYNAME
-	say "Assigning SSH key '$KEYNAME' to host '$HOST' for user '$USER' ..."
+ssh_mk_config_dir() {
 	must mkdir -p $HOME/.ssh
+	must chown $USER:$USER $HOME/.ssh
+	must chmod 700 $HOME/.ssh
+}
+
+ssh_host_config_update_for_user() { # USER HOST KEYNAME KEY HOSTKEY [unstable_ip]
+	local USER=$1 HOST=$2 KEYNAME=$3 KEY=$4 HOSTKEY=$5 UNSTABLE_IP=$6
+	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
+	checkvars USER HOST KEYNAME KEY- HOSTKEY-
+	say "Configuring SSH key '$KEYNAME' for host '$HOST' for user '$USER' ..."
+
+	ssh_mk_config_dir
+
+	local KEYFILE=$HOME/.ssh/${KEYNAME}.id_rsa
+	save "$KEY" $KEYFILE $USER 600
+
+	local HOSTKEYFILE=$HOME/.ssh/${KEYNAME}.hostkey
+	save "$HOSTKEY" $HOSTKEYFILE $USER 600
+
 	local CONFIG=$HOME/.ssh/config
 	touch "$CONFIG"
 	local s=$(sed 's/^Host/\n&/' $CONFIG | sed '/^Host '"$HOST"'$/,/^$/d;/^$/d')
 	s="$s
 Host $HOST
   HostName $HOST
-  IdentityFile $HOME/.ssh/${KEYNAME}.id_rsa
-  UserKnownHostsFile $HOME/.ssh/${KEYNAME}.hostkey "
+  IdentityFile $KEYFILE
+  UserKnownHostsFile $HOSTKEYFILE "
 	[ "$UNSTABLE_IP" ] && s+="
   CheckHostIP no"
-	save "$s" $CONFIG
-	must chown $USER:$USER -R $HOME/.ssh
+	save "$s" $CONFIG $USER 600
 }
 
-ssh_key_update_for_user() { # USER KEYNAME KEY HOSTKEY
-	local USER=$1
-	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	local KEYNAME=$2
-	local KEY=$3
-	local HOSTKEY=$4
-	checkvars USER KEYNAME KEY- HOSTKEY-
-	say "Updating SSH key '$KEYNAME' for user '$USER' ..."
-
-	must mkdir -p $HOME/.ssh
-
-	local KEYFILE=$HOME/.ssh/${KEYNAME}.id_rsa
-	save "$KEY" $KEYFILE $USER
-
-	local HOSTKEYFILE=$HOME/.ssh/${KEYNAME}.hostkey
-	save "$HOSTKEY" $HOSTKEYFILE $USER
-
-	must chown $USER:$USER -R $HOME/.ssh
-}
-
-ssh_host_key_update_for_user() { # USER HOST KEYNAME KEY HOSTKEY [unstable_ip]
-	ssh_key_update_for_user "$1" "$3" "$4" "$5"
-	ssh_host_update_for_user "$1" "$2" "$3" "$6"
-}
-
-ssh_keyfile() { # [MACHINE=] -> FOUND_KEYFILE [MACHINE_KEYFILE]
+ssh_usable_keyfile() { # [MACHINE=] -> FOUND_KEYFILE [MACHINE_KEYFILE]
 	R2=
 	[[ $MACHINE ]] && {
 		R1=var/machines/$MACHINE/.ssh_key
@@ -151,15 +136,20 @@ ssh_pubkey_from_keyfile() { # KEYFILE
 	R1=`must ssh-keygen -y -f "$KEYFILE"` || exit
 }
 
-ssh_pubkey() { # USER MATCH_KEY
-       local USER=$1
-       local KEYNAME=$2
-       checkvars USER KEYNAME
-       local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-       cat $HOME/.ssh/authorized_keys | grep "$MATCH_KEY"
+ssh_pubkey_find() { # USER KEYMATCH
+	local USER=$1 KEYMATCH=$2
+	checkvars USER KEYMATCH
+	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
+	cat $HOME/.ssh/authorized_keys | grep "$KEYMATCH"
 }
 
-ssh_pubkeys() { # FMT [USERS] [MATCH_PUBKEY] [MATCH_ONLY=1]
+ssh_device_pubkey() { # DEVICE
+	local DEVICE=$1
+	checkvars DEVICE
+	must catfile devices/$DEVICE/ssh_pubkey
+}
+
+ssh_pubkeys() { # FMT [USERS] [MATCH_PUBKEY]
 	local FMT=$1
 	local USERS=$2
 	local MATCH_PUBKEY=$3
@@ -174,10 +164,45 @@ ssh_pubkeys() { # FMT [USERS] [MATCH_PUBKEY] [MATCH_ONLY=1]
 			while read -r type key name; do
 				[[ $key ]] || continue
 				local match=; [[ "$type $key" == $MATCH_PUBKEY ]] && match='*'
-				[[ $MATCH_ONLY && match == '*' ]] && continue
 				printf "$FMT" "$MACHINE" "$USER" "${key: -20}" "$match" "$name"
 			done <<< "$line"
 		done < $kf
+	done
+}
+
+_ssh_pubkeys() { # [USERS]
+	local USERS=$1
+	[[ $USERS ]] || USERS=`echo root; ls -1 /home`
+	for USER in $USERS; do
+		local HOME=/home/$USER; [[ $USER == root ]] && HOME=/root
+		local kf=$HOME/.ssh/authorized_keys
+		[[ -f $kf ]] || continue
+		local line
+		while IFS= read -r line; do
+			while read -r type key name; do
+				[[ $key ]] || continue
+				printf "%b\n" "$MACHINE $USER $type $key $name"
+			done <<< "$line"
+		done < $kf
+	done
+}
+
+ssh_pubkeys() { # [USERS]
+	local USERS=$1
+	local FMT="%-10s %-10s %-10s %-22s %-10s %-10s\n"
+	printf "$WHITE$FMT$ENDCOLOR" MACHINE USER TYPE KEY KEYNAME DEVICE
+	declare -A map
+	local device; for device in `ls var/devices`; do
+		catfile var/devices/$device/ssh_pubkey || continue
+		read -r type key name <<< "$R1"
+		map["$type $key"]=$device
+	done
+	ssh_usable_keyfile; local KEYFILE=$R1
+	ssh_pubkey_from_keyfile $KEYFILE; local MY_PUBKEY=$R1
+	local machine user type key name
+	QUIET=1 SSH_KEYFILE=$KEYFILE each_machine ssh_script "_ssh_pubkeys" "$USERS" | while read -r machine user type key name; do
+		device=${map["$type $key"]}
+		printf "$FMT" $machine $user $type ${key: -20} "$name" ${device:-?}
 	done
 }
 
@@ -187,16 +212,15 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY|--remove
 	local PUBKEY=$3
 	checkvars USER KEYNAME PUBKEY-
 	say "Updating SSH public key '$KEYNAME' for user '$USER'..."
-	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	[ -d $HOME ] || die "No home dir for user '$USER'"
+	local HOME=/home/$USER; [[ $USER == root ]] && HOME=/root
+	[[ -d $HOME ]] || die "No home dir for user '$USER'"
 	local ak=$HOME/.ssh/authorized_keys
-	[ -f $ak ] || {
+	[[ -f $ak ]] || {
 		say "Creating file $ak..."
-		must mkdir -p $HOME/.ssh
-		must chmod 700 $HOME/.ssh
+		ssh_mk_config_dir
 		must touch $ak
 		must chmod 600 $ak
-		must chown $USER:$USER -R $HOME/.ssh
+		must chown $USER:$USER $ak
 	}
 	local UP_PUBKEY=$(grep " $KEYNAME\$" $ak)
 	if [[ $PUBKEY == --remove && $UP_PUBKEY == "" ]]; then
@@ -216,7 +240,7 @@ ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
 	local PUBKEY="$2"
 	checkvars KEYNAME PUBKEY-
 	local USERS="$3"
-	[ "$USERS" ] || USERS="$(echo root; machine_deploys)"
+	[[ $USERS ]] || USERS="$(echo root; machine_deploys)"
 	for USER in $USERS; do
 		ssh_pubkey_update_for_user $USER $KEYNAME "$PUBKEY"
 	done

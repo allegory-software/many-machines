@@ -2,8 +2,4 @@
 # ADMIN SSH ; ["USER1 ..."] ; list ssh public keys
 . mmlib
 
-USERS=$1
-FMT="%-16s %-16s %-22s %1s %-20s\n"
-printf "$WHITE$FMT$ENDCOLOR" MACHINE USER ...KEY "" KEYNAME
-ssh_keyfile; ssh_pubkey_from_keyfile "$R1"; MY_PUBKEY=$R1
-QUIET=1 each_machine ssh_script "ssh_pubkeys" "$FMT" "$USERS" "$MY_PUBKEY"
+ssh_pubkeys "$@"

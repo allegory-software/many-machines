@@ -144,10 +144,8 @@ remove_line() { # REGEX FILE
 	fi
 }
 
-save() { # S FILE [USER]
-	local s="$1"
-	local file="$2"
-	local user="$3"
+save() { # S FILE [USER] [MODE]
+	local s=$1 file=$2 user=$3 mode=$4
 	checkvars s- file
 	sayn "Saving ${#s} bytes to file $file ... "
 	debugn "MUST: save \"$s\" $file "
@@ -156,11 +154,14 @@ save() { # S FILE [USER]
 	else
 		die "save $file [$?]"
 	fi
-	if [ "$user" ]; then
+	[[ $user ]] && {
 		checkvars user
 		must chown $user:$user $file
-		must chmod 600 $file
-	fi
+	}
+	[[ $mode ]] && {
+		checkvars mode
+		must chmod $mode $file
+	}
 	say OK
 }
 

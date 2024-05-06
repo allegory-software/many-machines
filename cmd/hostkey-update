@@ -2,4 +2,4 @@
 # ADMIN SSH ;; make machine(s) known to mm
 . mmlib
 
-each_machine ssh_hostkey_update
+NOALL=1 each_machine ssh_hostkey_update

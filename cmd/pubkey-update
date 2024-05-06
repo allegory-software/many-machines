@@ -4,21 +4,20 @@
 
 PUBKEY=$1 USERS=$2
 if [[ $PUBKEY ]]; then
-	if [[ -d "devices/$PUBKEY" ]]; then
-		catfile devices/$PUBKEY/ssh_pubkey; PUBKEY=$R1
-	fi
+	[[ -d "devices/$PUBKEY" ]] && ssh_device_pubkey "$PUBKEY" && PUBKEY=$R1
 else
-	ssh_keyfile; KEYFILE=$R1
-	ssh_pubkey_from_keyfile $KEYFILE; PUBKEY="$R1"
+	ssh_usable_keyfile; ssh_pubkey_from_keyfile $R1; PUBKEY=$R1
 fi
 
 _f() {
-	local UP_PUBKEY=$(must ssh_script $1 "ssh_pubkey root; true")
-	if [[ $UP_PUBKEY == $PUBKEY ]]; then
-		say "SSH public key '$KEYNAME' is there and it's the same."
+	local type key name
+	must ssh_script "ssh_pubkey_find" root "$PUBKEY" | read -r type key name
+	if [[ "$type $key" == $PUBKEY ]]; then
+		say "SSH public key is already there."
 	else
-		ssh_keyfile; KEYFILE=$R1 ssh_script "ssh_pubkey_update" "$PUBKEY" "$USERS"
-		cp_file $KEYFILE  var/machines/$MACHINE/.ssh_key
+		ssh_usable_keyfile; local KEYFILE=$R1 MACHINE_KEYFILE=$R2
+		SSH_KEYFILE=$KEYFILE ssh_script "ssh_pubkey_update" "$PUBKEY" "$USERS"
+		cp_file $KEYFILE $MACHINE_KEYFILE
 	fi
 }
 each_machine _f
