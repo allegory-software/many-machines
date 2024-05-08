@@ -3,20 +3,19 @@
 . mmlib
 
 PUBKEY=$1 USERS=$2
+
 if [[ $PUBKEY ]]; then
 	[[ -d "devices/$PUBKEY" ]] && ssh_device_pubkey "$PUBKEY" && PUBKEY=$R1
 else
-	ssh_usable_keyfile; ssh_pubkey_from_keyfile $R1; PUBKEY=$R1
+	ssh_usable_keyfile; KEYFILE=$R1
+	ssh_pubkey_from_keyfile $KEYFILE; PUBKEY=$R1
+	SSH_KEYFILE=$KEYFILE ssh_script "ssh_pubkey_update" "$PUBKEY" "$USERS" "$REMOVE"
 fi
 
 _f() {
-	local type key name
-	must ssh_script "ssh_pubkey_find" root "$PUBKEY" | read -r type key name
-	if [[ "$type $key" == $PUBKEY ]]; then
-		say "SSH public key is already there."
+	if [[ $REMOVE ]]; then
+		rm_file $MACHINE_KEYFILE
 	else
-		ssh_usable_keyfile; local KEYFILE=$R1 MACHINE_KEYFILE=$R2
-		SSH_KEYFILE=$KEYFILE ssh_script "ssh_pubkey_update" "$PUBKEY" "$USERS"
 		cp_file $KEYFILE $MACHINE_KEYFILE
 	fi
 }

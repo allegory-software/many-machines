@@ -149,27 +149,6 @@ ssh_device_pubkey() { # DEVICE
 	must catfile devices/$DEVICE/ssh_pubkey
 }
 
-ssh_pubkeys() { # FMT [USERS] [MATCH_PUBKEY]
-	local FMT=$1
-	local USERS=$2
-	local MATCH_PUBKEY=$3
-	checkvars FMT-
-	[[ $USERS ]] || USERS=`echo root; ls -1 /home`
-	for USER in $USERS; do
-		local HOME=/home/$USER; [[ $USER == root ]] && HOME=/root
-		local kf=$HOME/.ssh/authorized_keys
-		[[ -f $kf ]] || continue
-		local line
-		while IFS= read -r line; do
-			while read -r type key name; do
-				[[ $key ]] || continue
-				local match=; [[ "$type $key" == $MATCH_PUBKEY ]] && match='*'
-				printf "$FMT" "$MACHINE" "$USER" "${key: -20}" "$match" "$name"
-			done <<< "$line"
-		done < $kf
-	done
-}
-
 _ssh_pubkeys() { # [USERS]
 	local USERS=$1
 	[[ $USERS ]] || USERS=`echo root; ls -1 /home`
@@ -186,7 +165,6 @@ _ssh_pubkeys() { # [USERS]
 		done < $kf
 	done
 }
-
 ssh_pubkeys() { # [USERS]
 	local USERS=$1
 	local FMT="%-10s %-10s %-10s %-22s %-10s %-10s\n"
@@ -200,18 +178,17 @@ ssh_pubkeys() { # [USERS]
 	ssh_usable_keyfile; local KEYFILE=$R1
 	ssh_pubkey_from_keyfile $KEYFILE; local MY_PUBKEY=$R1
 	local machine user type key name
-	QUIET=1 SSH_KEYFILE=$KEYFILE each_machine ssh_script "_ssh_pubkeys" "$USERS" | while read -r machine user type key name; do
-		device=${map["$type $key"]}
-		printf "$FMT" $machine $user $type ${key: -20} "$name" ${device:-?}
-	done
+	QUIET=1 SSH_KEYFILE=$KEYFILE each_machine ssh_script "_ssh_pubkeys" "$USERS" \
+		| while read -r machine user type key name; do
+			device=${map["$type $key"]}
+			printf "$FMT" $machine $user $type ${key: -20} "$name" ${device:-?}
+		done
 }
 
-ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY|--remove
-	local USER=$1
-	local KEYNAME=$2
-	local PUBKEY=$3
-	checkvars USER KEYNAME PUBKEY-
-	say "Updating SSH public key '$KEYNAME' for user '$USER'..."
+ssh_pubkey_update_for_user() { # USER PUBKEY [--remove]
+	local USER=$1 PUBKEY=$2 REMOVE=$3
+	checkvars USER PUBKEY-
+	say "Adding SSH public key '...${PUBKEY: -20}' for user '$USER'..."
 	local HOME=/home/$USER; [[ $USER == root ]] && HOME=/root
 	[[ -d $HOME ]] || die "No home dir for user '$USER'"
 	local ak=$HOME/.ssh/authorized_keys
@@ -222,27 +199,24 @@ ssh_pubkey_update_for_user() { # USER KEYNAME PUBKEY|--remove
 		must chmod 600 $ak
 		must chown $USER:$USER $ak
 	}
-	local UP_PUBKEY=$(grep " $KEYNAME\$" $ak)
+	local UP_PUBKEY=$(grep "$PUBKEY" $ak)
 	if [[ $PUBKEY == --remove && $UP_PUBKEY == "" ]]; then
 		say "Key not found."
 	elif [[ $PUBKEY == $UP_PUBKEY ]]; then
 		say "Key is the same."
 	else
-		remove_line "$KEYNAME\$" $ak
-		if [[ $PUBKEY != --remove ]]; then
+		remove_line "$PUBKEY" $ak
+		if [[ $REMOVE != --remove ]]; then
 			must append "$PUBKEY"$'\n' $ak
 		fi
 	fi
 }
-
-ssh_pubkey_update() { # KEYNAME PUBKEY [USERS]
-	local KEYNAME="$1"
-	local PUBKEY="$2"
-	checkvars KEYNAME PUBKEY-
-	local USERS="$3"
+ssh_pubkey_update() { # PUBKEY [USERS] [--remove]
+	local PUBKEY=$1 USERS=$3 REMOVE=$3
+	checkvars PUBKEY-
 	[[ $USERS ]] || USERS="$(echo root; machine_deploys)"
 	for USER in $USERS; do
-		ssh_pubkey_update_for_user $USER $KEYNAME "$PUBKEY"
+		ssh_pubkey_update_for_user $USER "$PUBKEY" $REMOVE
 	done
 }
 

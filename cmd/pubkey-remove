@@ -1,8 +1,5 @@
 #!/bin/bash
 # ADMIN SSH ; [DEVICE|KEYMATCH] ["USER1 ..."] ; remove a public key from a machine
-. mmlib
 
-KEYMATCH=$1 USERS=$2
-checkvars KEYMATCH
-[[ -d devices/$KEYMATCH ]] && { catfile devices/$KEYMATCH/ssh_pubkey; $KEYMATCH=$R1; }
-each_machine ssh_script "ssh_pubkey_update --remove" "$KEYMATCH" "$USERS"
+REMOVE=--remove
+. cmd/pubkey-update
