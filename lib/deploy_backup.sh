@@ -25,7 +25,7 @@ rel_backup_date() { # FILE
 
 list_deploy_backups() {
 	local FMT="%-10s %-20s %s\n"
-	printf "$FMT" DEPLOY AGE DATE
+	printf "$WHITE$FMT$ENDCOLOR" DEPLOY AGE DATE
 	local DEPLOY
 	for DEPLOY in `ls backups`; do
 		for DATE in `ls -r backups/$DEPLOY`; do

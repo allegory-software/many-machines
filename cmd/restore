@@ -1,10 +1,10 @@
 #!/bin/bash
-# DEPLOY ; DEPLOY DATE|latest [DST_DEPLOY] ; restore deploy from backup
+# DEPLOY ; [DEPLOY DATE|latest [DST_DEPLOY]] ; restore deploy from backup
 . mmlib
 
 [[ $1 ]] || {
 	say
-	say "Usage: mm restore DEPLOY DATE|latest [DST_DEPLOY]"
+	say "Usage: ${WHITE}mm restore DEPLOY DATE|latest [DST_DEPLOY]$ENDCOLOR"
 	say
 	list_deploy_backups
 	say

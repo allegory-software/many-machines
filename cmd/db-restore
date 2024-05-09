@@ -2,5 +2,4 @@
 # ADMIN DB ; BACKUP_FILE DST_MACHINE DST_DB ; restore database from backup
 . mmlib
 
-[[ $1 ]] ||  "Usage: mm db-restore BACKUP_FILE DST_MACHINE [DST_DB]"
 deploy_db_restore "$@"

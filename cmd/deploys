@@ -1,5 +1,5 @@
 #!/bin/bash
-# DEPLOY ;; list deploys found on machines
+# STAT ;; list deploys found on machines
 . mmlib
 
 md_custom_list "%-10s %s" "DEPLOYS"

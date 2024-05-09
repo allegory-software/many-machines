@@ -2,5 +2,4 @@
 # BACKUP CMD ; BACKUP_DIR DST_MACHINE DST_DEPLOY ; restore deploy files from backup
 . mmlib
 
-[[ $1 ]] || die "Usage: mm files-restore BACKUP_DIR DST_MACHINE DST_DEPLOY"
 deploy_files_restore "$@"

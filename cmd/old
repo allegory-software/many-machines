@@ -1,4 +1,7 @@
 #!/bin/bash
-# DEPLOY ;; list deployments that need updating
+# STAT ;; deploy version status
+. mmlib
 
-mm d-st | grep -e MACHINE -e !
+d_custom_list \
+	"%-10s %-10s %-10s %-10s" \
+	"APP_LATEST APP_WANT APP_DEPL SDK_DEPL"
