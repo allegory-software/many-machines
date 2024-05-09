@@ -100,7 +100,7 @@ install_mysql() {
 	checkvars MYSQL_ROOT_PASS
 
 	say; say "Installing MySQL (Percona latest)..."
-	service_stop mysql
+	service_is_installed mysql && service_stop mysql
 
 	apt_get_install gnupg2 lsb-release
 

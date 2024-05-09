@@ -49,7 +49,7 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 	(
 	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	must mkdir -p $DIR
-	must chown -RH root:root $DIR
+	must chown -Rh root:root $DIR
 	must cd $DIR
 	[ -d .git ] || must git init $QUIET
 	run  git remote rm  origin 2>/dev/null
@@ -74,7 +74,7 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 	exit 0
 	)
 	local ret=$?
-	must chown -R $USER:$USER $DIR
+	must chown -Rh $USER:$USER $DIR
 	[ $ret != 0 ] && exit $ret
 }
 
