@@ -1,10 +1,15 @@
 # integration with Allegory-SDK-based apps
 
-app() {
+try_app() {
 	checkvars DEPLOY APP
 	must pushd /home/$DEPLOY/app
-	VARS="DEBUG VERBOSE" must run_as $DEPLOY ./$APP "$@"
+	VARS="DEBUG VERBOSE" run_as $DEPLOY ./$APP "$@"; local ret=$?
 	popd
+	return $ret
+}
+
+app() {
+	must try_app "$@"
 }
 
 deploy_version_app() {
@@ -27,17 +32,17 @@ deploy_start_app() {
 
 deploy_stop_app() {
 	[[ -d /home/$DEPLOY/app ]] || return
-	(app running && must app stop)
+	app running && must app stop
 }
 
 deploy_is_running_app() {
 	[[ -d /home/$DEPLOY/app ]] || return
-	(app running)
+	try_app running
 }
 
 deploy_install_app() {
 	checkvars DEPLOY REPO APP APP_VERSION
-	deploy_stop_app
+	(deploy_stop_app)
 	[[ $FAST ]] && SUBMODULES=
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/app "$APP_VERSION"
 	deploy_gen_conf

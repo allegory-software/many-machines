@@ -33,7 +33,7 @@ get_SDK_DEPL() {
 }
 
 get_APP_STATUS() {
-	app running && echo RUNNING || echo DOWN!
+	try_app running && echo UP || echo DOWN!
 }
 
 # deploy modules -------------------------------------------------------------
