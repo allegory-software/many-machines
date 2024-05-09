@@ -109,8 +109,10 @@ deploy_restore() { # DEPLOY= DATE= [DST_DEPLOY=]
 	checkvars DEPLOY DATE DST_DEPLOY
 	machine_of "$DST_DEPLOY"; local DST_MACHINE=$R1
 	local DIR=backups/$DEPLOY/$DATE
+	MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_stop all
 	deploy_db_restore    $DIR/db.qp $DST_MACHINE $DST_DEPLOY
 	deploy_files_restore $DIR/files $DST_MACHINE $DST_DEPLOY
+	MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_start all
 }
 
 # remove old backups according to configured retention policy.

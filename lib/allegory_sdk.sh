@@ -24,6 +24,11 @@ deploy_version_sdk() {
 	popd
 }
 
+deploy_is_running_app() {
+	[[ -d /home/$DEPLOY/app ]] || return
+	try_app running
+}
+
 deploy_start_app() {
 	say "Starting the app..."
 	must app start
@@ -31,13 +36,7 @@ deploy_start_app() {
 }
 
 deploy_stop_app() {
-	[[ -d /home/$DEPLOY/app ]] || return
-	app running && must app stop
-}
-
-deploy_is_running_app() {
-	[[ -d /home/$DEPLOY/app ]] || return
-	try_app running
+	deploy_is_running_app && must app stop
 }
 
 deploy_install_app() {

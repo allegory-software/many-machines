@@ -1,5 +1,5 @@
 #!/bin/bash
-# RUN ; [SERVICE] ; start a service
+# RUN ; [SERVICE|all] ; start a service
 . mmlib
 
 [[ $1 ]] || QUIET=1
