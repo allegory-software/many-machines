@@ -90,7 +90,7 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 	dry must cp -rL $src $dst
 	if [[ $user ]]; then
 		checkvars user
-		dry must chown -R $user:$user $dst
+		dry must chown -Rh $user:$user $dst
 		[[ $mod ]] && dry must chmod -R "$mod" $dst
 	fi
 	say "OK"
@@ -156,7 +156,7 @@ save() { # S FILE [USER] [MODE]
 	fi
 	[[ $user ]] && {
 		checkvars user
-		must chown $user:$user $file
+		must chown -h $user:$user $file
 	}
 	[[ $mode ]] && {
 		checkvars mode

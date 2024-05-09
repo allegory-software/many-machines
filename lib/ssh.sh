@@ -51,6 +51,7 @@ $SCRIPT $ARGS
 		# faster but doesn't report line numbers correctly on errors in lib code.
 		run ssh_to bash -s <<< "
 $VARS
+mkdir -p /opt/mm
 cd /opt/mm || exit 1
 set -f # disable globbing
 set -o pipefail
@@ -123,7 +124,6 @@ ssh_usable_keyfile() { # [MACHINE=] -> FOUND_KEYFILE [MACHINE_KEYFILE]
 	[[ $MACHINE ]] && {
 		R1=var/machines/$MACHINE/.ssh_key
 		[[ -f $R1 ]] && return
-		R2=$R1 # machine key file
 	}
 	R1=var/ssh_key
 	[[ -f $R1 ]] && return
@@ -185,40 +185,30 @@ ssh_pubkeys() { # [USERS]
 		done
 }
 
-ssh_pubkey_update_for_user() { # USER PUBKEY [--remove]
-	local USER=$1 PUBKEY=$2 REMOVE=$3
-	checkvars USER PUBKEY-
-	say "Adding SSH public key '...${PUBKEY: -20}' for user '$USER'..."
-	local HOME=/home/$USER; [[ $USER == root ]] && HOME=/root
-	[[ -d $HOME ]] || die "No home dir for user '$USER'"
-	local ak=$HOME/.ssh/authorized_keys
-	[[ -f $ak ]] || {
-		say "Creating file $ak..."
-		ssh_mk_config_dir
-		must touch $ak
-		must chmod 600 $ak
-		must chown $USER:$USER $ak
-	}
-	local UP_PUBKEY=$(grep "$PUBKEY" $ak)
-	if [[ $PUBKEY == --remove && $UP_PUBKEY == "" ]]; then
-		say "Key not found."
-	elif [[ $PUBKEY == $UP_PUBKEY ]]; then
-		say "Key is the same."
+_ssh_pubkey_add() {
+	if [[ -f $AK_FILE ]]; then
+		remove_line "${PUBKEY: -20}" $AK_FILE
+		append "$PUBKEY"$'\n' $AK_FILE
 	else
-		remove_line "$PUBKEY" $ak
-		if [[ $REMOVE != --remove ]]; then
-			must append "$PUBKEY"$'\n' $ak
-		fi
+		ssh_mk_config_dir
+		save "$PUBKEY"$'\n' $AK_FILE
 	fi
 }
-ssh_pubkey_update() { # PUBKEY [USERS] [--remove]
-	local PUBKEY=$1 USERS=$3 REMOVE=$3
+_ssh_pubkey_remove() {
+	remove_line "$PUBKEY" $AK_FILE
+}
+_ssh_pubkey_do() { # fn "PUBKEY" [USERS]
+	local fn=$1 PUBKEY=$2 USERS=$3
 	checkvars PUBKEY-
 	[[ $USERS ]] || USERS="$(echo root; machine_deploys)"
 	for USER in $USERS; do
-		ssh_pubkey_update_for_user $USER "$PUBKEY" $REMOVE
+		local HOME=/home/$USER; [[ $USER == root ]] && HOME=/root
+		local AK_FILE=$HOME/.ssh/authorized_keys
+		$fn
 	done
 }
+ssh_pubkey_add()    { _ssh_pubkey_do _ssh_pubkey_add    "$@"; }
+ssh_pubkey_remove() { _ssh_pubkey_do _ssh_pubkey_remove "$@"; }
 
 # rsync ----------------------------------------------------------------------
 

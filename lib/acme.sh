@@ -11,10 +11,10 @@ install_acme() {
 	say "Installing acme.sh..."
 
 	# install acme.sh to auto-renew SSL certs.
-	must curl -sL https://get.acme.sh | must sh \
-		-s $ACME_EMAIL \
+	must curl -sSL https://get.acme.sh | must sh \
+		-s email=$ACME_EMAIL \
 		--nocron \
-		--config-home $ACME_DIR 2>/dev/null
+		--config-home $ACME_DIR
 
 	# ZeroSSL is the default but it's very slow, so we're switching back to LE.
 	acme_sh --set-default-ca --server letsencrypt

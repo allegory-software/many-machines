@@ -1,5 +1,12 @@
 #!/bin/bash
-# ADMIN SSH ; [DEVICE|KEYMATCH] ["USER1 ..."] ; remove a public key from a machine
+# ADMIN SSH ; [DEVICE|"PUBKEY"] ["USER1 ..."] ; add a ssh public key on machine(s)
+. mmlib
 
-REMOVE=--remove
-. cmd/pubkey-update
+PUBKEY=$1 USERS=$2
+checkvars PUBKEY
+if [[ -d "var/devices/$PUBKEY" ]]; then
+	must catfile var/devices/$PUBKEY/ssh_pubkey
+	PUBKEY=$R1
+fi
+
+each_machine ssh_script "ssh_pubkey_remove" "$PUBKEY" "$USERS"
