@@ -1,4 +1,4 @@
 #!/bin/bash
 # DEPLOY ;; list deployments that need updating
 
-mm d-st | grep !
+mm d-st | grep -e MACHINE -e !
