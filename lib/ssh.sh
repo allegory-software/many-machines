@@ -256,3 +256,13 @@ rsync_dir() {
 	must "${R1[@]}"
 	[[ $PROGRESS ]] || say OK
 }
+
+rsync_upload() { # SRC_DIR DST_DIR
+	checkvars MACHINE
+	DST_MACHINE=$MACHINE SRC_DIR=$1 DST_DIR=$2 rsync_dir
+}
+
+rsync_download() { # SRC_DIR DST_DIR
+	checkvars MACHINE
+	SRC_MACHINE=$MACHINE SRC_DIR=$1 DST_DIR=$2 rsync_dir
+}
