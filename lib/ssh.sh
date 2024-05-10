@@ -1,7 +1,20 @@
 # ssh lib: ssh config and operation wrappers.
 
+ssh_keyfile() { # [MACHINE=] -> FOUND_KEYFILE [MACHINE_KEYFILE]
+	R2=
+	[[ $MACHINE ]] && {
+		R1=.ssh/$MACHINE.id_rsa
+		[[ -f $R1 ]] && return
+	}
+	R1=.ssh/id_rsa
+	[[ -f $R1 ]] && return
+	checkfile $HOME/.ssh/id_rsa
+}
+
 ssh_cmd_opt() { # MACHINE= [KEYFILE=]
 	checkvars MACHINE
+	local SSH_KEYFILE=$SSH_KEYFILE
+	[[ $SSH_KEYFILE ]] || { ssh_keyfile; SSH_KEYFILE=$R1; }
 	R1=(ssh
 -o ConnectTimeout=3
 -o PreferredAuthentications=publickey
@@ -9,7 +22,7 @@ ssh_cmd_opt() { # MACHINE= [KEYFILE=]
 -o ControlMaster=auto
 -o ControlPath=~/.ssh/control-%h-%p-%r
 -o ControlPersist=600
--i ${SSH_KEYFILE:-var/machines/$MACHINE/.ssh_key}
+-i $SSH_KEYFILE
 )
 	[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 }
@@ -119,17 +132,6 @@ Host $HOST
 	save "$s" $CONFIG $USER 600
 }
 
-ssh_usable_keyfile() { # [MACHINE=] -> FOUND_KEYFILE [MACHINE_KEYFILE]
-	R2=
-	[[ $MACHINE ]] && {
-		R1=var/machines/$MACHINE/.ssh_key
-		[[ -f $R1 ]] && return
-	}
-	R1=var/ssh_key
-	[[ -f $R1 ]] && return
-	checkfile $HOME/.ssh/id_rsa
-}
-
 ssh_pubkey_from_keyfile() { # KEYFILE
 	local KEYFILE=$1
 	checkvars KEYFILE
@@ -175,7 +177,7 @@ ssh_pubkeys() { # [USERS]
 		read -r type key name <<< "$R1"
 		map["$type $key"]=$device
 	done
-	ssh_usable_keyfile; local KEYFILE=$R1
+	ssh_keyfile; local KEYFILE=$R1
 	ssh_pubkey_from_keyfile $KEYFILE; local MY_PUBKEY=$R1
 	local machine user type key name
 	QUIET=1 SSH_KEYFILE=$KEYFILE each_machine ssh_script "_ssh_pubkeys" "$USERS" \

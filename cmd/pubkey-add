@@ -17,7 +17,6 @@ fi
 
 _f() {
 	SSH_KEYFILE=$KEYFILE ssh_script "ssh_pubkey_add" "$PUBKEY" "$USERS"
-	local MACHINE_KEYFILE=var/machines/$MACHINE/.ssh_key
-	cp_file $KEYFILE $MACHINE_KEYFILE
+	cp_file $KEYFILE .ssh/$MACHINE.id_rsa
 }
 each_machine _f
