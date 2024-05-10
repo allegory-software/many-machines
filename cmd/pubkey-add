@@ -2,21 +2,14 @@
 # ADMIN SSH ; [DEVICE] ["USER1 ..."] ; add a ssh public key on machine(s)
 . mmlib
 
-ssh_keyfile
-KEYFILE=$R1
-
 DEVICE=$1
 if [[ $DEVICE ]]; then
 	checkvars DEVICE
 	must catfile var/devices/$DEVICE/ssh_pubkey
 	PUBKEY=$R1
 else
-	ssh_pubkey_from_keyfile $KEYFILE
+	ssh_pubkey
 	PUBKEY=$R1
 fi
 
-_f() {
-	SSH_KEYFILE=$KEYFILE ssh_script "ssh_pubkey_add" "$PUBKEY" "$USERS"
-	cp_file $KEYFILE .ssh/$MACHINE.id_rsa
-}
-each_machine _f
+each_machine ssh_script "ssh_pubkey_add" "$PUBKEY" "$USERS"

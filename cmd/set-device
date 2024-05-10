@@ -1,0 +1,13 @@
+#!/bin/bash
+# ADMIN SSH ; DEVICE ; set device
+. mmlib
+
+DEVICE=$1
+checkvars DEVICE
+
+[[ -d var/devices/$DEVICE ]] || {
+	say "Creating new device: $DEVICE ... "
+	must mkdir -p var/devices/$DEVICE
+}
+sayn "Setting current device to: $DEVICE ... "
+ln_file var/devices/$DEVICE device

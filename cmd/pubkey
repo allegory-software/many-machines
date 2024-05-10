@@ -2,5 +2,5 @@
 # ADMIN SSH ;; get a usable ssh public key
 . mmlib
 
-ssh_keyfile; ssh_pubkey_from_keyfile $R1
+ssh_pubkey
 printf "%b\n" "$R1"

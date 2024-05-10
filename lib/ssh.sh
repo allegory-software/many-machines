@@ -1,20 +1,6 @@
 # ssh lib: ssh config and operation wrappers.
 
-ssh_keyfile() { # [MACHINE=] -> FOUND_KEYFILE [MACHINE_KEYFILE]
-	R2=
-	[[ $MACHINE ]] && {
-		R1=.ssh/$MACHINE.id_rsa
-		[[ -f $R1 ]] && return
-	}
-	R1=.ssh/id_rsa
-	[[ -f $R1 ]] && return
-	checkfile $HOME/.ssh/id_rsa
-}
-
-ssh_cmd_opt() { # MACHINE= [KEYFILE=]
-	checkvars MACHINE
-	local SSH_KEYFILE=$SSH_KEYFILE
-	[[ $SSH_KEYFILE ]] || { ssh_keyfile; SSH_KEYFILE=$R1; }
+ssh_cmd_opt() { # MACHINE=
 	R1=(ssh
 -o ConnectTimeout=3
 -o PreferredAuthentications=publickey
@@ -22,8 +8,17 @@ ssh_cmd_opt() { # MACHINE= [KEYFILE=]
 -o ControlMaster=auto
 -o ControlPath=~/.ssh/control-%h-%p-%r
 -o ControlPersist=600
--i $SSH_KEYFILE
 )
+	# try current key but also any old keys, in case the pubkey was not updated
+	# on the remote host when the privkey was renewed.
+	set +f # enable globbing
+	local a=($HOME/.ssh/id_rsa.~* $HOME/.ssh/id_rsa)
+	set -f
+	local i n=${#a[@]}
+	for ((i=n-1; i>=0; i--)); do
+		R1+=(-i ${a[$i]})
+	done
+
 	[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 }
 
@@ -67,6 +62,7 @@ $VARS
 mkdir -p /opt/mm
 cd /opt/mm || exit 1
 set -f # disable globbing
+shopt -s nullglob
 set -o pipefail
 $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
 $(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)
@@ -132,17 +128,8 @@ Host $HOST
 	save "$s" $CONFIG $USER 600
 }
 
-ssh_pubkey_from_keyfile() { # KEYFILE
-	local KEYFILE=$1
-	checkvars KEYFILE
-	R1=`must ssh-keygen -y -f "$KEYFILE"` || exit
-}
-
-ssh_pubkey_find() { # USER KEYMATCH
-	local USER=$1 KEYMATCH=$2
-	checkvars USER KEYMATCH
-	local HOME=/home/$USER; [ $USER == root ] && HOME=/root
-	cat $HOME/.ssh/authorized_keys | grep "$KEYMATCH"
+ssh_pubkey() {
+	R1=`must ssh-keygen -y -f $HOME/.ssh/id_rsa` || exit
 }
 
 ssh_device_pubkey() { # DEVICE
@@ -177,10 +164,9 @@ ssh_pubkeys() { # [USERS]
 		read -r type key name <<< "$R1"
 		map["$type $key"]=$device
 	done
-	ssh_keyfile; local KEYFILE=$R1
-	ssh_pubkey_from_keyfile $KEYFILE; local MY_PUBKEY=$R1
+	ssh_pubkey; local MY_PUBKEY=$R1
 	local machine user type key name
-	QUIET=1 SSH_KEYFILE=$KEYFILE each_machine ssh_script "_ssh_pubkeys" "$USERS" \
+	QUIET=1 each_machine ssh_script "_ssh_pubkeys" "$USERS" \
 		| while read -r machine user type key name; do
 			device=${map["$type $key"]}
 			printf "$FMT" $machine $user $type ${key: -20} "$name" ${device:-?}
@@ -189,7 +175,7 @@ ssh_pubkeys() { # [USERS]
 
 _ssh_pubkey_add() {
 	if [[ -f $AK_FILE ]]; then
-		remove_line "${PUBKEY: -20}" $AK_FILE
+		remove_line "$PUBKEY" $AK_FILE
 		append "$PUBKEY"$'\n' $AK_FILE
 	else
 		ssh_mk_config_dir

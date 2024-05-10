@@ -1,13 +1,21 @@
 #!/bin/bash
-# ADMIN SSH ; [KEYNAME] ; generate a new ssh key for this host
+# ADMIN SSH ; please ; generate a new ssh key for this host
 . mmlib
 
-KEYNAME=${1:-$HOSTNAME}
-checkvars KEYNAME
+[[ $1 == please ]] || die "Say please."
+[[ -L device ]] || die "Run $WHITEmm set-device$ENDCOLOR first."
+DEVICE=`basename $(readlink device)`
+checkvars DEVICE
 
-say "Generating a new ssh key labeled '$KEYNAME' ..."
-ssh-keygen -q -f var/ssh_key.new -t rsa -b 4096 -C "$KEYNAME" -N ""
-mv_file_with_backup var/ssh_key.new     var/ssh_key-$KEYNAME
-must rm var/ssh_key.new.pub
+KEYFILE=$HOME/.ssh/id_rsa
+rm_file $KEYFILE.new
+rm_file $KEYFILE.new.pub
+must ssh-keygen -f $KEYFILE.new -t rsa -b 2048 -C $DEVICE -N ""
+mv_file_with_backup $KEYFILE.new $KEYFILE
+rm_file $KEYFILE.new.pub
 
-say "Now run \`mm pubkey-update\` to make it usable on all machines."
+ssh_pubkey; PUBKEY=$R1
+echo $R1
+save "$PUBKEY"$'\n' var/devices/$DEVICE/ssh_pubkey
+
+say "Done. now run \`mm pubkey-add $DEVICE\` to upload the key on all machines."
