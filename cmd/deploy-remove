@@ -1,5 +1,0 @@
-#!/bin/bash
-# DEPLOY ;; uninstall a deployment (mmd uninstall all)
-. mmlib
-
-NOALL=1 each_deploy md_uninstall all

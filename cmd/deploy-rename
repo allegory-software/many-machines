@@ -1,6 +1,0 @@
-#!/bin/bash
-# DEPLOY ; DEPLOY NEW_NAME ; rename a deployment
-. mmlib
-
-DEPLOY=$1; shift
-deploy_rename "$@"

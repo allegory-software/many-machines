@@ -145,6 +145,15 @@ machine_rename() { # MACHINE= NEW_NAME ...
 	done
 }
 
+md_rename() { # MACHINE|DEPLOY NEW_NAME ...
+	machine_of "$1"; shift
+	if [[ $DEPLOY ]]; then
+		deploy_rename "$@"
+	else
+		machine_rename "$@"
+	fi
+}
+
 # version reporting ----------------------------------------------------------
 
 md_component_version() { # DEPLOY= [COMPONENT1 ...]

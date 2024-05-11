@@ -1,0 +1,5 @@
+#!/bin/bash
+# DEPLOY ; MACHINE|DEPLOY NEW_NAME ; rename a machine or deployment
+. mmlib
+
+md_rename "$@"
