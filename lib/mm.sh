@@ -87,7 +87,7 @@ active_deploys() {
 
 # NOTE: set NOALL=1 for dangerous commands. User will set ALL=1 to override.
 # NOTE: set NOSUBPROC=1 to break on first error.
-each_machine() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS...
+each_machine() { # [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS...
 	declare -A mm
 	local M D
 	local MACHINES="$MACHINES"
@@ -119,7 +119,7 @@ each_machine() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS
 	done
 }
 
-each_deploy() { # [NOALL=] [ALL=] [NOSUBPROC=1] MACHINES="" DEPLOYS= COMMAND ARGS...
+each_deploy() { # [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES="" DEPLOYS= COMMAND ARGS...
 	[[ $MACHINES ]] && die "Invalid deploy(s): $MACHINES"
 	local DEPLOYS="$DEPLOYS"
 	if [[ $DEPLOYS ]]; then

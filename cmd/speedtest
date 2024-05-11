@@ -3,5 +3,4 @@
 MM_LIBS="speedtest"
 . mmlib
 
-[[ $1 == list ]] || speedtest_header
-QUIET=1 each_machine ssh_script "speedtest $1"
+speedtest "$@"

@@ -15,7 +15,10 @@ on_exit sayn $ENDCOLOR
 
 usage() {
 	say
-	say "Usage: ${WHITE}mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS...$ENDCOLOR"
+	say "Usage: ${WHITE}[MACHINES=\"MACHINE1 ...\"] [DEPLOYS=\"DEPLOY1 ...\"] mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS...$ENDCOLOR"
+	say "Usage: ${WHITE}[DEPLOYS=\"DEPLOY1 ...\"] mmd DEPLOY1 ... COMMAND ARGS...$ENDCOLOR"
+	say "Usage: ${WHITE}mm help [SECTION]$ENDCOLOR"
+	say "Usage: ${WHITE}mm COMMAND help$ENDCOLOR"
 	say
 }
 

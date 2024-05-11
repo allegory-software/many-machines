@@ -15,6 +15,8 @@ install_speedtest() {
 	must rm -f speedtest.tgz
 }
 
+ST_FMT="%-10s %-18s %-18s %-20s %-12s\n"
+
 speedtest1() { # [SERVER_ID|list] [NODE_NAME]
 	if ! run $SPEEDTEST_DIR/speedtest --progress=no --accept-license --accept-gdpr ${1:+--server-id="$1"} \
 		> $SPEEDTEST_DIR/speedtest.log 2>&1
@@ -25,14 +27,10 @@ speedtest1() { # [SERVER_ID|list] [NODE_NAME]
 	dl_speed=$(awk '/Download/{print $3" "$4}' $SPEEDTEST_DIR/speedtest.log)
 	up_speed=$(awk '/Upload/{print $3" "$4}'   $SPEEDTEST_DIR/speedtest.log)
 	latency=$(awk '/Latency/{print $3" "$4}'   $SPEEDTEST_DIR/speedtest.log)
-	printf "%-10s %-18s %-18s %-20s %-12s\n" "$MACHINE" "${2:-$1}" "$up_speed" "$dl_speed" "$latency"
+	printf "$ST_FMT" "$MACHINE" "${2:-$1}" "$up_speed" "$dl_speed" "$latency"
 }
 
-speedtest_header() {
-	printf "%-10s %-18s %-18s %-20s %-12s\n" MACHINE NODE UPLOAD DOWNLOAD LATENCY
-}
-
-speedtest() { # [SERVER_ID|list]
+_speedtest() { # [SERVER_ID|list]
 	install_speedtest
 	[[ $1 == list ]] && {
 		must tmp/speedtest-cli/speedtest -L
@@ -55,4 +53,8 @@ speedtest() { # [SERVER_ID|list]
 	speedtest1 '23647' 'Mumbai, IN'
 	#speedtest1 '13623' 'Singapore, SG'
 	#speedtest1 '21569' 'Tokyo, JP'
+}
+speedtest() { # [SERVER_ID|list]
+	[[ $1 == list ]] || printf "$WHITE$ST_FMT$ENDCOLOR" MACHINE NODE UPLOAD DOWNLOAD LATENCY
+	QUIET=1 NOALL=1 each_machine ssh_script "_speedtest $1"
 }
