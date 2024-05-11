@@ -52,6 +52,8 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 $VARS
 $FUNCS
 . /root/.mm/lib/all
+mkdir -p /root/.mm
+cd /root/.mm || exit 1
 $SCRIPT $ARGS
 "
 	else
@@ -62,6 +64,8 @@ $VARS
 set -f # disable globbing
 shopt -s nullglob
 set -o pipefail
+mkdir -p /root/.mm
+cd /root/.mm || exit 1
 $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
 $(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)
 $FUNCS

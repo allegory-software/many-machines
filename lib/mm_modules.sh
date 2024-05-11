@@ -13,7 +13,6 @@ md_modules() {
 md_services() {
 	must md_var ${DEPLOY:+DEPLOY_}SERVICES
 }
-
 _md_list() { # LIST= DEPLOY=|MACHINE=
 	$LIST; local names=($R1)
 	if [[ $DEPLOY ]]; then

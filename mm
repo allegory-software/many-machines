@@ -67,7 +67,7 @@ while [[ $# > 0 ]]; do
 		shift
 		break
 	else
-		say "Invalid DEPLOY, MACHINE or COMMAND: $1"
+		say "${RED}ABORT:$ENDCOLOR Invalid DEPLOY, MACHINE or COMMAND: $WHITE$1$ENDCOLOR"
 		usage
 		exit 1
 	fi

@@ -39,9 +39,9 @@ list_deploy_backups() {
 deploy_db_backup() { # BACKUP_FILE
 	local BACKUP_FILE=$1
 	checkvars MACHINE DEPLOY BACKUP_FILE
-	ssh_script "mysql_backup_db $DEPLOY tmp/$DEPLOY-$DATE-$$.qp"
+	ssh_script "mysql_backup_db $DEPLOY $DEPLOY-$DATE-$$.qp"
 	SRC_MACHINE=$MACHINE DST_MACHINE= \
-		SRC_DIR=/opt/mm/tmp/./$DEPLOY-$DATE-$$.qp \
+		SRC_DIR=/root/.mm/$DEPLOY-$DATE-$$.qp \
 		DST_DIR=$BACKUP_FILE \
 		PROGRESS=1 MOVE=1 rsync_dir
 }
@@ -54,12 +54,12 @@ deploy_db_restore() { # BACKUP_FILE DST_MACHINE DST_DB
 
 	SRC_MACHINE= \
 		SRC_DIR="$(dirname $BACKUP_FILE)/./$(basename $BACKUP_FILE)" \
-		DST_DIR=/opt/mm/tmp/$DST_DB.$$.qp \
+		DST_DIR=/root/.mm/$DST_DB.$$.qp \
 		PROGRESS=1 rsync_dir
 
 	MACHINE=$DST_MACHINE ssh_script "
-		on_exit must rm tmp/$DST_DB.$$.qp
-		mysql_restore_db $DST_DB tmp/$DST_DB.$$.qp
+		on_exit must rm $DST_DB.$$.qp
+		mysql_restore_db $DST_DB $DST_DB.$$.qp
 	"
 }
 
