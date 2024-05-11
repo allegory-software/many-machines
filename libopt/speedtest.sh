@@ -55,6 +55,6 @@ _speedtest() { # [SERVER_ID|list]
 	#speedtest1 '21569' 'Tokyo, JP'
 }
 speedtest() { # [SERVER_ID|list]
-	[[ $1 == list ]] || printf "$WHITE$ST_FMT$ENDCOLOR" MACHINE NODE UPLOAD DOWNLOAD LATENCY
+	[[ $1 != list && $MACHINES ]] && printf "$WHITE$ST_FMT$ENDCOLOR" MACHINE NODE UPLOAD DOWNLOAD LATENCY
 	QUIET=1 NOALL=1 each_machine ssh_script "_speedtest $1"
 }

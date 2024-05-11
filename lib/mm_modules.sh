@@ -23,7 +23,7 @@ _md_list() { # LIST= DEPLOY=|MACHINE=
 	fi
 }
 
-_each() { # ACTION= NAME1 ...
+_each() { # ACTION= [DRY=1] NAME1 ...
 	local name
 	for name in "$@"; do
 		local fn=${ACTION}_${name}
@@ -33,11 +33,11 @@ _each() { # ACTION= NAME1 ...
 				continue
 			fi
 		fi
-		$fn $name
+		dry $fn $name
 	done
 	return 0
 }
-_md_action() { # ACTION= [REMOTE=] LIST= [un=] NAME1 ...
+_md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] all | NAME1 ...
 	checkvars ACTION
 	local NAMES=$*
 	[[ $NAMES ]] || {
@@ -46,27 +46,28 @@ _md_action() { # ACTION= [REMOTE=] LIST= [un=] NAME1 ...
 	}
 	if [[ $NAMES == all ]]; then
 		$LIST; NAMES=$R1
-		[[ $un ]] && NAMES=`awk '{for(i=NF;i>0;i--) printf("%s ",$i)}' <<<"$NAMES"`
+		[[ $REVERSE ]] && NAMES=`awk '{for(i=NF;i>0;i--) printf("%s ",$i)}' <<<"$NAMES"`
 	fi
 	local ACTION=$ACTION
 	if [[ $DEPLOY ]]; then
 		ACTION=deploy_$ACTION
 	fi
 	if [[ $REMOTE ]]; then
-		VARS="ACTION" md_ssh_script _each $NAMES
+		VARS="ACTION DRY $VARS" md_ssh_script _each $NAMES
 	else
 		_each $NAMES
 	fi
 }
 
 # executed both locally (pre/post functions) and remotely (main function).
-_md_install() { # [un=un] [MODULE1 ...]
-	ACTION=pre${un}install       LIST=md_modules _md_action $@
-	ACTION=${un}install REMOTE=1 LIST=md_modules _md_action $@
-	ACTION=post${un}install      LIST=md_modules _md_action $@
+_md_combined_action() { # ACTION= [MODULE1 ...]
+	ACTION=pre$ACTION  _md_action "$@"
+	REMOTE=1           _md_action "$@"
+	ACTION=post$ACTION _md_action "$@"
 }
-md_install()   { un=   _md_install "$@"; }
-md_uninstall() { un=un _md_install "$@"; }
+md_install()   { ACTION=install   LIST=md_modules           _md_combined_action "$@"; }
+md_uninstall() { ACTION=uninstall LIST=md_modules REVERSE=1 _md_combined_action "$@"; }
+_md_rename()   { ACTION=rename    LIST=md_modules           _md_combined_action "$@"; }
 
 default_install()   { package_install   "$1"; }
 default_uninstall() { package_uninstall "$1"; }
@@ -77,6 +78,11 @@ md_stop()  { ACTION=stop  REMOTE=1 LIST=md_services _md_action $@; }
 
 default_start() { service_start "$@"; }
 default_stop()  { service_stop  "$@"; }
+
+# executed locally
+_deploy_services() { R1=$DEPLOY_SERVICES; }
+deploy_start()  { ACTION=start LIST=_deploy_services _md_action $@; }
+deploy_stop()   { ACTION=stop  LIST=_deploy_services _md_action $@; }
 
 md_status() { # ["SERVICE1 ..."]
 	if [[ $DEPLOY ]]; then
@@ -93,6 +99,49 @@ md_status() { # ["SERVICE1 ..."]
 			printf "%s\n" $MACHINE '*' $SERVICE "${STATUS:--}" "${VERSION:--}"
 		done
 	fi
+}
+
+check_md_new_name() {
+	local NAME=$1
+	checkvars NAME
+	[[ ! -d var/deploys/$NAME  ]] || die "A deploy with this name already exists: '$NAME'."
+	[[ ! -d var/machines/$NAME ]] || die "A machine with this name already exists: '$NAME'."
+}
+
+deploy_rename() { # DEPLOY= NEW_NAME ...
+	local DEPLOY1=$1
+	check_deploy $DEPLOY
+	check_md_new_name $DEPLOY1
+
+	md_ssh_script "deploy_stop all"
+
+	VARS="DEPLOY1" _md_rename all
+
+	must dry mv \
+		var/deploys/$DEPLOY \
+		var/deploys/$DEPLOY1
+
+	DEPLOY=$DEPLOY1 md_ssh_script "deploy_start all"
+}
+
+machine_rename() { # MACHINE= NEW_NAME ...
+	local MACHINE1=$1
+	check_machine $MACHINE
+	check_md_new_name $MACHINE1
+
+	VARS="MACHINE1" _md_rename all
+
+	must dry mv \
+		var/machines/$MACHINE \
+		var/machines/$MACHINE1
+
+	INACTIVE=1 active_deploys; local deploys=$R1
+	local deploy
+	for deploy in $R1; do
+		if try_machine_of_deploy $deploy && [[ $R1 == $MACHINE ]]; then
+			ln_file ../../machines/$MACHINE1 var/deploys/$deploy/machine
+		fi
+	done
 }
 
 # version reporting ----------------------------------------------------------

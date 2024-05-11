@@ -3,4 +3,3 @@
 . mmlib
 
 each_md ssh_query "show tables"
-

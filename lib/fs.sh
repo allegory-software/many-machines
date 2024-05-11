@@ -34,7 +34,7 @@ rm_dir() { # DIR
 	checkvars dir
 	check_abs_filepath "$dir"
 	sayn "Removing dir: $dir ... "
-	[ "$DRY" ] || must rm -rf "$dir"
+	[ "$DRY" ] || must dry rm -rf "$dir"
 	say OK
 }
 
@@ -46,7 +46,7 @@ rm_file() { # FILE
 	if [[ ! -f $file ]]; then
 		say "not found"
 	else
-		[ "$DRY" ] || must rm -f "$file"
+		[ "$DRY" ] || must dry rm -f "$file"
 		say OK
 	fi
 }
@@ -54,7 +54,7 @@ rm_file() { # FILE
 ln_file() {
 	local FILE=$1 LINK=$2
 	checkvars FILE LINK
-	must ln -sfTv $FILE $LINK
+	must dry ln -sfTv $FILE $LINK
 }
 
 mv_file_with_backup() { # OLD NEW
@@ -62,9 +62,9 @@ mv_file_with_backup() { # OLD NEW
 	checkvars OLD NEW
 	if cmp -s $OLD $NEW; then
 		say "Renaming '$OLD' -> '$NEW' ... files are the same. "
-		must rm $OLD
+		must dry rm $OLD
 	else
-		must mv -Tv --backup=numbered $OLD $NEW
+		must dry mv -Tv --backup=numbered $OLD $NEW
 	fi
 }
 
@@ -85,13 +85,13 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 	[[ -e $src ]] || die: "Missing: $src"
 	[[ $what == dir  ]] && { [[ -d $src ]] || die "src is not a dir."; }
 	[[ $what == file ]] && { [[ -f $src ]] || die "src is not a file."; }
-	dry must mkdir -p `dirname $dst` # because cp doesn't do it for us
-	dry must rm -rf $dst # prevent copying _inside_ $dst if $dst is a dir
-	dry must cp -rL $src $dst
+	must dry mkdir -p `dirname $dst` # because cp doesn't do it for us
+	must dry rm -rf $dst # prevent copying _inside_ $dst if $dst is a dir
+	must dry cp -rL $src $dst
 	if [[ $user ]]; then
 		checkvars user
-		dry must chown -Rh $user:$user $dst
-		[[ $mod ]] && dry must chmod -R "$mod" $dst
+		must dry chown -Rh $user:$user $dst
+		[[ $mod ]] && must dry chmod -R "$mod" $dst
 	fi
 	say "OK"
 }
@@ -117,12 +117,11 @@ dir_lean_size() { # DIR
 }
 
 append() { # S FILE
-	local s="$1"
-	local file="$2"
+	local s=$1 file=$2
 	checkvars s- file
 	sayn "Appending ${#s} bytes to file $file ... "
 	debugn "MUST: append \"$s\" $file "
-	if [ "$DRY" ] || printf "%s" "$s" >> "$file"; then
+	if [[ $DRY ]] || printf "%s" "$s" >> "$file"; then
 		debug "[$?]"
 	else
 		die "append $file [$?]"
@@ -131,13 +130,12 @@ append() { # S FILE
 }
 
 remove_line() { # REGEX FILE
-	local regex="$1"
-	local file="$2"
+	local regex=$1 file=$2
 	checkvars regex- file
 	sayn "Removing lines containing pattern '$regex' from '$file' ... "
 	if grep -q "$regex" $file; then
-		grep -v "$regex" $file > $file.temp # exits with 1
-		must mv $file.temp $file
+		[[ ! $DRY ]] && grep -v "$regex" $file > $file.temp # exits with 1
+		must dry mv $file.temp $file
 		say "OK"
 	else
 		say "none found."
@@ -149,31 +147,29 @@ save() { # S FILE [USER] [MODE]
 	checkvars s- file
 	sayn "Saving ${#s} bytes to file $file ... "
 	debugn "MUST: save \"$s\" $file "
-	if [ "$DRY" ] || printf "%s" "$s" > "$file"; then
+	if [[ $DRY ]] || printf "%s" "$s" > "$file"; then
 		debug "[$?]"
 	else
 		die "save $file [$?]"
 	fi
 	[[ $user ]] && {
 		checkvars user
-		must chown -h $user:$user $file
+		must dry chown -h $user:$user $file
 	}
 	[[ $mode ]] && {
 		checkvars mode
-		must chmod $mode $file
+		must dry chmod $mode $file
 	}
 	say OK
 }
 
 replace_lines() { # REGEX S FILE
-	local regex="$1"
-	local s="$2"
-	local file="$3"
+	local regex=$1 s=$2 file=$3
 	checkvars regex- s- file
 	say "Replacing line containing $regex to $s in file $file ... "
 	local s="$(cat "$file")" || die "cat $file [$?]"
 	local s1="${s//$regex/$}"
-	[ "$s1" != "$s" ] && save "$s1" "$file"
+	[[ $s1 != $s ]] && save "$s1" "$file"
 }
 
 sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]

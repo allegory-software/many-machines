@@ -3,11 +3,11 @@
 . mmlib
 
 PORT=${1:-22}
-FMT="$WHITE%-10s %-16s %-5s %-5s$ENDCOLOR\n"
+FMT="%-10s %-16s %-5s %-5s\n"
 _f() {
 	must md_var PUBLIC_IP; local IP=$R1
 	IP=$IP is_listening $PORT && OPEN=YES || OPEN=NO
 	printf "$FMT" "$MACHINE" "$IP" "$PORT" "$OPEN"
 }
-printf "$FMT" "MACHINE" "IP" "PORT" "OPEN"
+printf "$WHITE$FMT$ENDCOLOR" MACHINE IP PORT OPEN
 QUIET=1 each_machine _f

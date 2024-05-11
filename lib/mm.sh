@@ -160,12 +160,3 @@ each_md() {
 		each_machine "$@"
 	fi
 }
-
-# machine & deploy ops -------------------------------------------------------
-
-machine_rename() { # OLD_MACHINE NEW_MACHINE
-	local OLD_MACHINE=$1
-	local NEW_MACHINE=$2
-	checkvars OLD_MACHINE NEW_MACHINE
-	set_hostname $NEW_MACHINE
-}

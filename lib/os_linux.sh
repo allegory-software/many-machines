@@ -106,6 +106,9 @@ install_hostname() {
 uninstall_hostname() {
 	set_hostname local
 }
+rename_hostname() {
+	MACHINE=$MACHINE1 install_hostname
+}
 
 install_timezone() {
 	checkvars TIMEZONE

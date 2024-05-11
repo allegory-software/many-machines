@@ -54,10 +54,7 @@ mysql_pass_gen_once() { # FILE
 
 # update ~/.my.cnf for using mysql and mysqldump without a password.
 mysql_gen_my_cnf() { # HOST USER PASS [DB]
-	local host="$1"
-	local user="$2"
-	local pass="$3"
-	local db="$4"
+	local host=$1 user=$2 pass=$3 db=$4
 	checkvars host user pass
 	local cnf=$(mysql_my_cnf $user)
 	checkvars cnf
@@ -76,10 +73,10 @@ ${db:+database=$db}
 MYSQL_OPTS_SCRIPT="-N -B"
 MYSQL_OPTS_PRETTY="-G -t"
 _must_mysql() {
-	local opts="$MYSQL_OPTS"
-	[ "$MYSQL_PRETTY" ] && opts+=" $MYSQL_OPTS_PRETTY"
-	[ "$opts" ] || opts="$MYSQL_OPTS_SCRIPT"
-	if [ -f $HOME/.my.cnf ]; then
+	local opts=$MYSQL_OPTS
+	[[ $MYSQL_PRETTY ]] && opts+=" $MYSQL_OPTS_PRETTY"
+	[[ $opts ]] || opts=$MYSQL_OPTS_SCRIPT
+	if [[ -f $HOME/.my.cnf ]]; then
 		must mysql $opts "$@"
 	else
 		# on a fresh mysql install we can login from the `root` system user
@@ -198,8 +195,8 @@ mysql_dump_views() { # DB
 	checkvars db
 	local table
 	local ignore="$(
-		mysql_tables $db | while read -r table; do
-			echo -n " --ignore-table=$db.$table"
+		query_on $db 'show tables' | while read -r table; do
+			printf ' --ignore-table=%s' $db.$table
 		done
 	)"
 	must mysqldump --no-data --no-create-db --skip-opt $ignore $db
@@ -273,13 +270,14 @@ mysql_drop_procs_funcs() { # DB
 # Triggers and procs are created under that user in order to set their DEFINER.
 #
 mysql_rename_db() { # OLD_DB NEW_DB
-	local db0="$1"
-	local db1="$2"
+	local db0=$1
+	local db1=$2
 	checkvars db0 db1
 
 	mysql_create_db $db1
 
-	local vtpf_sql="$(
+	local vtpf_sql
+	vtpf_sql="$(
 		mysql_dump_views $db0
 		mysql_dump_triggers_procs_funcs $db0
 	)" || exit $?
@@ -294,7 +292,7 @@ mysql_rename_db() { # OLD_DB NEW_DB
 	mysql_grant_user_db localhost $db1 $db1
 
 	# rename user in DEFINER clauses.
-	vtpf_sql="$(echo "$vtpf_sql" | mysqldump_fix_user $db1)"
+	vtpf_sql=`mysqldump_fix_user $db1 <<< "$vtpf_sql"`
 
 	sayn "Adding all views, triggers, procs & funcs from $db0 to $db1 ... "
 	mysql_exec_on $db1 "$vtpf_sql"

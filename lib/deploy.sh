@@ -47,6 +47,10 @@ deploy_uninstall_user() {
 	user_remove $DEPLOY
 }
 
+deploy_rename_user() {
+	user_rename $DEPLOY $DEPLOY1
+}
+
 deploy_install_git() {
 	git_keys_update $DEPLOY
 	git_config_user "mm@allegory.ro" "Many Machines"
@@ -70,6 +74,12 @@ deploy_uninstall_mysql() {
 	mysql_drop_user localhost $DEPLOY
 }
 
+deploy_rename_mysql() {
+	checkvars MYSQL_PASS
+	mysql_rename_db $DEPLOY $DEPLOY1
+	mysql_gen_my_cnf localhost $DEPLOY1 "$MYSQL_PASS" $DEPLOY1
+}
+
 deploy_install_nginx() {
 	[[ $HTTP_PORT && $DOMAIN ]] && {
 		local src=/home/$DEPLOY/$APP/www/5xx.html
@@ -90,22 +100,6 @@ deploy_install_nginx() {
 
 deploy_secret_gen() {
 	must openssl rand 46 | base64 # result is 64 chars
-}
-
-deploy_rename() { # OLD_DEPLOY NEW_DEPLOY [nosql]
-	local OLD_DEPLOY="$1"
-	local NEW_DEPLOY="$2"
-	local OPT="$3"
-	checkvars OLD_DEPLOY NEW_DEPLOY
-	checkvars DEPLOY APP
-
-	local MYSQL_PASS="$(mysql_pass $OLD_DEPLOY)"
-	user_rename      $OLD_DEPLOY $NEW_DEPLOY
-	mysql_rename_db  $OLD_DEPLOY $NEW_DEPLOY
-	[ "$MYSQL_PASS" ] && \
-		mysql_gen_my_cnf localhost $NEW_DEPLOY $MYSQL_PASS $NEW_DEPLOY
-
-	deploy_gen_conf
 }
 
 test_task() {

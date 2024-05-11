@@ -5,16 +5,18 @@
 USERS="$2"
 
 _f() {
-	ssh_script '
+	md_ssh_script '
 USERS="'"$USERS"'"; [ "$USERS" ] || USERS=`echo root; ls -1 /home`
 for USER in $USERS; do
 	PASS=`mysql_pass $USER`
-	[ "$PASS" ] && printf "%-10s %-10s %s\n" "'$MACHINE'" "$USER" "$PASS"
+	[[ $DEPLOY && $USER == $DEPLOY ]] && deploy=$DEPLOY || deploy=\*
+	st=
+	[[ $DEPLOY && $USER != root && $MYSQL_PASS ]] && { [[ $MYSQL_PASS == $PASS ]] && st=OK || st=OLD!; }
+	[[ ! $DEPLOY && $USER == root && $MYSQL_ROOT_PASS ]] && { [[ $MYSQL_ROOT_PASS == $PASS ]] && st=OK || st=OLD!; }
+	[ "$PASS" ] && printf "%-10s %-10s %-10s %-10s %s\n" "'$MACHINE'" "$deploy" "$USER" "$st" "$PASS"
 done
 true
 '
 }
-printf "%-10s %-10s %s\n" MACHINE USER PASS
-QUIET=1 each_machine _f
-
-# TODO: UPTODATE column
+printf "$WHITE%-10s %-10s %-10s %-10s %s$ENDCOLOR\n" MACHINE DEPLOY USER PASS_OK PASS
+QUIET=1 each_md _f

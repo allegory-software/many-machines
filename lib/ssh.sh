@@ -48,7 +48,7 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 		# slower (takes ~1s) but reports line numbers correctly on errors.
 		QUIET=1 SRC_DIR=lib    DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
 		QUIET=1 SRC_DIR=libopt DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
-		ssh_to bash -s <<< "
+		run ssh_to bash -s <<< "
 $VARS
 $FUNCS
 . /root/.mm/lib/all
@@ -59,8 +59,6 @@ $SCRIPT $ARGS
 		# faster but doesn't report line numbers correctly on errors in lib code.
 		run ssh_to bash -s <<< "
 $VARS
-mkdir -p /opt/mm
-cd /opt/mm || exit 1
 set -f # disable globbing
 shopt -s nullglob
 set -o pipefail
@@ -75,6 +73,11 @@ $SCRIPT $ARGS
 md_ssh_script() { # [VARS=] DEPLOY=|MACHINE= "SCRIPT" ARGS...
 	local SCRIPT=$1; shift
 	checkvars SCRIPT-
+	local MACHINE=$MACHINE
+	if [[ $DEPLOY && ! $MACHINE ]]; then
+		machine_of $DEPLOY
+		MACHINE=$R1
+	fi
 	md_vars
 	VARS="DEPLOY $VARS" ssh_script "
 ${R1[*]}

@@ -1,0 +1,6 @@
+#!/bin/bash
+# ADMIN ; MACHINE NEW_NAME ; rename a machine
+. mmlib
+
+MACHINE=$1; shift
+machine_rename "$@"

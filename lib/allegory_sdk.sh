@@ -62,6 +62,10 @@ deploy_uninstall_app() {
 	rm_dir /home/$DEPLOY/app
 }
 
+deploy_rename_app() {
+	DEPLOY=$DEPLOY1 deploy_gen_conf
+}
+
 deploy_gen_conf() {
 	checkvars MACHINE DEPLOY APP MYSQL_PASS SECRET
 	local conf=/home/$DEPLOY/app/${APP}.conf
