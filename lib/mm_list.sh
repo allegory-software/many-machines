@@ -4,9 +4,9 @@ _md_ssh_list() {
 	local FUNC=$1 FMT=$2 FIELDS=$3; shift 3
 	local VALS
 	(
-	if VALS=$(VARS="FIELDS" md_ssh_script $FUNC "$@"); then
+	if VALS=$(VARS="FIELDS $VARS" md_ssh_script $FUNC "$@"); then
 		local IFS0="$IFS"; IFS=$'\n'
-		printf "%-10b %-10b $FMT\n" $VALS
+		[[ $VALS ]] && printf "%-10b %-10b $FMT\n" $VALS
 		IFS="$IFS0"
 	else
 		printf "%-10b %-10b %b\n" "$MACHINE" "${DEPLOY:-*}" "$VALS"

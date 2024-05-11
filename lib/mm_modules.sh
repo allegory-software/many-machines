@@ -83,11 +83,12 @@ _deploy_services() { R1=$DEPLOY_SERVICES; }
 deploy_start()  { ACTION=start LIST=_deploy_services _md_action $@; }
 deploy_stop()   { ACTION=stop  LIST=_deploy_services _md_action $@; }
 
-md_status() { # ["SERVICE1 ..."]
+md_status() { # [DOWN=1] ["SERVICE1 ..."]
 	if [[ $DEPLOY ]]; then
 		for SERVICE in $DEPLOY_SERVICES; do
 			local VERSION=`deploy_version_$SERVICE 2>/dev/null`
 			local STATUS; deploy_is_running_$SERVICE && STATUS=UP || STATUS=DOWN!
+			[[ $DOWN && $STATUS == UP ]] && continue
 			printf "%s\n" $MACHINE $DEPLOY $SERVICE "${STATUS:--}" "${VERSION:--}"
 		done
 	else
@@ -95,6 +96,7 @@ md_status() { # ["SERVICE1 ..."]
 		for SERVICE in $SERVICES; do
 			local VERSION=`version_$SERVICE 2>/dev/null`
 			local STATUS; service_is_running "$SERVICE" && STATUS=UP || STATUS=DOWN!
+			[[ $DOWN && $STATUS == UP ]] && continue
 			printf "%s\n" $MACHINE '*' $SERVICE "${STATUS:--}" "${VERSION:--}"
 		done
 	fi
