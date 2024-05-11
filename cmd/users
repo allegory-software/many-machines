@@ -1,0 +1,5 @@
+#!/bin/bash
+# COMMAND ;; list users with a shell
+. mmlib
+
+list_users

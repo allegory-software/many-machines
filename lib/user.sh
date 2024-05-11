@@ -55,3 +55,29 @@ user_rename() { # OLD_USER NEW_USER
 
 	say OK
 }
+
+# list users with a login shell
+_list_users() {
+	local user pass rest
+	declare -A map
+	while IFS=: read -r user pass rest; do
+		map[$user]=$pass
+	done < /etc/shadow
+	local user pass uid gid gecos home shell
+	while IFS=: read -r user pass uid gid gecos home shell; do
+		[[ $shell == */nologin ]] && continue
+		[[ $shell == */false ]] && continue
+		echo $MACHINE
+		[[ $user == $DEPLOY || -d /home/$user/app ]] && echo $user || echo '*'
+		echo $user
+		[[ ${map[$user]} =~ ^[!*] ]] && echo YES || echo NO!
+		echo $uid
+		echo $gid
+		echo $shell
+	done  < /etc/passwd
+}
+list_users() {
+	md_ssh_list _list_users \
+		"%-10b %-10b %-10b %-10b %-20b" \
+		"USER LOCKED UID GID SHELL"
+}
