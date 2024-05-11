@@ -1,0 +1,6 @@
+#!/bin/bash
+# COMMAND ; [USER] ; add user on machine
+. mmlib
+
+[[ $1 ]] || { list_users; exit; }
+NOALL=1 each_md ssh_script user_create "$@"
