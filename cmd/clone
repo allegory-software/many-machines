@@ -2,5 +2,4 @@
 # DEPLOY ; DST_MACHINE DST_DEPLOY ; clone deploy
 . mmlib
 
-[[ $1 ]] || die "Usage: mm clone DST_MACHINE DST_DEPLOY"
 DST_MACHINE=$1 DST_DEPLOY=$2 each_md md_clone

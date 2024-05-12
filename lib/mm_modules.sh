@@ -102,13 +102,6 @@ md_status() { # [DOWN=1] ["SERVICE1 ..."]
 	fi
 }
 
-check_md_new_name() {
-	local NAME=$1
-	checkvars NAME
-	[[ ! -d var/deploys/$NAME  ]] || die "A deploy with this name already exists: '$NAME'."
-	[[ ! -d var/machines/$NAME ]] || die "A machine with this name already exists: '$NAME'."
-}
-
 deploy_rename() { # DEPLOY= NEW_NAME ...
 	local DEPLOY1=$1
 	check_deploy $DEPLOY

@@ -31,6 +31,13 @@ check_deploy() { # DEPLOY
 	[[ -d var/deploys/$1 ]] || die "Deployment unknown: $1"
 }
 
+check_md_new_name() { # MACHINE|DEPLOY
+	local NAME=$1
+	checkvars NAME
+	[[ ! -d var/deploys/$NAME  ]] || die "A deploy with this name already exists: '$NAME'."
+	[[ ! -d var/machines/$NAME ]] || die "A machine with this name already exists: '$NAME'."
+}
+
 try_machine_of_deploy() {
 	check_deploy "$1"
 	R1=$(basename $(readlink var/deploys/$1/machine) 2>/dev/null)

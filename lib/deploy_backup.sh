@@ -150,8 +150,7 @@ deploy_backups_sweep() {
 
 deploy_clone() { # DEPLOY= [LATEST=1] DST_MACHINE= DST_DEPLOY=
 	checkvars DEPLOY DST_MACHINE DST_DEPLOY
-	[[ $DEPLOY != $DST_DEPLOY ]] || die "DST_DEPLOY == DEPLOY: '$DST_DEPLOY'"
-	[[ -d var/deploys/$DST_DEPLOY ]] || die "Deploy already exists: '$DST_DEPLOY'"
+	check_md_new_name $DST_DEPLOY
 
 	# backup the deploy or use the latest backup.
 	local DATE
@@ -168,6 +167,7 @@ deploy_clone() { # DEPLOY= [LATEST=1] DST_MACHINE= DST_DEPLOY=
 		var/deploys/$DEPLOY \
 		var/deploys/$DST_DEPLOY
 	ln_file ../machines/$DST_MACHINE var/deploys/$DST_DEPLOY/machine
+
 	rm_file var/deploys/$DST_DEPLOY/secret
 	rm_file var/deploys/$DST_DEPLOY/mysql_pass
 
