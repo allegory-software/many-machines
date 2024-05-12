@@ -42,7 +42,7 @@ deploy_stop_app() {
 deploy_install_app() {
 	checkvars DEPLOY REPO APP APP_VERSION
 	(deploy_stop_app)
-	[[ $FAST ]] && SUBMODULES=
+	[[ $FAST ]] && SUBMODULES=sdk
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/app "$APP_VERSION"
 	deploy_gen_conf
 	[[ ! $FAST ]] && {
