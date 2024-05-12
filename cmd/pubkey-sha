@@ -1,0 +1,6 @@
+#!/bin/bash
+# ADMIN SSH ;; get a usable ssh public key
+. mmlib
+
+ssh_pubkey
+printf "%s" "$R1" | ssh-keygen -E sha256 -lf -
