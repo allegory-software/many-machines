@@ -42,7 +42,7 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 	checkvars MACHINE SCRIPT-
 	quote_args "$@"; local ARGS="${R1[*]}"
 	[[ $FUNCS ]] && local FUNCS=$(declare -f $FUNCS)
-	local VARS=$(declare -p DEBUG VERBOSE MACHINE MM_LIBS $VARS 2>/dev/null)
+	local VARS=$(declare -p DEBUG VERBOSE DRY MACHINE MM_LIBS $VARS 2>/dev/null)
 	if [ "$MM_DEBUG_LIB" ]; then
 		# rsync lib to machine and load from there:
 		# slower (takes ~1s) but reports line numbers correctly on errors.

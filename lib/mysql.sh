@@ -31,7 +31,7 @@ mysql_my_cnf() {
 	local USER="$1"
 	checkvars USER
 	local HOME="/home/$USER"
-	[ "$USER" == root ] && HOME=/root
+	[[ $USER == root ]] && HOME=/root
 	echo "$HOME/.my.cnf"
 }
 
@@ -101,12 +101,12 @@ ssh_query() { # SQL
 }
 
 mysql_exec_on() { # DB SQL
-	[ "$DRY" ] && { echo "DRY mysql_exec_on $1 [[$2]]"; return; }
+	[[ $DRY ]] && { echo "DRY: mysql_exec_on $1 [[$2]]"; return; }
 	query_on "$@"
 }
 
 mysql_exec() { # SQL
-	[ "$DRY" ] && { echo "DRY mysql_exec [[$1]]"; return; }
+	[[ $DRY ]] && { echo "DRY: mysql_exec [[$1]]"; return; }
 	query "$1"
 }
 

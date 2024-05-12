@@ -1,12 +1,15 @@
 # mysqldump backups
 
-mysql_backup_db() { # DB FILE
+mysql_backup_db() { # DB [FILE]
 	local db=$1 file=$2
-	checkvars db file
-	must mkdir -p $(dirname $file)
-	sayn "Dumping MySQL database '$MACHINE:$db' to file '$file' ... "
+	checkvars db
+	[[ $file ]] && checkvars file
+	[[ $file ]] && must mkdir -p $(dirname $file)
+	sayn "Dumping MySQL database '$MACHINE:$db' "
+	[[ $file ]] && sayn "to file '$file' ... " || sayn "to stdout ... "
 
-	must mysqldump -u root \
+	local qp_opt="-i db.sql $file"; [[ ! $file ]] && qp_opt="-io db.sql $file"
+	must dry mysqldump -u root \
 		--no-create-db \
 		--extended-insert \
 		--order-by-primary \
@@ -15,9 +18,9 @@ mysql_backup_db() { # DB FILE
 		--skip_add_locks \
 		--skip-lock-tables \
 		--quick \
-		$db | qpress -i dump.sql $file
+		$db | must qpress $qp_opt
 
-	say "OK. $(stat --printf=%s $file | numfmt --to=iec) written."
+	[[ $file ]] && say "OK. $(stat --printf=%s $file | numfmt --to=iec) written." || say "OK."
 }
 
 # rename user in DEFINER clauses in a mysqldump, in order to be able to

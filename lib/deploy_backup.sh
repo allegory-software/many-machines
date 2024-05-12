@@ -36,14 +36,10 @@ list_deploy_backups() {
 	done
 }
 
-deploy_db_backup() { # BACKUP_FILE
-	local BACKUP_FILE=$1
-	checkvars MACHINE DEPLOY BACKUP_FILE
-	ssh_script "mysql_backup_db $DEPLOY $DEPLOY-$DATE-$$.qp"
-	SRC_MACHINE=$MACHINE DST_MACHINE= \
-		SRC_DIR=/root/.mm/./$DEPLOY-$DATE-$$.qp \
-		DST_DIR=$BACKUP_FILE \
-		PROGRESS=1 MOVE=1 rsync_dir
+deploy_db_backup() { # [BACKUP_FILE]
+	local BACKUP_FILE=${1:-/dev/stdout}
+	checkvars MACHINE DEPLOY
+	ssh_script "mysql_backup_db $DEPLOY" > $BACKUP_FILE
 }
 
 deploy_db_restore() { # BACKUP_FILE DST_MACHINE DST_DB
@@ -150,6 +146,7 @@ deploy_backups_sweep() {
 
 deploy_clone() { # DEPLOY= [LATEST=1] DST_MACHINE= DST_DEPLOY=
 	checkvars DEPLOY DST_MACHINE DST_DEPLOY
+	local DST_MACHINE=$DST_MACHINE; machine_of $DST_MACHINE; DST_MACHINE=$R1
 	check_md_new_name $DST_DEPLOY
 
 	# backup the deploy or use the latest backup.
@@ -166,10 +163,7 @@ deploy_clone() { # DEPLOY= [LATEST=1] DST_MACHINE= DST_DEPLOY=
 	cp_dir \
 		var/deploys/$DEPLOY \
 		var/deploys/$DST_DEPLOY
-	ln_file ../machines/$DST_MACHINE var/deploys/$DST_DEPLOY/machine
-
-	rm_file var/deploys/$DST_DEPLOY/secret
-	rm_file var/deploys/$DST_DEPLOY/mysql_pass
+	ln_file ../../machines/$DST_MACHINE var/deploys/$DST_DEPLOY/machine
 
 	# install the deploy.
 	DEPLOY=$DST_DEPLOY MACHINE=$DST_MACHINE md_install all

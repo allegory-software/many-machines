@@ -1,5 +1,8 @@
 #!/bin/bash
 # BACKUP CMD ; BACKUP_DIR [PREV_BACKUP_DIR] ; backup deploy files here
+PWD0=$OLDPWD
 . mmlib
 
-NOALL=1 each_deploy deploy_files_backup "$@"
+BACKUP_DIR=$1; checkvars BACKUP_DIR
+rel_path $BACKUP_DIR $PWD0; BACKUP_DIR=$R1
+NOALL=1 each_deploy deploy_files_backup "$BACKUP_DIR"

@@ -52,7 +52,7 @@ _md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] all | NAME1 ...
 		ACTION=deploy_$ACTION
 	fi
 	if [[ $REMOTE ]]; then
-		VARS="ACTION DRY $VARS" md_ssh_script _each $NAMES
+		VARS="ACTION $VARS" md_ssh_script _each $NAMES
 	else
 		_each $NAMES
 	fi

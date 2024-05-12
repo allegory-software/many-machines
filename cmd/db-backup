@@ -1,5 +1,7 @@
 #!/bin/bash
-# ADMIN DB ; BACKUP_FILE ; backup a database and bring it here
+# ADMIN DB ; [BACKUP_FILE] ; backup a database and bring it here
+PWD0=$OLDPWD
 . mmlib
 
-NOALL=1 each_deploy deploy_db_backup "$@"
+BACKUP_FILE=$1; [[ $1 ]] && { rel_path $1 $PWD0; BACKUP_FILE=$R1; }
+NOALL=1 each_deploy deploy_db_backup "$BACKUP_FILE"

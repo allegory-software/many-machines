@@ -8,6 +8,10 @@ check_abs_filepath() {
 	[[ "${1: -1}" == "/" ]] && die "path ends in slash: $1"
 }
 
+rel_path() { # PATH BASE_PATH
+	R1=$1; [[ $1 != /* ]] && R1=$2/$1
+}
+
 checkfile() {
 	[[ -f $1 ]] || die "File not found: $1"
 	R1=$1
@@ -87,7 +91,7 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 	[[ $what == file ]] && { [[ -f $src ]] || die "src is not a file."; }
 	must dry mkdir -p `dirname $dst` # because cp doesn't do it for us
 	must dry rm -rf $dst # prevent copying _inside_ $dst if $dst is a dir
-	must dry cp -rL $src $dst
+	must dry cp -rn $src $dst
 	if [[ $user ]]; then
 		checkvars user
 		must dry chown -Rh $user:$user $dst
