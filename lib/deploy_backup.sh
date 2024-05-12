@@ -41,7 +41,7 @@ deploy_db_backup() { # BACKUP_FILE
 	checkvars MACHINE DEPLOY BACKUP_FILE
 	ssh_script "mysql_backup_db $DEPLOY $DEPLOY-$DATE-$$.qp"
 	SRC_MACHINE=$MACHINE DST_MACHINE= \
-		SRC_DIR=/root/.mm/$DEPLOY-$DATE-$$.qp \
+		SRC_DIR=/root/.mm/./$DEPLOY-$DATE-$$.qp \
 		DST_DIR=$BACKUP_FILE \
 		PROGRESS=1 MOVE=1 rsync_dir
 }
