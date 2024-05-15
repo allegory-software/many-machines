@@ -81,8 +81,8 @@ deploy_rename_mysql() {
 }
 
 deploy_install_nginx() {
-	[[ $HTTP_PORT && $DOMAIN ]] && {
-		local src=/home/$DEPLOY/$APP/www/5xx.html
+	[[ $HTTP_PORT || $HTTP_SOCKET ]] && {
+		local src=/home/$DEPLOY/app/www/5xx.html
 		local dst=/var/www/$DOMAIN/5xx.html
 		if [ -f "$src" ]; then
 			cp_file $src $dst

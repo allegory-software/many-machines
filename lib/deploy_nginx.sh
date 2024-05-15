@@ -3,11 +3,11 @@
 deploy_preinstall_nginx() {
 	if md_var DOMAIN; then
 		local DOMAIN=$R1
-		acme_cert_upload $MACHINE $DOMAIN
+		md_var NOSSL || acme_cert_upload $MACHINE $DOMAIN
 	fi
 }
 
-deploy_nginx_config() { # DOMAIN= HTTP_PORT= [ACME=1] $0
+deploy_nginx_config() { # DOMAIN= HTTP_SOCKET=|HTTP_PORT= [ACME=1] [NOSSL=1] $0
 
 	checkvars ACME_THUMBPRINT
 
@@ -20,7 +20,7 @@ deploy_nginx_config() { # DOMAIN= HTTP_PORT= [ACME=1] $0
 
 	local nginx_conf
 
-	if [ "$ACME" ]; then
+	if [[ $ACME ]]; then
 
 		checkvars DOMAIN
 
@@ -34,17 +34,22 @@ $acme_location
 "
 	else
 
-		checkvars HTTP_PORT DOMAIN
+		[[ "$HTTP_PORT$HTTP_SOCKET" ]] || die "HTTP_PORT or HTTP_SOCKET required"
+		[[ $HTTP_PORT   ]] && checkvars HTTP_PORT
+		[[ $HTTP_SOCKET ]] && checkvars HTTP_SOCKET
+
+		checkvars DOMAIN
 
 		local error_page="\
 	error_page 502 503 504 /5xx.html;
 	location /5xx.html {
-		root /var/www/$DOMAIN;
+		root /var/www/5xx.html;
 	}
 "
 
 		local proxy_options="
-		proxy_pass http://127.0.0.1:$HTTP_PORT;
+		${HTTP_PORT:+proxy_pass http://127.0.0.1:$HTTP_PORT;}
+		${HTTP_SOCKET:+proxy_pass http://unix:$HTTP_SOCKET;}
 		proxy_set_header X-Forwarded-Host \$http_host;
 		proxy_set_header X-Forwarded-For  \$proxy_add_x_forwarded_for;
 		proxy_set_header X-Forwarded-Port \$server_port;
@@ -55,7 +60,37 @@ $acme_location
 		proxy_cache off;
 "
 
-		nginx_conf="\
+		local locations="
+	location / {
+		$proxy_options
+	}
+
+	location /xrowset.events {
+		$proxy_options
+		$proxy_nobuffer_options
+	}
+
+	location /api.txt {
+		$proxy_options
+		$proxy_nobuffer_options
+	}
+"
+
+		if [[ $NOSSL ]]; then
+
+			nginx_conf="\
+server {
+	listen 80;
+	server_name $DOMAIN;
+
+$locations
+$error_page
+$acme_location
+}
+"
+		else
+
+			nginx_conf="\
 server {
 	listen 80;
 	server_name $DOMAIN;
@@ -87,26 +122,14 @@ server {
 
 	# NOTE: nginx nested locations don't inherit proxy options, so we copy-paste them!
 
-	location / {
-		$proxy_options
-	}
-
-	location /xrowset.events {
-		$proxy_options
-		$proxy_nobuffer_options
-	}
-
-	location /api.txt {
-		$proxy_options
-		$proxy_nobuffer_options
-	}
-
+$locations
 $error_page
 $acme_location
 }
 "
+		fi # NOSSL
 
-fi
+	fi # ACME
 
 	save "$nginx_conf" /etc/nginx/sites-enabled/$DOMAIN
 	sayn "Reloading nginx config... "
