@@ -1,12 +1,6 @@
 #!/bin/bash
-# ADMIN MM ; please ; decrypt and unpack var.tar.gz to var dir
+# ADMIN MM ; please [FILE] ; decrypt and unpack file (var.tar.gz.gpg) to var dir
 . mmlib
 
 [[ $1 == please ]] || die "Say please"
-must gpg --decrypt --batch --yes --passphrase-file var-secret var.tar.gz.gpg > var.tar.gz
-must mkdir var.new
-must tar xzf var.tar.gz -C var.new --overwrite
-must rm var.tar.gz
-must mv --backup=numbered var.new/var .
-must rmdir var.new
-must chmod 770 var
+var_unpack "$2"

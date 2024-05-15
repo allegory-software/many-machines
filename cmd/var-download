@@ -1,0 +1,7 @@
+#!/bin/bash
+# ADMIN MM ;; download var.tar.gz from machine
+. mmlib
+
+on_exit must rm -f var.tar.gz.gpg
+mm download /opt/mm/./var.tar.gz.gpg /opt/mm
+var_unpack

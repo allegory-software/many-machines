@@ -1,5 +1,6 @@
 #!/bin/bash
 # ADMIN MM ;; upload var.tar.gz to machine
 
-mm var-pack
+on_exit rm -f var.tar.gz.gpg
+var_pack
 mm upload var.tar.gz.gpg /opt/mm

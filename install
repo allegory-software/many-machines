@@ -1,0 +1,8 @@
+#!/bin/bash
+# install mm locally
+
+ln -sf /opt/mm/mm      /usr/bin/mm
+ln -sf /opt/mm/mmd     /usr/bin/mmd
+ln -sf /opt/mm/lib/all /usr/bin/mmlib
+sed -i '/mm-autocomplete.sh/d' /root/.bashrc
+echo ". /opt/mm/mm-autocomplete.sh" > /root/.bashrc

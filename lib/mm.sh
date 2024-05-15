@@ -3,7 +3,7 @@
 # mm module ------------------------------------------------------------------
 
 install_mm() {
-	git_clone_for root git@github.com:allegory-software/many-machines2 /opt/mm master mm
+	git_clone_for root git@github.com:allegory-software/many-machines2 /opt/mm master
 	# install globally
 	must ln -sf /opt/mm/mm      /usr/bin/mm
 	must ln -sf /opt/mm/mmd     /usr/bin/mmd
@@ -16,6 +16,48 @@ version_mm() {
 	(
 	must cd /opt/mm
 	must git rev-parse --short HEAD
+	)
+}
+
+# var dir ops ----------------------------------------------------------------
+
+var_pack() { # FILE
+	local FILE=${1:-var.tar.gz.gpg}
+	checkvars FILE
+	must chmod 440 var-secret
+	on_exit must rm tmp/var.tar.gz
+	must tar --exclude-from var/.ignore -czf tmp/var.tar.gz var
+	must gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-file var-secret tmp/var.tar.gz
+	must mv tmp/var.tar.gz.gpg $FILE
+	du -sh $FILE
+}
+
+var_unpack() { # FILE
+	local FILE=${1:-var.tar.gz.gpg}
+	checkvars FILE
+	on_exit must rm tmp/var.tar.gz
+	must gpg --decrypt --batch --yes --passphrase-file var-secret $FILE > tmp/var.tar.gz
+	must rm -rf tmp/var
+	must mkdir tmp/var
+	on_exit must rm -rf tmp/var
+	must tar xzf tmp/var.tar.gz -C tmp/var --overwrite
+	must mv --backup=numbered tmp/var/var .
+	must chmod 770 var
+}
+
+var_pull() {
+	git_clone_for root git@github.com:allegory-software/mm-var tmp/mm-var
+	var_unpack tmp/mm-var/var.tar.gz.gpg
+}
+
+var_push() { # [COMMIT_MSG]
+	git_clone_for root git@github.com:allegory-software/mm-var tmp/mm-var
+	var_pack tmp/mm-var/var.tar.gz.gpg
+	(
+	must cd tmp/mm-var
+	must git add .
+	must git commit -m "${COMMIT_MSG:-unimportant}"
+	must git push
 	)
 }
 
@@ -127,7 +169,6 @@ each_machine() { # [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND AR
 }
 
 each_deploy() { # [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES="" DEPLOYS= COMMAND ARGS...
-	[[ $MACHINES ]] && die "Invalid deploy(s): $MACHINES"
 	local DEPLOYS="$DEPLOYS"
 	if [[ $DEPLOYS ]]; then
 		for DEPLOY in $DEPLOYS; do

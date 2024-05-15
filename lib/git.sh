@@ -38,20 +38,16 @@ git_config_user() { # email name
 	must git config --global user.name "$2"
 }
 
-git_clone_for() { # USER REPO DIR [VERSION=master]
-	local USER="$1"
-	local REPO="$2"
-	local DIR="$3"
-	local VERSION="$4"
+git_clone_for() { # USER REPO DIR [VERSION]
+	local USER=$1 REPO=$2 DIR=$3 VERSION=${4:-master}
 	checkvars USER REPO DIR
-	[ "$VERSION" ] || VERSION=master
 	say "Pulling $DIR $VERSION ..."
 	(
 	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	must mkdir -p $DIR
 	must chown -Rh root:root $DIR
 	must cd $DIR
-	[ -d .git ] || must git init $QUIET
+	[[ -d .git ]] || must git init $QUIET
 	run  git remote rm  origin 2>/dev/null
 	must git remote add origin $REPO
 	must git -c advice.objectNameWarning=false fetch --depth=1 $QUIET origin "$VERSION:refs/remotes/origin/$VERSION"
@@ -75,7 +71,7 @@ git_clone_for() { # USER REPO DIR [VERSION=master]
 	)
 	local ret=$?
 	must chown -Rh $USER:$USER $DIR
-	[ $ret != 0 ] && exit $ret
+	[[ $ret != 0 ]] && exit $ret
 }
 
 install_mgit() {
