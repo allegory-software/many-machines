@@ -80,22 +80,6 @@ deploy_rename_mysql() {
 	mysql_gen_my_cnf localhost $DEPLOY1 "$MYSQL_PASS" $DEPLOY1
 }
 
-deploy_install_nginx() {
-	[[ $HTTP_PORT || $HTTP_SOCKET ]] && {
-		local src=/home/$DEPLOY/app/www/5xx.html
-		local dst=/var/www/$DOMAIN/5xx.html
-		if [ -f "$src" ]; then
-			cp_file $src $dst
-		else
-			save "Server down!" $dst
-		fi
-	}
-	[[ $DOMAIN ]] && {
-		local ACME; [[ -f /opt/mm/var/.acme.sh.etc/${DOMAIN}_ecc/$DOMAIN.cer ]] || ACME=1
-		ACME=$ACME deploy_nginx_config
-	}
-}
-
 # deploy admin ---------------------------------------------------------------
 
 deploy_secret_gen() {

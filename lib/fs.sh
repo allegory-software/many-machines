@@ -34,7 +34,7 @@ catfile() { # FILE [DEFAULT]
 }
 
 rm_dir() { # DIR
-	local dir="$1"
+	local dir=$1
 	checkvars dir
 	check_abs_filepath "$dir"
 	sayn "Removing dir: $dir ... "
@@ -43,7 +43,7 @@ rm_dir() { # DIR
 }
 
 rm_file() { # FILE
-	local file="$1"
+	local file=$1
 	checkvars file
 	check_abs_filepath "$file"
 	sayn "Removing file: $file ... "
@@ -56,30 +56,37 @@ rm_file() { # FILE
 }
 
 ln_file() {
-	local FILE=$1 LINK=$2
-	checkvars FILE LINK
-	must dry ln -sfTv $FILE $LINK
+	local target=$1 linkfile=$2
+	checkvars target linkfile
+	must dry ln -sfTv $target $linkfile
 }
 
-mv_file_with_backup() { # OLD NEW
-	local OLD=$1 NEW=$2
-	checkvars OLD NEW
-	if cmp -s $OLD $NEW; then
-		say "Renaming '$OLD' -> '$NEW' ... files are the same. "
-		must dry rm $OLD
+_mv() { # TYPE OPT OLD NEW
+	local type=$1 opt=$2 old=$3 new=$4
+	checkvars type old
+	local s="Renaming '$old' -> '$new' ... "
+	if [[ ! -e $old ]]; then
+		say "$s not found: '$old'"
+	elif [[ $type == dir && ! -d $old ]]; then
+		say "$s not a dir: '$OLD'"
+	elif [[ $type == file && ! -f $old ]]; then
+		say "$s not a file: '$old'"
+	elif [[ $type == file ]] && cmp -s $old $new; then
+		say "$s files are the same."
+		must dry rm $old
 	else
-		must dry mv -Tv --backup=numbered $OLD $NEW
+		must dry mv -Tv $opt $old $new
 	fi
 }
+mv_dir()  { _mv dir  "" "$1" "$2"; }
+mv_file() { _mv file "" "$1" "$2"; }
+mv_file_with_backup() { _mv file "--backup=numbered" "$1" "$2"; }
+mv_dir_with_backup()  { _mv dir  "--backup=numbered" "$1" "$2"; }
 
 # modified cp that treats DST based on whether it ends with a / or not,
 # and it also does the same thing regardless of what the situation is at the destination.
 _cp() { # WHAT SRC DST [USER] [MOD]
-	local what="$1"
-	local src="$2"
-	local dst="$3"
-	local user="$4"
-	local mod="$5"
+	local what=$1 src=$2 dst=$3 user=$4 mod=$5
 	checkvars what src dst
 	[[ $src != */ ]] || die "NYI: $src ends with slash."
 	if [[ $dst == */ ]]; then # adjust $dst for chown and chmod
