@@ -3,18 +3,18 @@
 # mm module ------------------------------------------------------------------
 
 install_mm() {
-	git_clone_for root git@github.com:allegory-software/many-machines2 /opt/mm master
+	git_clone_for root git@github.com:allegory-software/many-machines2 /root/mm master
 	# install globally
-	must ln -sf /opt/mm/mm      /usr/bin/mm
-	must ln -sf /opt/mm/mmd     /usr/bin/mmd
-	must ln -sf /opt/mm/lib/all /usr/bin/mmlib
-	remove_line /opt/mm/mm-autocomplete.sh /root/.bashrc
-	append ". /opt/mm/mm-autocomplete.sh" /root/.bashrc
+	must ln -sf /root/mm/mm      /usr/bin/mm
+	must ln -sf /root/mm/mmd     /usr/bin/mmd
+	must ln -sf /root/mm/lib/all /usr/bin/mmlib
+	remove_line /root/mm/mm-autocomplete.sh /root/.bashrc
+	append ". /root/mm/mm-autocomplete.sh" /root/.bashrc
 }
 
 version_mm() {
 	(
-	must cd /opt/mm
+	must cd /root/mm
 	must git rev-parse --short HEAD
 	)
 }
@@ -25,7 +25,7 @@ var_pack() { # FILE
 	local FILE=${1:-var.tar.gz.gpg}
 	checkvars FILE
 	must chmod 440 var-secret
-	on_exit must rm tmp/var.tar.gz
+	on_exit run rm -f tmp/var.tar.gz
 	must tar --exclude-from var/.ignore -czf tmp/var.tar.gz var
 	must gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-file var-secret tmp/var.tar.gz
 	must mv tmp/var.tar.gz.gpg $FILE
@@ -35,23 +35,28 @@ var_pack() { # FILE
 var_unpack() { # FILE
 	local FILE=${1:-var.tar.gz.gpg}
 	checkvars FILE
-	on_exit must rm tmp/var.tar.gz
+	on_exit run rm -f tmp/var.tar.gz
 	must gpg --decrypt --batch --yes --passphrase-file var-secret $FILE > tmp/var.tar.gz
 	must rm -rf tmp/var
 	must mkdir tmp/var
-	on_exit must rm -rf tmp/var
+	on_exit run rm -rf tmp/var
 	must tar xzf tmp/var.tar.gz -C tmp/var --overwrite
 	must mv --backup=numbered tmp/var/var .
 	must chmod 770 var
 }
 
-var_pull() {
+_var_clone() {
+	on_exit run rm -rf tmp/mm-var
 	git_clone_for root git@github.com:allegory-software/mm-var tmp/mm-var
+}
+
+var_pull() {
+	_var_clone
 	var_unpack tmp/mm-var/var.tar.gz.gpg
 }
 
 var_push() { # [COMMIT_MSG]
-	git_clone_for root git@github.com:allegory-software/mm-var tmp/mm-var
+	_var_clone
 	var_pack tmp/mm-var/var.tar.gz.gpg
 	(
 	must cd tmp/mm-var
@@ -199,6 +204,17 @@ _each_deploy_with_domain() {
 }
 each_deploy_with_domain() {
 	each_deploy _each_deploy_with_domain "$@"
+}
+
+_each_deploy_with_ssl() {
+	if md_var DOMAIN; then
+		local DOMAIN=$R1
+		md_var NOSSL && return
+		(DOMAIN=$DOMAIN "$@")
+	fi
+}
+each_deploy_with_ssl() {
+	each_deploy _each_deploy_with_ssl "$@"
 }
 
 each_md() {

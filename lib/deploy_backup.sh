@@ -54,7 +54,7 @@ deploy_db_restore() { # BACKUP_FILE DST_MACHINE DST_DB
 		PROGRESS=1 rsync_dir
 
 	MACHINE=$DST_MACHINE ssh_script "
-		on_exit must rm $DST_DB.$$.qp
+		on_exit run rm -f $DST_DB.$$.qp
 		mysql_restore_db $DST_DB $DST_DB.$$.qp
 	"
 }
@@ -80,8 +80,8 @@ deploy_files_restore() { # BACKUP_DIR DST_MACHINE DST_DB
 	SRC_MACHINE= \
 		SRC_DIR=$BACKUP_DIR/./. \
 		DST_DIR=/home/$DST_DEPLOY \
-		DST_USER=$DST_DEPLOY
-		DELETE=1 PROGRESS=1 rsync_dir
+		DST_USER=$DST_DEPLOY \
+		PROGRESS=1 rsync_dir
 }
 
 deploy_backup() {
@@ -138,16 +138,15 @@ deploy_backups_sweep() {
 	done
 	) | sort -k1n | while read d f; do
 		local fsize=`stat -c %s backups/$f`
-		DRY=1 rm_file /opt/mm/backups/$f
+		DRY=1 rm_file /root/mm/backups/$f
 		must_free=$(( must_free - fsize ))
 		(( must_free < 0 )) && break
 	done
 }
 
-deploy_clone() { # DEPLOY= [LATEST=1] DST_MACHINE= DST_DEPLOY=
-	checkvars DEPLOY DST_MACHINE DST_DEPLOY
+deploy_move() { # DEPLOY= [LATEST=1] DST_MACHINE=
+	checkvars DEPLOY DST_MACHINE
 	local DST_MACHINE=$DST_MACHINE; machine_of $DST_MACHINE; DST_MACHINE=$R1
-	check_md_new_name $DST_DEPLOY
 
 	# backup the deploy or use the latest backup.
 	local DATE
@@ -159,23 +158,25 @@ deploy_clone() { # DEPLOY= [LATEST=1] DST_MACHINE= DST_DEPLOY=
 		DATE=$R1
 	fi
 
-	# clone the deploy metadata and modify it.
-	cp_dir \
-		var/deploys/$DEPLOY \
-		var/deploys/$DST_DEPLOY
-	ln_file ../../machines/$DST_MACHINE var/deploys/$DST_DEPLOY/machine
+	# backup SSL cert if any.
+	(acme_cert_backup)
+
+	ln_file ../../machines/$DST_MACHINE var/deploys/$DEPLOY/machine
+
+	# restore SSL cert if any.
+	(MACHINE=$DST_MACHINE acme_cert_restore)
 
 	# install the deploy.
-	DEPLOY=$DST_DEPLOY MACHINE=$DST_MACHINE md_install all
+	MACHINE=$DST_MACHINE md_install all
 
 	# restore the deploy data over the fresh install.
 	deploy_restore
 }
 
-md_clone() {
+md_move() {
 	if [[ $DEPLOY ]]; then
-		deploy_clone "$@"
+		deploy_move "$@"
 	else
-		machine_clone "$@"
+		machine_move "$@"
 	fi
 }

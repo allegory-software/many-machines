@@ -52,7 +52,7 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 $VARS
 $FUNCS
 . /root/.mm/lib/all
-mkdir -p /root/.mm
+mkdir -p /root/.mm/tmp
 cd /root/.mm || exit 1
 $SCRIPT $ARGS
 "
@@ -64,7 +64,7 @@ $VARS
 set -f # disable globbing
 shopt -s nullglob
 set -o pipefail
-mkdir -p /root/.mm
+mkdir -p /root/.mm/tmp
 cd /root/.mm || exit 1
 $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
 $(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)
@@ -207,7 +207,9 @@ ssh_pubkey_remove() { _ssh_pubkey_do _ssh_pubkey_remove "$@"; }
 
 # rsync ----------------------------------------------------------------------
 
-# SRC_DIR= [FILE_LIST_FILE=] [DST_DIR=] [DST_USER=] [DST_GROUP=] [LINK_DIR=] [SRC_MACHINE=] [DST_MACHINE=] [PROGRESS=1] [DRY] [MOVE] [VERBOSE] rsync_cmd
+# SRC_DIR= [FILE_LIST_FILE=] [DST_DIR=] [SRC_MACHINE=] [DST_MACHINE=] \
+#   [MOVE=1] [NODELETE=1] [LINK_DIR=] [DST_USER=] [DST_GROUP=] \
+#   [PROGRESS=1] [DRY=1] [VERBOSE=1] rsync_cmd
 rsync_cmd() {
 	local SRC_DIR=$SRC_DIR
 	local DST_DIR=${DST_DIR:-$SRC_DIR}
@@ -233,7 +235,6 @@ rsync_cmd() {
 	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
 	R1=(rsync
 		--recursive --relative --links --perms --times --devices --specials --hard-links --timeout=5
-		${DELETE:+--delete}
 		${PROGRESS:+--info=progress2}
 		${LINK_DIR:+--link-dest="$LINK_DIR"}
 		${MOVE:+--remove-source-files}
@@ -242,6 +243,7 @@ rsync_cmd() {
 		${DRY:+--dry-run}
 		${VERBOSE:+-v}
 	)
+	[[ $NODELETE ]] || R1+=(--delete)
 	[[ $ssh_cmd ]] && R1+=(-e "${ssh_cmd[*]}")
 	R1+=("$SRC_DIR" "$DST_DIR")
 }

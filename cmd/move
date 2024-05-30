@@ -1,0 +1,5 @@
+#!/bin/bash
+# DEPLOY ; DST_MACHINE ; move deploy to another machine
+. mmlib
+
+DST_MACHINE=$1 each_md md_move

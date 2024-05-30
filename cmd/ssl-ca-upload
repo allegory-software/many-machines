@@ -1,0 +1,5 @@
+#!/bin/bash
+# ADMIN DOMAIN ;; upload SSL CA files to machine
+. mmlib
+
+each_machine acme_ca_upload

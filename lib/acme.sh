@@ -1,6 +1,6 @@
 # acme.sh install and running
 
-ACME_DIR=/opt/mm/var/.acme.sh.etc
+ACME_DIR=/root/.acme.sh.etc
 ACME_EMAIL=cosmin.apreutesei@gmail.com
 
 preinstall_acme() {
@@ -8,9 +8,10 @@ preinstall_acme() {
 }
 
 install_acme() {
-	say "Installing acme.sh..."
+	say "Installing acme.sh ..."
 
 	# install acme.sh to auto-renew SSL certs.
+	export LE_CONFIG_HOME=$ACME_DIR
 	must curl -sSL https://get.acme.sh | must sh \
 		-s email=$ACME_EMAIL \
 		--nocron \
@@ -18,6 +19,11 @@ install_acme() {
 
 	# ZeroSSL is the default but it's very slow, so we're switching back to LE.
 	acme_sh --set-default-ca --server letsencrypt
+
+	save "\
+/root/.acme.sh/acme.sh --cron --home /root/.acme.sh --config-home $ACME_DIR >/dev/null
+nginx -s reload
+" /etc/cron.daily/acme root 755
 
 	say "acme.sh install done."
 }
@@ -33,42 +39,46 @@ acme_sh() {
 	[[ $ret == 0 ]] || die "$cmd_args $@ [$ret]"
 }
 
+acme_cert_dir() {
+	checkvars DOMAIN
+	R1=$ACME_DIR/${DOMAIN}_ecc
+}
+acme_cert_keyfile() { acme_cert_dir; R1=$R1/$DOMAIN.key; }
+acme_cert_cerfile() { acme_cert_dir; R1=$R1/fullchain.cer; }
+
 acme_ca_upload() {
 	checkvars MACHINE
 	say "Uploading acme.sh CA files to '$MACHINE' ..."
-	DELETE=1 SRC_DIR=$ACME_DIR/ca           DST_DIR=/ DST_MACHINE=$MACHINE rsync_dir
-	DELETE=1 SRC_DIR=$ACME_DIR/account.conf DST_DIR=/ DST_MACHINE=$MACHINE rsync_dir
+	SRC_DIR=/root/mm/var/./.acme.sh.etc/ca            DST_DIR=/root DST_MACHINE=$MACHINE rsync_dir
+	SRC_DIR=/root/mm/var/./.acme.sh.etc/account.conf  DST_DIR=/root DST_MACHINE=$MACHINE rsync_dir
 }
 
-acme_cert_upload() {
+acme_cert_issue() { # DOMAIN=
+	checkvars DOMAIN
+	say "Issuing SSL certificate for domain: '$DOMAIN' ... "
+	acme_sh --issue -d $DOMAIN --stateless "$@"
+	nginx_reload
+}
+
+acme_cert_renew() { # DOMAIN=
+	checkvars DOMAIN
+	say "Renewing SSL certificate for domain: '$DOMAIN' ... "
+	acme_sh --renew -d $DOMAIN "$@"
+	nginx_reload
+}
+
+acme_cert_backup() {
+	checkvars MACHINE DOMAIN
+	check_machine $MACHINE
+	say "Downloading SSL cert files for domain '$DOMAIN' from '$MACHINE' ..."
+	acme_cert_dir
+	SRC_DIR=$R1 DST_DIR=/ SRC_MACHINE=$MACHINE rsync_dir
+}
+
+acme_cert_restore() {
 	checkvars MACHINE DOMAIN
 	check_machine $MACHINE
 	say "Uploading SSL cert files for domain '$DOMAIN' to '$MACHINE' ..."
-	local DIR=$ACME_DIR/${DOMAIN}_ecc
-	[[ -f $DIR/$DOMAIN.cer ]] || { say "Cert file not found: '$DIR/$DOMAIN.cer'"; return 1; }
-	[[ -f $DIR/$DOMAIN.key ]] || { say "Cert file not found: '$DIR/$DOMAIN.key'"; return 1; }
-	DELETE=1 SRC_DIR=$DIR DST_DIR=/ DST_MACHINE=$MACHINE rsync_dir
-}
-
-acme_cert_download() {
-	local MACHINE=$1 DOMAIN=$2
-	check_machine "$MACHINE"
-	checkvars DOMAIN
-	say "Uploading SSL cert files for domain '$DOMAIN' to '$MACHINE' ..."
-	local DIR=$ACME_DIR/${DOMAIN}_ecc
-	[[ -f $DIR/$DOMAIN.cer ]] || { say "Cert file not found: '$DIR/$DOMAIN.cer'"; return 1; }
-	[[ -f $DIR/$DOMAIN.key ]] || { say "Cert file not found: '$DIR/$DOMAIN.key'"; return 1; }
-	DELETE=1 SRC_DIR=$DIR DST_DIR=/ DST_MACHINE=$MACHINE rsync_dir
-}
-
-acme_issue_cert() { # DOMAIN
-	local DOMAIN="$1"
-	checkvars DOMAIN
-
-	say "Issuing SSL certificate for $DOMAIN with acme.sh ... "
-	local keyfile=$ACME_DIR/${DOMAIN}_ecc/$DOMAIN.key
-	deploy_nginx_config_acme
-	acme_sh --issue -d $DOMAIN --stateless --force
-	[[ -f $keyfile ]] || die "SSL certificate was NOT created: $keyfile."
-	deploy_nginx_config
+	acme_cert_dir
+	SRC_DIR=$R1 DST_DIR=/ DST_MACHINE=$MACHINE rsync_dir
 }

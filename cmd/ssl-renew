@@ -1,0 +1,5 @@
+#!/bin/bash
+# ADMIN DOMAIN ; [--force] ; check/renew SSL certificates for deployment(s)
+. mmlib
+
+NOALL=1 each_deploy_with_domain md_ssh_script acme_cert_renew "$@"

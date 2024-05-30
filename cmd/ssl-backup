@@ -1,0 +1,5 @@
+#!/bin/bash
+# ADMIN DOMAIN ;; download SSL certificate from deploy machine(s)
+. mmlib
+
+each_deploy_with_ssl acme_cert_backup

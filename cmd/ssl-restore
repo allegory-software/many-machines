@@ -2,4 +2,4 @@
 # ADMIN DOMAIN ;; upload a SSL certificate to deploy machine(s)
 . mmlib
 
-NOALL=1 each_deploy_with_domain acme_cert_upload
+NOALL=1 each_deploy_with_domain acme_cert_restore

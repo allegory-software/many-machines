@@ -36,7 +36,7 @@ mysql_restore_all() { # BKP_DIR
 		BKP_DIR="$PARENT_BKP_DIR"
 	done
 
-	local RESTORE_DIR=/root/mm-machine-restore/mysql
+	local RESTORE_DIR=/opt/mm-machine-restore/mysql
 
 	# prepare base backup and all incrementals in order without doing rollbacks.
 	sync_dir "$BKP_DIR" "$RESTORE_DIR"

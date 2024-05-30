@@ -8,7 +8,7 @@ fix_symlink() {
 	local target=$(readlink "$symlink")
 	local abs_target=$(readlink -f "$symlink")
 	local rel_target
-	if [[ $abs_target == /opt/mm/* ]]; then
+	if [[ $abs_target == /root/mm/* ]]; then
 		rel_target=$(realpath --relative-to="$parent_dir" "$abs_target")
 	else
 		rel_target=$abs_target

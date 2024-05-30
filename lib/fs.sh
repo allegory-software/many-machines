@@ -38,7 +38,7 @@ rm_dir() { # DIR
 	checkvars dir
 	check_abs_filepath "$dir"
 	sayn "Removing dir: $dir ... "
-	[ "$DRY" ] || must dry rm -rf "$dir"
+	must dry rm -rf "$dir"
 	say OK
 }
 
@@ -50,7 +50,7 @@ rm_file() { # FILE
 	if [[ ! -f $file ]]; then
 		say "not found"
 	else
-		[ "$DRY" ] || must dry rm -f "$file"
+		must dry rm -f "$file"
 		say OK
 	fi
 }
@@ -58,7 +58,11 @@ rm_file() { # FILE
 ln_file() {
 	local target=$1 linkfile=$2
 	checkvars target linkfile
-	must dry ln -sfTv $target $linkfile
+	sayn "Symlinking: $target -> $linkfile ... "
+	local target0=`readlink $linkfile`
+	[[ $target0 == $target ]] && { say "no change."; return; }
+	must dry ln -sfT $target $linkfile
+	[[ -e $target ]] && say OK || say "OK (broken)"
 }
 
 _mv() { # TYPE OPT OLD NEW
@@ -156,7 +160,7 @@ remove_line() { # REGEX FILE
 save() { # S FILE [USER] [MODE]
 	local s=$1 file=$2 user=$3 mode=$4
 	checkvars s- file
-	sayn "Saving ${#s} bytes to file $file ... "
+	sayn "Saving ${#s} bytes to file: '$file'${user:+ user=$user}${mode:+ mode=$mode} ... "
 	debugn "MUST: save \"$s\" $file "
 	if [[ $DRY ]] || printf "%s" "$s" > "$file"; then
 		debug "[$?]"

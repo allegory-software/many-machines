@@ -1,5 +1,0 @@
-#!/bin/bash
-# DEPLOY ; DST_MACHINE DST_DEPLOY ; clone deploy
-. mmlib
-
-DST_MACHINE=$1 DST_DEPLOY=$2 each_md md_clone

@@ -35,14 +35,12 @@ must()      { debug "\nMUST: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || die "$*
 dry()       { if [[ $DRY ]]; then say "DRY: $*"; else "$@"; fi; }
 nag()       { [[ $VERBOSE ]] || return 0; say "$@"; }
 
-_ON_EXIT=
-_on_exit() {
-	eval $_ON_EXIT
-}
-trap _on_exit EXIT
-on_exit()  { # CMD ARGS ...
+on_exit() { # CMD ARGS ...
+	local s=`trap -p EXIT`; s=${s:9:-7}
 	quote_args "$@"
-	_ON_EXIT+="${R1[@]}"$'\n'
+	trap "$s
+${R1[*]}
+" EXIT
 }
 
 # arg checking and sanitizing
@@ -113,7 +111,7 @@ run_as() { # VARS="VAR1 ..." FUNCS="FUNC1 ..." USER "SCRIPT" ARG1 ...
 	quote_args "$@"; local args="${R1[*]}"
 	local vars=$(declare -p DEBUG VERBOSE $VARS 2>/dev/null)
 	[[ $FUNCS ]] && local funcs=$(declare -f $FUNCS)
-	sudo -u "$user" bash -s <<< "
+	run sudo -u "$user" bash -s <<< "
 $vars
 $funcs
 $script $args
@@ -123,7 +121,7 @@ $script $args
 # reflection
 
 functions_with_prefix() { # PREFIX
-	local prefix="$1"
+	local prefix=$1
 	R1=
 	for func_name in $(declare -F | awk '{print $3}'); do
 		if [[ $func_name == "$prefix"* ]]; then

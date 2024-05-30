@@ -1,0 +1,8 @@
+#!/bin/bash
+# ADMIN ;; list custom installers
+. mmlib
+
+functions_with_prefix ${MM_DEPLOY:+deploy_}install_
+for f in $R1; do
+	printf "%s\n" $f
+done

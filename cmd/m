@@ -2,11 +2,11 @@
 # SEE ;; list machines
 . mmlib
 
-FMT="$WHITE%-10s %-6s %-15s$ENDCOLOR\n"
+FMT="%-10s %-6s %-15s\n"
 _f() {
 	cat_varfile var/machines/$MACHINE active    ; local ACTIVE=$R1
 	cat_varfile var/machines/$MACHINE public_ip ; local PUBLIC_IP=$R1
 	printf "$FMT" $MACHINE "$ACTIVE" "$PUBLIC_IP"
 }
-printf "$FMT" MACHINE ACTIVE PUBLIC_IP
+printf "$WHITE$FMT$ENDCOLOR" MACHINE ACTIVE PUBLIC_IP
 QUIET=1 INACTIVE=1 each_machine _f

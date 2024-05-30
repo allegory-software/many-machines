@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /opt/mm || { printf "ABORT: Could not chdir to '/opt/mm'.\n" >&2; exit 1; }
+cd /root/mm || exit 1
 
 export DEPLOYS
 export MACHINES
