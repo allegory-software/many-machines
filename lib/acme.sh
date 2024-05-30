@@ -11,7 +11,6 @@ install_acme() {
 	say "Installing acme.sh ..."
 
 	# install acme.sh to auto-renew SSL certs.
-	export LE_CONFIG_HOME=$ACME_DIR
 	must curl -sSL https://get.acme.sh | must sh \
 		-s email=$ACME_EMAIL \
 		--nocron \
@@ -39,16 +38,11 @@ acme_sh() {
 	[[ $ret == 0 ]] || die "$cmd_args $@ [$ret]"
 }
 
-acme_cert_dir() {
-	checkvars DOMAIN
-	R1=$ACME_DIR/${DOMAIN}_ecc
-}
-acme_cert_keyfile() { acme_cert_dir; R1=$R1/$DOMAIN.key; }
-acme_cert_cerfile() { acme_cert_dir; R1=$R1/fullchain.cer; }
+acme_cert_keyfile() { R1=$ACME_DIR/${DOMAIN}_ecc/$DOMAIN.key; }
+acme_cert_cerfile() { R1=$ACME_DIR/${DOMAIN}_ecc/fullchain.cer; }
 
 acme_ca_upload() {
 	checkvars MACHINE
-	say "Uploading acme.sh CA files to '$MACHINE' ..."
 	SRC_DIR=/root/mm/var/./.acme.sh.etc/ca            DST_DIR=/root DST_MACHINE=$MACHINE rsync_dir
 	SRC_DIR=/root/mm/var/./.acme.sh.etc/account.conf  DST_DIR=/root DST_MACHINE=$MACHINE rsync_dir
 }
@@ -70,15 +64,11 @@ acme_cert_renew() { # DOMAIN=
 acme_cert_backup() {
 	checkvars MACHINE DOMAIN
 	check_machine $MACHINE
-	say "Downloading SSL cert files for domain '$DOMAIN' from '$MACHINE' ..."
-	acme_cert_dir
-	SRC_DIR=$R1 DST_DIR=/ SRC_MACHINE=$MACHINE rsync_dir
+	SRC_DIR=/root/./.acme.sh.etc/${DOMAIN}_ecc DST_DIR=/root/mm/var SRC_MACHINE=$MACHINE rsync_dir
 }
 
 acme_cert_restore() {
 	checkvars MACHINE DOMAIN
 	check_machine $MACHINE
-	say "Uploading SSL cert files for domain '$DOMAIN' to '$MACHINE' ..."
-	acme_cert_dir
-	SRC_DIR=$R1 DST_DIR=/ DST_MACHINE=$MACHINE rsync_dir
+	SRC_DIR=/root/mm/var/./.acme.sh.etc/${DOMAIN}_ecc DST_DIR=/root DST_MACHINE=$MACHINE rsync_dir
 }
