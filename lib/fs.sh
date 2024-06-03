@@ -187,22 +187,6 @@ replace_lines() { # REGEX S FILE
 	[[ $s1 != $s ]] && save "$s1" "$file"
 }
 
-sync_dir() { # SRC_DIR= DST_DIR= [LINK_DIR=]
-	checkvars SRC_DIR DST_DIR
-	[ "$LINK_DIR" ] && {
-		LINK_DIR="$(realpath "$LINK_DIR")" # --link-dest path must be absolute.
-		checkvars LINK_DIR
-	}
-
-	sayn "Sync'ing dir: '$SRC_DIR' -> '$PWD/$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
-
-	# NOTE: the dot syntax cuts out the path before it as a way to make the path relative.
-	[ "$DRY" ] || must rsync --delete -aHR ${LINK_DIR:+--link-dest=$LINK_DIR} $SRC_DIR/./. $DST_DIR
-
-	dir_lean_size $DST_DIR; kbytes $R1
-	say "OK. $R1 bytes in destination."
-}
-
 innermost_subpath_with_file() { # FILE DIR
 	local file="$1"
 	local dir="$2"

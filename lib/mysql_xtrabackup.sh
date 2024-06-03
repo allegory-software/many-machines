@@ -39,7 +39,7 @@ mysql_restore_all() { # BKP_DIR
 	local RESTORE_DIR=/opt/mm-machine-restore/mysql
 
 	# prepare base backup and all incrementals in order without doing rollbacks.
-	sync_dir "$BKP_DIR" "$RESTORE_DIR"
+	rsync_dir "$BKP_DIR" "$RESTORE_DIR"
 	local PARENT_BKP_DIR=""
 	for BKP_DIR in $BKP_DIRS; do
 		xbkp --prepare --target-dir=$RESTORE_DIR --apply-log-only \

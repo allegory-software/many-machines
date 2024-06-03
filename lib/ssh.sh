@@ -211,22 +211,18 @@ ssh_pubkey_remove() { _ssh_pubkey_do _ssh_pubkey_remove "$@"; }
 #   [MOVE=1] [NODELETE=1] [LINK_DIR=] [DST_USER=] [DST_GROUP=] \
 #   [PROGRESS=1] [DRY=1] [VERBOSE=1] rsync_cmd
 rsync_cmd() {
-	local SRC_DIR=$SRC_DIR
-	local DST_DIR=${DST_DIR:-$SRC_DIR}
+	local SRC=$SRC_DIR
+	local DST=${DST_DIR:-$SRC_DIR}
 	local PROGRESS=$PROGRESS; [[ $TERM ]] || PROGRESS=
-	checkvars SRC_DIR DST_DIR
-	local LINK_DIR=$LINK_DIR
-	if [[ $LINK_DIR && -d $LINK_DIR ]]; then
-		LINK_DIR=$(realpath "$LINK_DIR") # --link-dest path must be absolute!
-		checkvars LINK_DIR
-	fi
+	checkvars SRC DST
+	[[ $LINK_DIR ]] && checkvars LINK_DIR
 
-	local SRC_MACHINE=$SRC_MACHINE; [[ $SRC_MACHINE ]] && { ip_of "$SRC_MACHINE"; SRC_MACHINE=$R2; SRC_DIR="root@$R1:$SRC_DIR"; }
-	local DST_MACHINE=$DST_MACHINE; [[ $DST_MACHINE ]] && { ip_of "$DST_MACHINE"; DST_MACHINE=$R2; DST_DIR="root@$R1:$DST_DIR"; }
+	[[ $SRC_MACHINE ]] && { ip_of "$SRC_MACHINE"; SRC="root@$R1:$SRC"; }
+	[[ $DST_MACHINE ]] && { ip_of "$DST_MACHINE"; DST="root@$R1:$DST"; }
 	[[ $SRC_MACHINE && $DST_MACHINE ]] && die "Can't copy between two remotes."
 	local MACHINE=$SRC_MACHINE$DST_MACHINE
 
-	sayn "Sync'ing${DRY:+ DRY}: '$SRC_DIR' -> '$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
+	sayn "Sync'ing${DRY:+ DRY}: '${SRC_MACHINE:+$SRC_MACHINE:}$SRC_DIR' -> '${DST_MACHINE:+$DST_MACHINE:}$DST_DIR'${LINK_DIR:+ lnk '$LINK_DIR'} ... "
 	[[ $DRY ]] && local VERBOSE=1
 	[[ $PROGRESS ]] && say
 
@@ -245,7 +241,7 @@ rsync_cmd() {
 	)
 	[[ $NODELETE ]] || R1+=(--delete)
 	[[ $ssh_cmd ]] && R1+=(-e "${ssh_cmd[*]}")
-	R1+=("$SRC_DIR" "$DST_DIR")
+	R1+=("$SRC" "$DST")
 }
 
 rsync_dir() {

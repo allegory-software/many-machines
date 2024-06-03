@@ -2,4 +2,4 @@
 # ADMIN DOMAIN ;; download SSL certificate from deploy machine(s)
 . mmlib
 
-each_deploy_with_ssl acme_cert_backup
+QUIET=1 each_deploy_with_ssl acme_cert_backup

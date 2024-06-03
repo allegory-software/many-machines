@@ -63,12 +63,14 @@ deploy_files_backup() { # MACHINE= DEPLOY= BACKUP_DIR [PREV_BACKUP_DIR]
 	local BACKUP_DIR=$1 PREV_BACKUP_DIR=$2
 	checkvars MACHINE DEPLOY BACKUP_DIR
 	md_varfile backup_files; local backup_files_file=$R1
+	local PDIR=$PREV_BACKUP_DIR
+	[[ -d PDIR ]] && PDIR=`realpath $PDIR`
 	FILE_LIST_FILE=$backup_files_file \
 		SRC_MACHINE=$MACHINE \
 		DST_MACHINE= \
 		SRC_DIR=/home/$DEPLOY \
 		DST_DIR=$BACKUP_DIR \
-		LINK_DIR=$PREV_BACKUP_DIR \
+		LINK_DIR=$PDIR \
 		PROGRESS=1 rsync_dir
 }
 
@@ -159,7 +161,7 @@ deploy_move() { # DEPLOY= [LATEST=1] DST_MACHINE=
 	fi
 
 	# backup SSL cert if any.
-	(acme_cert_backup)
+	acme_cert_cerfile; [[ -f $R1 ]] && acme_cert_backup
 
 	ln_file ../../machines/$DST_MACHINE var/deploys/$DEPLOY/machine
 

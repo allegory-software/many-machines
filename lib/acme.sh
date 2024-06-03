@@ -62,13 +62,23 @@ acme_cert_renew() { # DOMAIN=
 }
 
 acme_cert_backup() {
-	checkvars MACHINE DOMAIN
+	checkvars DEPLOY DOMAIN
 	check_machine $MACHINE
-	SRC_DIR=/root/./.acme.sh.etc/${DOMAIN}_ecc DST_DIR=/root/mm/var SRC_MACHINE=$MACHINE rsync_dir
+	local d=.acme.sh.etc/${DOMAIN}_ecc
+	if [[ ! -d /root/$d ]]; then
+		say "No SSL certificate to back up for domain: '$DOMAIN'."
+		return 1
+	fi
+	SRC_DIR=/root/./$d DST_DIR=/root/mm/var SRC_MACHINE=$MACHINE rsync_dir
 }
 
 acme_cert_restore() {
 	checkvars MACHINE DOMAIN
 	check_machine $MACHINE
-	SRC_DIR=/root/mm/var/./.acme.sh.etc/${DOMAIN}_ecc DST_DIR=/root DST_MACHINE=$MACHINE rsync_dir
+	local d=.acme.sh.etc/${DOMAIN}_ecc
+	ssh_script "[[ -d /root/$d ]]" && {
+		say "Not uploading SSL certificate: dir '/root/$d' already present."
+		return 1
+	}
+	SRC_DIR=/root/mm/var/./$d DST_DIR=/root DST_MACHINE=$MACHINE rsync_dir
 }
