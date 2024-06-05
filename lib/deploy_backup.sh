@@ -36,19 +36,19 @@ list_deploy_backups() {
 	done
 }
 
-deploy_db_backup() { # [BACKUP_FILE]
+deploy_mysql_backup() { # [BACKUP_FILE]
 	local BACKUP_FILE=${1:-/dev/stdout}
 	checkvars MACHINE DEPLOY
 	ssh_script "mysql_backup_db $DEPLOY" > $BACKUP_FILE
 }
 
-deploy_db_restore() { # BACKUP_FILE DST_MACHINE DST_DB
+deploy_mysql_restore() { # BACKUP_FILE DST_MACHINE DST_DB
 	local BACKUP_FILE=$1 DST_MACHINE=$2 DST_DB=$3
 	checkvars BACKUP_FILE DST_MACHINE DST_DB
 	checkfile $BACKUP_FILE
 	machine_of "$DST_MACHINE"; local DST_MACHINE=$R1
 
-	SRC_MACHINE= \
+	SRC_MACHINE= DST_MACHINE=$DST_MACHINE \
 		SRC_DIR="$(dirname $BACKUP_FILE)/./$(basename $BACKUP_FILE)" \
 		DST_DIR=/root/.mm/$DST_DB.$$.qp \
 		PROGRESS=1 rsync_dir
@@ -86,35 +86,53 @@ deploy_files_restore() { # BACKUP_DIR DST_MACHINE DST_DB
 		PROGRESS=1 rsync_dir
 }
 
-deploy_backup() {
-	checkvars MACHINE DEPLOY
+deploy_backup_mysql() {
+	deploy_mysql_backup $BACKUP_DIR/db.qp
+}
+
+deploy_restore_mysql() {
+	deploy_mysql_restore $BSCKUP_DIR/db.qp $DST_MACHINE $DST_DEPLOY
+}
+
+deploy_backup_app() {
+	deploy_files_backup $BACKUP_DIR/files $PREV_BACKUP_DIR
+}
+
+deploy_restore_app() {
+	deploy_files_restore $BACKUP_DIR/files $DST_MACHINE $DST_DEPLOY
+}
+
+md_backup() { # MACHINE=|DEPLOY=
+	local MD=${DEPLOY:-$MACHINE}
+	checkvars MD
 	backup_date; local DATE=$R1
-	local DIR=backups/$DEPLOY/$DATE
-	must mkdir -p $DIR/files
-	deploy_db_backup    $DIR/db.qp
-	deploy_files_backup $DIR/files  backups/$DEPLOY/latest/files
-	ln_file $DATE backups/$DEPLOY/latest
+	local BACKUP_DIR=backups/$MD/$DATE
+	local PREV_BACKUP_DIR=backups/$MD/latest/files
+	must mkdir -p $BACKUP_DIR/files
+	_md_backup
+	ln_file $DATE backups/$MD/latest
 	R1=$DATE
 }
 
-deploy_restore() { # DEPLOY= DATE= [DST_DEPLOY=]
-	local DST_DEPLOY=${DST_DEPLOY:-$DEPLOY}
+md_restore() { # MACHINE=|DEPLOY= DATE= [DST_MACHINE=|DST_DEPLOY=]
+	local MD=${DEPLOY:-$MACHINE}
+	local DST_MD=${DST_DEPLOY:-$DST_MACHINE}
+	DST_MD=${DST_MD:-$MD}
 	local DATE=$DATE
 	if [[ $DATE == latest ]]; then
-		DATE=`readlink backups/$DEPLOY/latest` \
-			|| die "No latest backup for deploy '$DEPLOY'"
+		DATE=`readlink backups/$MD/latest` \
+			|| die "No latest backup for '$MD'"
 	fi
-	checkvars DEPLOY DATE DST_DEPLOY
-	machine_of "$DST_DEPLOY"; local DST_MACHINE=$R1
-	local DIR=backups/$DEPLOY/$DATE
+	checkvars MD DST_MD DATE
+	[[ $DST_DEPLOY ]] && machine_of "$DST_DEPLOY"; local DST_MACHINE=$R1
+	local BACKUP_DIR=backups/$MD/$DATE
 	MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_stop all
-	deploy_db_restore    $DIR/db.qp $DST_MACHINE $DST_DEPLOY
-	deploy_files_restore $DIR/files $DST_MACHINE $DST_DEPLOY
+	_md_restore
 	MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_start all
 }
 
 # remove old backups according to configured retention policy.
-deploy_backups_sweep() {
+md_backups_sweep() {
 	mm_var backup_min_age_days     ; local min_age_s=$(( R1 * 3600 * 24 ))
 	mm_var backup_min_free_disk_gb ; local min_free_kb=$(( R1 * 1024 * 1024 ))
 

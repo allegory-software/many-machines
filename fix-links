@@ -1,5 +1,5 @@
 #!/bin/bash
-# make all var symlinks relative
+# make all local symlinks relative
 . mmlib
 
 fix_symlink() {

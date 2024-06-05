@@ -7,27 +7,31 @@
 # - install only what's needed, and have a library of installers ready.
 # - split code into package-specific and distro-specific libraries.
 
+_with_action() { # ACTION= NAME1 ...
+	declare -F default_${DEPLOY:+deploy_}${ACTION} >/dev/null && return 0
+	R1=
+	local name
+	for name in "$@"; do
+		if declare -F ${DEPLOY:+deploy_}${ACTION}_${name} >/dev/null; then
+			R1+=" $name"
+		fi
+	done
+}
 md_modules() {
 	must md_var ${DEPLOY:+DEPLOY_}MODULES
+	[[ $ACTION ]] && _with_action $R1
 }
 md_services() {
 	must md_var ${DEPLOY:+DEPLOY_}SERVICES
-}
-_md_list() { # LIST= DEPLOY=|MACHINE=
-	$LIST; local names=($R1)
-	if [[ $DEPLOY ]]; then
-		printf "%-10s %-10s %s\n" $MACHINE $DEPLOY "${names[*]}"
-	else
-		printf "%-10s %s\n" $MACHINE "${names[*]}"
-	fi
+	[[ $ACTION ]] && _with_action $R1
 }
 
 _each() { # ACTION= [DRY=1] NAME1 ...
 	local name
 	for name in "$@"; do
-		local fn=${ACTION}_${name}
+		local fn=${DEPLOY:+deploy_}${ACTION}_${name}
 		if ! declare -F $fn > /dev/null; then
-			fn=default_${ACTION}
+			fn=default_${DEPLOY:+deploy_}${ACTION}
 			if ! declare -F $fn > /dev/null; then
 				continue
 			fi
@@ -36,21 +40,23 @@ _each() { # ACTION= [DRY=1] NAME1 ...
 	done
 	return 0
 }
+_md_list() { # LIST=
+	$LIST; local names=($R1)
+	if [[ $DEPLOY ]]; then
+		printf "$WHITE%-10s %-10s$ENDCOLOR %s\n" $MACHINE $DEPLOY "${names[*]}"
+	else
+		printf "$WHITE%-10s$ENDCOLOR %s\n" $MACHINE "${names[*]}"
+	fi
+}
 _md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] all | NAME1 ...
 	checkvars ACTION
 	local NAMES=$*
-	[[ $NAMES ]] || {
-		_md_list
-		return 0
-	}
+	[[ $NAMES ]] || { _md_list; return 0; }
 	if [[ $NAMES == all ]]; then
 		$LIST; NAMES=$R1
 		[[ $REVERSE ]] && NAMES=`awk '{for(i=NF;i>0;i--) printf("%s ",$i)}' <<<"$NAMES"`
 	fi
-	local ACTION=$ACTION
-	if [[ $DEPLOY ]]; then
-		ACTION=deploy_$ACTION
-	fi
+	checkvars NAMES-
 	if [[ $REMOTE ]]; then
 		VARS="ACTION $VARS" md_ssh_script _each $NAMES
 	else
@@ -60,6 +66,7 @@ _md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] all | NAME1 ...
 
 # executed both locally (pre/post functions) and remotely (main function).
 _md_combined_action() { # ACTION= [MODULE1 ...]
+	[[ $# > 0 ]] || { _md_list; return; } # list only once
 	ACTION=pre$ACTION  _md_action "$@"
 	REMOTE=1           _md_action "$@"
 	ACTION=post$ACTION _md_action "$@"
@@ -72,16 +79,20 @@ default_install()   { package_install   "$1"; }
 default_uninstall() { package_uninstall "$1"; }
 
 # executed remotely.
-md_start() { ACTION=start REMOTE=1 LIST=md_services _md_action $@; }
-md_stop()  { ACTION=stop  REMOTE=1 LIST=md_services _md_action $@; }
+md_start() { ACTION=start REMOTE=1 LIST=md_services _md_action "$@"; }
+md_stop()  { ACTION=stop  REMOTE=1 LIST=md_services _md_action "$@"; }
 
 default_start() { service_start "$@"; }
 default_stop()  { service_stop  "$@"; }
 
-# executed locally
+# executed locally on the target machine.
 _deploy_services() { R1=$DEPLOY_SERVICES; }
-deploy_start()  { ACTION=start LIST=_deploy_services _md_action $@; }
-deploy_stop()   { ACTION=stop  LIST=_deploy_services _md_action $@; }
+deploy_start()  { ACTION=start LIST=_deploy_services _md_action "$@"; }
+deploy_stop()   { ACTION=stop  LIST=_deploy_services _md_action "$@"; }
+
+# executed locally on the mm machine.
+_md_backup()  { ACTION=backup  LIST=md_modules _md_action "$@"; }
+_md_restore() { ACTION=restore LIST=md_modules _md_action "$@"; }
 
 md_status() { # [DOWN=1] ["SERVICE1 ..."]
 	if [[ $DEPLOY ]]; then

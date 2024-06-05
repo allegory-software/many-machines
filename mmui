@@ -1,0 +1,108 @@
+#!/bin/bash
+
+hide_cursor()  { printf '\e[?25l'; }
+show_cursor()  { printf '\e[?25h'; }
+set_line()     { printf '\e[%sH' $1; }
+set_col()      { printf '\e[%sC' $1; }
+move_pos()     { printf '\e[A'; }
+push_pos()     { printf '\e7'; }
+pop_pos()      { printf '\e8'; }
+clear_line()   { printf '\e[%sK' $1; }
+insert_line()  { printf '\e[%sL' $1; } 
+set_window_name() { printf '\e]2;fff: %s\e'\\ "$*"; }
+
+setup_terminal() {
+	# Setup the terminal for the TUI.
+	# '\e[?1049h': Use alternative screen buffer.
+	# '\e[?7l':    Disable line wrapping.
+	# '\e[?25l':   Hide the cursor.
+	# '\e[2J':     Clear the screen.
+	# '\e[1;Nr':   Limit scrolling to scrolling area.
+	#              Also sets cursor to (0,0).
+	printf '\e[?1049h\e[?7l\e[?25l\e[2J\e[1;%sr' "$max_items"
+
+	# Hide echoing of user input
+	stty -echo
+}
+
+reset_terminal() {
+	# Reset the terminal to a useable state (undo all changes).
+	# '\e[?7h':   Re-enable line wrapping.
+	# '\e[?25h':  Unhide the cursor.
+	# '\e[2J':    Clear the terminal.
+	# '\e[;r':    Set the scroll region to its default value.
+	#             Also sets cursor to (0,0).
+	# '\e[?1049l: Restore main screen buffer.
+	printf '\e[?7h\e[?25h\e[2J\e[;r\e[?1049l'
+
+	# Show user input.
+	stty echo
+}
+
+get_term_size() {
+	# Get terminal size ('stty' is POSIX and always available).
+	# This can't be done reliably across all bash versions in pure bash.
+	read -r LINES COLUMNS < <(stty size)
+
+	# Max list items that fit in the scroll area.
+	((max_items=LINES-3))
+}
+
+clear_screen() {
+	# Only clear the scrolling window (dir item list).
+	# '\e[%sH':    Move cursor to bottom of scroll area.
+	# '\e[9999C':  Move cursor to right edge of the terminal.
+	# '\e[1J':     Clear screen to top left corner (from cursor up).
+	# '\e[2J':     Clear screen fully (if using tmux) (fixes clear issues).
+	# '\e[1;%sr':  Clearing the screen resets the scroll region(?). Re-set it.
+	#              Also sets cursor to (0,0).
+	printf '\e[%sH\e[9999C\e[1J%b\e[1;%sr' \
+		"$((LINES-2))" "${TMUX:+\e[2J}" "$max_items"
+}
+
+redraw() {
+	# Redraw the current window.
+	clear_screen
+	draw
+}
+
+draw() {
+	printf 'hello'
+}
+
+key() {
+	
+}
+
+main() {
+
+	# bash 5 and some versions of bash 4 don't allow SIGWINCH to interrupt
+	# a 'read' command and instead wait for it to complete. In this case it
+	# causes the window to not redraw on resize until the user has pressed
+	# a key (causing the read to finish). This sets a read timeout on the
+	# affected versions of bash.
+	# NOTE: This shouldn't affect idle performance as the loop doesn't do
+	# anything until a key is pressed.
+	# SEE: https://github.com/dylanaraps/fff/issues/48
+	((BASH_VERSINFO[0] > 3)) &&
+		read_flags=(-t 0.05)
+
+	# Trap the exit signal (we need to reset the terminal to a useable state.)
+	trap 'reset_terminal' EXIT
+
+	# Trap the window resize signal (handle window resize events).
+	trap 'get_term_size; redraw' WINCH
+
+	get_term_size
+	setup_terminal
+	redraw
+
+	# infinite loop.
+	for ((;;)); {
+		read "${read_flags[@]}" -srn 1 && key "$REPLY"
+		# Exit if there is no longer a terminal attached.
+		[[ -t 1 ]] || exit 1
+	}
+}
+
+main

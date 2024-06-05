@@ -1,0 +1,8 @@
+#!/bin/bash
+declare -A m
+m[k1]=v1
+m[k2]=v2
+m=(a b c d)
+#m="a b c"
+echo "${m[@]}"
+echo "${!m[@]}"

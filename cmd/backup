@@ -1,5 +1,5 @@
 #!/bin/bash
-# DEPLOY ;; backup a deploy here
+# DEPLOY ;; backup a deploy or machine here
 . mmlib
 
 NOALL=1 each_deploy deploy_backup
