@@ -71,7 +71,7 @@ draw() {
 }
 
 key() {
-	
+	say
 }
 
 main() {
