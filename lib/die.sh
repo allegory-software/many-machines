@@ -2,17 +2,6 @@
 
 # colors!
 
-get_bg_value() { # get terminal background lightness
-	local _array _string
-	IFS= read -d$'\\' -srp $'\033]11;?\033\\' _string
-	IFS=$'\e/' read -ra _array <<< ${_string#*:}
-	_array=("${_array[@]%??}")
-	printf -v _string '[%d]= ' ${_array[@]/#/0x}
-	declare -a "_array=($_string)"
-	_array=(${!_array[@]})
-	printf -v "${1:-TERM_BG_VALUE}" '%d' ${_array[-1]}
-}
-
 [[ $TERM ]] && {
 RED="\e[31m"
 GREEN="\e[32m"
@@ -31,8 +20,7 @@ LIGHTCYAN="\e[96m"
 WHITE="\e[97m"
 BLACK="\e[30m"
 ENDCOLOR="\e[0m"
-get_bg_value bg_value
-[[ "$bg_value" == 255 ]] && {
+[[ $MM_WHITE_BG ]] && {
 	BLACK_REAL="$BLACK"
 	WHITE_REAL="$WHITE"
 	WHITE="$BLACK_REAL"
