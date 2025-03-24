@@ -23,7 +23,7 @@ get_APP_DEPL() {
 }
 
 get_APP_LATEST() {
-	[[ `get_APP_WANT` == `get_APP_DEPL` ]] && echo YES || echo NO!
+	[[ `get_APP_WANT` == `get_APP_DEPL` ]] && echo ${LIGHTGRAY}yes$ENDCOLOR || echo ${LIGHTRED}NO!$ENDCOLOR
 }
 
 get_SDK_DEPL() {
@@ -33,7 +33,7 @@ get_SDK_DEPL() {
 }
 
 get_APP_STATUS() {
-	try_app running && echo UP || echo DOWN!
+	try_app running && echo ${LIGHTGRAY}up$ENDCOLOR || echo ${LIGHTRED}DOWN!$ENDCOLOR
 }
 
 # deploy modules -------------------------------------------------------------

@@ -41,14 +41,31 @@ get_DEPLOYS() {
 	printf "%s\n" "${s//$'\n'/ }"
 }
 
+progress_bar() {
+	local total=$1 free=$2
+	local width=9
+	local n_free=$(( width * free / total ))
+	local n_filled=$((width - n_free))
+	local s1=; for ((i = 0; i < n_filled; i++)); do s1+="#"; done
+	local s2=; for ((i = 0; i < n_free; i++)); do s2+="."; done
+	printf "%s%s\n" "$s1" "$s2"
+}
+
 get_RAM()         { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_RAM_KB()      { cat /proc/meminfo | awk '/MemTotal/      { print $2 }'; }
 get_FREE_RAM()    { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_RAM_KB() { cat /proc/meminfo | awk '/MemAvailable/  { print $2 }'; }
+get_RAM_RATIO()   { printf "%s/%s\n" "$(get_FREE_RAM)" "$(get_RAM)"; }
+get_RAM_BAR()     { progress_bar $(get_RAM_KB) $(get_FREE_RAM_KB); }
 get_SWAP()        { cat /proc/meminfo | awk '/SwapTotal/     { printf "%.2fG\n", $2/(1024*1024) }'; }
 get_FREE_SWAP()   { cat /proc/meminfo | awk '/SwapFree/      { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_SWAP_RATIO()  { printf "%s/%s\n" "$(get_FREE_SWAP)" "$(get_SWAP)"; }
 get_HDD()         { df -l / | awk '(NR > 1) { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_HDD_KB()      { df -l / | awk '(NR > 1) { print $2 }'; }
 get_FREE_HDD()    { df -l / | awk '(NR > 1) { printf "%.2fG\n", $4/(1024*1024) }'; }
 get_FREE_HDD_KB() { df -l / | awk '(NR > 1) { print $4 }'; }
+get_HDD_RATIO()   { printf "%s/%s\n" "$(get_FREE_HDD)" "$(get_HDD)"; }
+get_HDD_BAR()     { progress_bar $(get_HDD_KB) $(get_FREE_HDD_KB); }
 
 get_CPU()         { lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p'; }
 get_CPUS()        { lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p'; }

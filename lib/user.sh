@@ -70,7 +70,7 @@ _list_users() {
 		echo $MACHINE
 		[[ $user == $DEPLOY || -d /home/$user/app ]] && echo $user || echo '*'
 		echo $user
-		[[ ${map[$user]} =~ ^[!*] ]] && echo YES || echo NO!
+		[[ ${map[$user]} =~ ^[!*] ]] && echo ${LIGHTGRAY}yes$ENDCOLOR || echo ${LIGHTRED}NO!$ENDCOLOR
 		echo $uid
 		echo $gid
 		echo $shell
@@ -79,5 +79,6 @@ _list_users() {
 list_users() {
 	md_ssh_list _list_users \
 		"%-10s %-10s %-10s %-10s %-20s" \
-		"USER LOCKED UID GID SHELL"
+		"USER LOCKED UID GID SHELL" \
+		"%-10s %-19s %-10s %-10s %-20s"
 }

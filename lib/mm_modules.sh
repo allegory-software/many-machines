@@ -100,10 +100,12 @@ md_status() { # [DOWN=1] ["SERVICE1 ..."]
 			local VERSION=`deploy_version_$SERVICE 2>/dev/null`
 			local STATUS
 			if deploy_is_running_$SERVICE; then
-				STATUS=${LIGHTGRAY}up$ENDCOLOR
 				[[ $DOWN ]] && continue
+				STATUS=${LIGHTGRAY}up${ENDCOLOR}
+				SERVICE=${LIGHTGRAY}${SERVICE}${ENDCOLOR}
 			else
-				STATUS=${RED}DOWN!$ENDCOLOR
+				STATUS=${LIGHTRED}DOWN!${ENDCOLOR}
+				SERVICE=${BG_RED}${WHITE}${SERVICE}${ENDCOLOR}
 			fi
 			printf "%s\n" $MACHINE $DEPLOY $SERVICE "${STATUS:--}" "${VERSION:--}"
 		done
@@ -113,10 +115,12 @@ md_status() { # [DOWN=1] ["SERVICE1 ..."]
 			local VERSION=`version_$SERVICE 2>/dev/null`
 			local STATUS
 			if service_is_running "$SERVICE"; then
-				STATUS=${LIGHTGRAY}up$ENDCOLOR
 				[[ $DOWN ]] && continue
+				STATUS=${LIGHTGRAY}up${ENDCOLOR}
+				SERVICE=${LIGHTGRAY}${LIGHTGRAY}${SERVICE}${ENDCOLOR}
 			else
-				STATUS=${RED}DOWN!$ENDCOLOR
+				STATUS=${LIGHTRED}DOWN!${ENDCOLOR}
+				SERVICE=${BG_RED}${WHITE}${SERVICE}${ENDCOLOR}
 			fi
 			printf "%s\n" $MACHINE '*' $SERVICE "${STATUS:--}" "${VERSION:--}"
 		done

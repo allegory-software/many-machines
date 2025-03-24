@@ -3,6 +3,7 @@
 . mmlib
 
 DEVICE=$1
+[[ $DEVICE ]] || say "Current device is: $WHITE$(basename $(readlink device))$ENDCOLOR"
 checkvars DEVICE
 
 [[ -d var/devices/$DEVICE ]] || {

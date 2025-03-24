@@ -3,6 +3,7 @@
 # colors!
 
 [[ $TERM ]] && {
+
 RED=$'\e[31m'
 GREEN=$'\e[32m'
 YELLOW=$'\e[33m'
@@ -19,13 +20,35 @@ LIGHTMAGENTA=$'\e[95m'
 LIGHTCYAN=$'\e[96m'
 WHITE=$'\e[97m'
 BLACK=$'\e[30m'
+
+BG_RED=$'\e[41m'
+BG_GREEN=$'\e[42m'
+BG_YELLOW=$'\e[43m'
+BG_BLUE=$'\e[44m'
+BG_MAGENTA=$'\e[45m'
+BG_CYAN=$'\e[46m'
+
+BG_BRIGHTBLACK=$'\e[100m'
+BG_BRIGHTRED=$'\e[101m'
+BG_BRIGHTGREEN=$'\e[102m'
+BG_BRIGHTYELLOW=$'\e[103m'
+BG_BRIGHTBLUE=$'\e[104m'
+BG_BRIGHTMAGENTA=$'\e[105m'
+BG_BRIGHTCYAN=$'\e[106m'
+BG_BRIGHTWHITE=$'\e[107m'
+
+BG_WHITE=$'\e[47m'
+BG_BLACK=$'\e[40m'
+
 ENDCOLOR=$'\e[0m'
+
 [[ $MM_WHITE_BG ]] && {
 	BLACK_REAL="$BLACK"
 	WHITE_REAL="$WHITE"
 	WHITE="$BLACK_REAL"
 	BLACK="$WHITE_REAL"
 }
+
 }
 
 # printing, tracing & error handling

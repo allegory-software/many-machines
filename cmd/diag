@@ -2,8 +2,8 @@
 # STAT ;; find and report problems
 . mmlib
 
-MIN_FREE_HDD_KB=$((1024 * 1000)) # 1 GB
-MIN_FREE_RAM_KB=$((1024 *  300)) # 200 MB
+MIN_FREE_HDD_KB=$((1024 * 10000)) # 10 GB
+MIN_FREE_RAM_KB=$((1024 *   300)) # 200 MB
 
 nag "Checking for offline machines (port 22) ..."
 ONLINE=
@@ -31,7 +31,7 @@ check_full() {
 	nag "Checking for $1 full (< $((MIN_FREE_${1}_KB / 1024)) MB) ..."
 	local FULL=
 	QUIET=1 NOSUBPROC=1 each_machine _add_full $1
-	[[ $FULL ]] && say "$1 FULL (< $((MIN_FREE_${1}_KB / 1024)) MB):$FULL"
+	[[ $FULL ]] && say "$1 FULL (< $((MIN_FREE_${1}_KB / 1024)) MB):$LIGHTRED$FULL$ENDCOLOR"
 }
 check_full HDD
 check_full RAM
@@ -40,4 +40,4 @@ nag "Checking for services that are down ..."
 mm status | grep !
 
 nag "Checking for deployments that are down or need updating ..."
-mm d-st | grep !
+

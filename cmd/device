@@ -1,0 +1,3 @@
+#!/bin/bash
+# ADMIN SSH ;; show current device
+basename $(readlink device)

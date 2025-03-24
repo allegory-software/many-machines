@@ -1,4 +1,5 @@
 #!/bin/bash
+. mmlib
 
 hide_cursor()  { printf '\e[?25l'; }
 show_cursor()  { printf '\e[?25h'; }
@@ -71,7 +72,7 @@ draw() {
 }
 
 key() {
-	say
+	say "$1"
 }
 
 main() {

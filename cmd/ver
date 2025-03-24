@@ -2,4 +2,8 @@
 # SEE ; [COMPONENT1 ...] ; list versions
 . mmlib
 
-md_ssh_list md_component_version "%-10s %s" "COMPONENT VERSION" "$@"
+md_ssh_list md_component_version \
+	"%-10s %s" \
+	"COMPONENT VERSION" \
+	"" \
+	"$@"
