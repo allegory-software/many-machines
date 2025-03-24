@@ -78,6 +78,6 @@ _list_users() {
 }
 list_users() {
 	md_ssh_list _list_users \
-		"%-10b %-10b %-10b %-10b %-20b" \
+		"%-10s %-10s %-10s %-10s %-20s" \
 		"USER LOCKED UID GID SHELL"
 }

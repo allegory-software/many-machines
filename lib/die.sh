@@ -3,23 +3,23 @@
 # colors!
 
 [[ $TERM ]] && {
-RED="\e[31m"
-GREEN="\e[32m"
-YELLOW="\e[33m"
-BLUE="\e[34m"
-MAGENTA="\e[35m"
-CYAN="\e[36m"
-LIGHTGRAY="\e[37m"
-GRAY="\e[90m"
-LIGHTRED="\e[91m"
-LIGHTGREEN="\e[92m"
-LIGHTYELLOW="\e[93m"
-LIGHTBLUE="\e[94m"
-LIGHTMAGENTA="\e[95m"
-LIGHTCYAN="\e[96m"
-WHITE="\e[97m"
-BLACK="\e[30m"
-ENDCOLOR="\e[0m"
+RED=$'\e[31m'
+GREEN=$'\e[32m'
+YELLOW=$'\e[33m'
+BLUE=$'\e[34m'
+MAGENTA=$'\e[35m'
+CYAN=$'\e[36m'
+LIGHTGRAY=$'\e[37m'
+GRAY=$'\e[90m'
+LIGHTRED=$'\e[91m'
+LIGHTGREEN=$'\e[92m'
+LIGHTYELLOW=$'\e[93m'
+LIGHTBLUE=$'\e[94m'
+LIGHTMAGENTA=$'\e[95m'
+LIGHTCYAN=$'\e[96m'
+WHITE=$'\e[97m'
+BLACK=$'\e[30m'
+ENDCOLOR=$'\e[0m'
 [[ $MM_WHITE_BG ]] && {
 	BLACK_REAL="$BLACK"
 	WHITE_REAL="$WHITE"
@@ -30,8 +30,8 @@ ENDCOLOR="\e[0m"
 
 # printing, tracing & error handling
 
-say()       { printf "%b\n" "$*" >&2; }
-sayn()      { printf "%b"   "$*" >&2; }
+say()       { printf "%s\n" "$*" >&2; }
+sayn()      { printf "%s"   "$*" >&2; }
 sayf()      { printf "$@" >&2; }
 say_ln()    { printf '=%.0s\n' {1..72}; }
 die()       { say "${RED}ABORT:$ENDCOLOR $*"; exit 1; }

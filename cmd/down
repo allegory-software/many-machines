@@ -1,7 +1,4 @@
 #!/bin/bash
 # STAT ; ["SERVICE1 ..."] ; print service(s) that are down
-. mmlib
 
-DOWN=1 VARS=DOWN md_ssh_list md_status \
-	"%-10s %-10s %s" \
-	"SERVICE STATUS VERSION" "$@"
+DOWN=1 VARS=DOWN mm status "$@"

@@ -9,5 +9,5 @@ checkvars DEVICE
 	say "Creating new device: $DEVICE ... "
 	must mkdir -p var/devices/$DEVICE
 }
-sayn "Setting current device to: $DEVICE ... "
+say "Setting current device to: $DEVICE ... "
 ln_file var/devices/$DEVICE device

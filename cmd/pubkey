@@ -3,4 +3,4 @@
 . mmlib
 
 ssh_pubkey
-printf "%b\n" "$R1"
+printf "%s\n" "$R1"

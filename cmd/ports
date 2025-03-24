@@ -6,7 +6,7 @@ printf "$WHITE%-10s %-11s %-23s %s$ENDCOLOR\n" MACHINE TYPE IP:PORT PID
 _f() {
 	local lines s
 	if lines=`ssh_to netstat -ltuwnp 2>&1`; then
-		printf "%b" "$lines" | while read s; do
+		printf "%s" "$lines" | while read s; do
 			[[ $s == Proto* || $s == Active* ]] && continue
 			local stype=${s:0:11}
 			local ip_port=${s:20:23}; trim ip_port

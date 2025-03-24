@@ -17,8 +17,8 @@ usage() {
 	say
 	say "Usage: ${WHITE}[MACHINES=\"MACHINE1 ...\"] [DEPLOYS=\"DEPLOY1 ...\"] mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS...$ENDCOLOR"
 	say "Usage: ${WHITE}[DEPLOYS=\"DEPLOY1 ...\"] mmd DEPLOY1 ... COMMAND ARGS...$ENDCOLOR"
-	say "Usage: ${WHITE}mm help [SECTION]$ENDCOLOR"
-	say "Usage: ${WHITE}mm COMMAND help$ENDCOLOR"
+	say "Usage: ${WHITE}mm [--]help|-?|-h [SECTION]$ENDCOLOR"
+	say "Usage: ${WHITE}mm COMMAND [--]help|-?|-h $ENDCOLOR"
 	say
 }
 
@@ -46,7 +46,7 @@ while [[ $# > 0 ]]; do
 			[[ ! $ARGS || $ARGS =~ ^\[.*\]$ ]] \
 				|| die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 		fi
-		if [[ $# == 1 && $1 == help ]]; then # special arg 'help' treated here
+		if [[ $# == 1 && ( $1 == help || $1 == "--help" || $1 == "-?" || $1 == "-h" ) ]]; then # special arg 'help' treated here
 			local SECTION ARGS DESCR; cmd_metadata
 			say "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 			exit
@@ -101,7 +101,7 @@ for SECTION in $s; do
 			say "${help[$SECTION]}"
 		}
 	else
-		sayf "%-26b %s\n" "$GREEN${SECTION}$ENDCOLOR" "${cmds[$SECTION]}"
+		sayf "%-26s %s\n" "$GREEN${SECTION}$ENDCOLOR" "${cmds[$SECTION]}"
 	fi
 done
 say

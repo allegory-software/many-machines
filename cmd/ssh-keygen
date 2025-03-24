@@ -15,7 +15,7 @@ mv_file_with_backup $KEYFILE.new $KEYFILE
 rm_file $KEYFILE.new.pub
 
 ssh_pubkey; PUBKEY=$R1
-echo $R1
+printf "\n%s\n\n" "$R1"
 save "$PUBKEY"$'\n' var/devices/$DEVICE/ssh_pubkey
 
 say "Done. now run \`mm pubkey-add $DEVICE\` to upload the key on all machines."

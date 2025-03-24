@@ -6,10 +6,10 @@ _md_ssh_list() {
 	(
 	if VALS=$(VARS="FIELDS $VARS" md_ssh_script $FUNC "$@"); then
 		local IFS0="$IFS"; IFS=$'\n'
-		[[ $VALS ]] && printf "%-10b %-10b $FMT\n" $VALS
+		[[ $VALS ]] && printf "%-10s %-10s $FMT\n" $VALS
 		IFS="$IFS0"
 	else
-		printf "%-10b %-10b %b\n" "$MACHINE" "${DEPLOY:-*}" "$VALS"
+		printf "%-10s %-10s %s\n" "$MACHINE" "${DEPLOY:-*}" "$VALS"
 	fi
 	) &
 	wait
@@ -17,7 +17,7 @@ _md_ssh_list() {
 md_ssh_list() { # LIST_FUNC FMT "FIELD1 ..." LIST_FUNC_ARGS...
 	local FUNC=$1 FMT=$2 FIELDS=$3
 	checkvars FUNC FMT- FIELDS-
-	printf "${WHITE}%-10b %-10b $FMT$ENDCOLOR\n" MACHINE DEPLOY $FIELDS
+	printf "${WHITE}%-10s %-10s $FMT$ENDCOLOR\n" MACHINE DEPLOY $FIELDS
 	QUIET=1 each_md _md_ssh_list "$@"
 }
 
@@ -33,9 +33,11 @@ _custom_list_get_values() { # "FIELD1 ..."
 			VAL=${!FIELD}
 		fi
 		VAL=${VAL:- } # can't echo an empty line, it will get skipped when line-splitting.
-		#local MIN=${!MIN_$FIELD}
-		#[[ $MIN ]] && ((VAL < MIN)) && continue
-		printf "%b\n" "$VAL"
+		local MIN_FIELD=MIN_$FIELD
+		local MIN=${!MIN_FIELD}
+		local VALN=${VAL//[^0-9.]/}
+		#[[ $MIN ]] && awk "{if ($VALN < $MIN) exit 0; else exit 1}" && VAL=${RED}$VAL$ENDCOLOR || VAL=${LIGHTGRAY}$VAL$ENDCOLOR
+		printf "%s\n" "$VAL"
 	done
 }
 _md_custom_list() {

@@ -16,9 +16,6 @@ in Lua and JavaScript using the Allegory SDK and [Canvas-UI].
 [Allegory SDK]: https://github.com/allegory-software/allegory-sdk
 [Canvas-UI]:    https://github.com/allegory-software/canvas-ui
 
-One notable feature of MM that's less common in tools of this type is
-the presence of Windows-native sysadmin tools like sshfs, putty, etc.
-
 # Design
 
 * File-based config database
@@ -26,7 +23,7 @@ the presence of Windows-native sysadmin tools like sshfs, putty, etc.
   use mc for CRUD which you already know, can do bulk ops on data,
   and you can inspect and repair the data if something goes wrong.
   * single-value-per-file for fast and robust CRUD scripting without sed.
-  * simple backup and restore with tar, gz, gpg and rsync or even git.
+  * simple backup and restore with tar, gz, gpg and rsync and git.
   * shared config groups with include dirs (think multiple inheritance with overrides).
   * linked entities with symlinks.
 * Written in Bash

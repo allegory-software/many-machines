@@ -156,7 +156,7 @@ _ssh_pubkeys() { # [USERS]
 		while IFS= read -r line; do
 			while read -r type key name; do
 				[[ $key ]] || continue
-				printf "%b\n" "$MACHINE $USER $type $key $name"
+				printf "%s\n" "$MACHINE $USER $type $key $name"
 			done <<< "$line"
 		done < $kf
 	done
