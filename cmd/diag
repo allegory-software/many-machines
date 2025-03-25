@@ -40,4 +40,4 @@ nag "Checking for services that are down ..."
 mm status | grep !
 
 nag "Checking for deployments that are down or need updating ..."
-
+mm d-st | grep !

@@ -36,6 +36,17 @@ get_APP_STATUS() {
 	try_app running && echo ${LIGHTGRAY}up$ENDCOLOR || echo ${LIGHTRED}DOWN!$ENDCOLOR
 }
 
+machine_deploys() {
+	local USER
+	for USER in `ls -1 /home`; do
+		[[ -d /home/$USER/app ]] && printf "%s\n" $USER
+	done
+}
+get_DEPLOYS() {
+	local s=`machine_deploys`
+	printf "%s\n" "${s//$'\n'/ }"
+}
+
 # deploy modules -------------------------------------------------------------
 
 deploy_install_user() {

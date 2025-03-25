@@ -5,7 +5,7 @@
 WHERE=${1:-1=1}
 checkvars WHERE-
 
-each_md ssh_query "
+each_deploy ssh_query "
 select
 	token, usr, expires, validates, ctime
 	from usrtoken

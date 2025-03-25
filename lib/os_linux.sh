@@ -29,18 +29,6 @@ is_listening() { # IP=|MACHINE= PORT
 	nc -zw1 $IP $PORT
 }
 
-machine_deploys() {
-	local USER
-	for USER in `ls -1 /home`; do
-		[[ -d /home/$USER/app ]] && printf "%s\n" $USER
-	done
-}
-
-get_DEPLOYS() {
-	local s=`machine_deploys`
-	printf "%s\n" "${s//$'\n'/ }"
-}
-
 progress_bar() {
 	local total=$1 free=$2
 	local width=9
@@ -51,21 +39,21 @@ progress_bar() {
 	printf "%s%s\n" "$s1" "$s2"
 }
 
-get_RAM()         { cat /proc/meminfo | awk '/MemTotal/      { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_RAM_GB()      { cat /proc/meminfo | awk '/MemTotal/      { printf "%.1f\n", $2/(1024*1024) }'; }
 get_RAM_KB()      { cat /proc/meminfo | awk '/MemTotal/      { print $2 }'; }
-get_FREE_RAM()    { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_FREE_RAM_GB() { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.1f\n", $2/(1024*1024) }'; }
 get_FREE_RAM_KB() { cat /proc/meminfo | awk '/MemAvailable/  { print $2 }'; }
-get_RAM_RATIO()   { printf "%s/%s\n" "$(get_FREE_RAM)" "$(get_RAM)"; }
-get_RAM_BAR()     { progress_bar $(get_RAM_KB) $(get_FREE_RAM_KB); }
-get_SWAP()        { cat /proc/meminfo | awk '/SwapTotal/     { printf "%.2fG\n", $2/(1024*1024) }'; }
-get_FREE_SWAP()   { cat /proc/meminfo | awk '/SwapFree/      { printf "%.2fG\n", $2/(1024*1024) }'; }
-get_SWAP_RATIO()  { printf "%s/%s\n" "$(get_FREE_SWAP)" "$(get_SWAP)"; }
-get_HDD()         { df -l / | awk '(NR > 1) { printf "%.2fG\n", $2/(1024*1024) }'; }
+get_RAM_RATIO()   { printf "%s/%s G\n" $(get_FREE_RAM_GB) $(get_RAM_GB); }
+get_RAM_BAR()     { progress_bar "$(get_RAM_KB)" "$(get_FREE_RAM_KB)"; }
+get_SWAP_GB()     { cat /proc/meminfo | awk '/SwapTotal/     { printf "%.1f\n", $2/(1024*1024) }'; }
+get_FREE_SWAP_GB(){ cat /proc/meminfo | awk '/SwapFree/      { printf "%.1f\n", $2/(1024*1024) }'; }
+get_SWAP_RATIO()  { printf "%s/%s\n" "$(get_FREE_SWAP_GB)" "$(get_SWAP_GB)"; }
+get_HDD_GB()      { df -l / | awk '(NR > 1) { printf "%.0f\n", $2/(1024*1024) }'; }
 get_HDD_KB()      { df -l / | awk '(NR > 1) { print $2 }'; }
-get_FREE_HDD()    { df -l / | awk '(NR > 1) { printf "%.2fG\n", $4/(1024*1024) }'; }
+get_FREE_HDD_GB() { df -l / | awk '(NR > 1) { printf "%.0f\n", $4/(1024*1024) }'; }
 get_FREE_HDD_KB() { df -l / | awk '(NR > 1) { print $4 }'; }
-get_HDD_RATIO()   { printf "%s/%s\n" "$(get_FREE_HDD)" "$(get_HDD)"; }
-get_HDD_BAR()     { progress_bar $(get_HDD_KB) $(get_FREE_HDD_KB); }
+get_HDD_RATIO()   { printf "%s/%s G\n" "$(get_FREE_HDD_GB)" "$(get_HDD_GB)"; }
+get_HDD_BAR()     { progress_bar "$(get_HDD_KB)" "$(get_FREE_HDD_KB)"; }
 
 get_CPU()         { lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p'; }
 get_CPUS()        { lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p'; }

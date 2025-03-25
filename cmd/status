@@ -3,7 +3,7 @@
 . mmlib
 
 md_ssh_list md_status \
-	"%-15s %-10s %s" \
+	"%-10s %-7s %s" \
 	"SERVICE STATUS VERSION" \
-	"%-29s %-19s %s" \
+	"%-24s %-16s %s" \
 	"$@"

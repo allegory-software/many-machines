@@ -60,8 +60,8 @@ say_ln()    { printf '=%.0s\n' {1..72}; }
 die()       { say "${RED}ABORT:$ENDCOLOR $*"; exit 1; }
 debug()     { if [[ $DEBUG ]]; then sayn "$CYAN"; say  "$*$ENDCOLOR"; fi; }
 debugn()    { if [[ $DEBUG ]]; then sayn "$CYAN"; sayn "$*$ENDCOLOR"; fi; }
-run()       { debug "\nEXEC: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || debug "[$ret]"; return $ret; }
-must()      { debug "\nMUST: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || die "$* [$ret]"; }
+run()       { debug "EXEC: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || debug "[$ret]"; return $ret; }
+must()      { debug "MUST: $*"; "$@"; local ret=$?; [[ $ret == 0 ]] || die "$* [$ret]"; }
 dry()       { if [[ $DRY ]]; then say "DRY: $*"; else "$@"; fi; }
 nag()       { [[ $VERBOSE ]] || return 0; say "$@"; }
 
