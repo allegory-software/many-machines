@@ -1,6 +1,6 @@
 # speedtest.net network speed tester
 
-SPEEDTEST_DIR=/opt/mm/tmp/speedtest-cli
+SPEEDTEST_DIR=/root/mm/tmp/speedtest-cli
 
 install_speedtest() {
 	[[ -e $SPEEDTEST_DIR/speedtest ]] && return
@@ -33,24 +33,24 @@ speedtest1() { # [SERVER_ID|list] [NODE_NAME]
 _speedtest() { # [SERVER_ID|list]
 	install_speedtest
 	[[ $1 == list ]] && {
-		must tmp/speedtest-cli/speedtest -L
+		must $SPEEDTEST_DIR/speedtest -L
 		return
 	}
 	[[ $1 ]] && {
 		speedtest1 "$1"
 		return
 	}
-	speedtest1 ''      'Speedtest.net'
-	speedtest1 '21541' 'Los Angeles, US'
+	speedtest1 ''       'Speedtest.net'
+	#speedtest1 '21541' 'Los Angeles, US'
 	#speedtest1 '43860' 'Dallas, US'
 	#speedtest1 '40879' 'Montreal, CA'
-	speedtest1 '24215' 'Paris, FR'
+	#speedtest1 '24215' 'Paris, FR'
 	#speedtest1 '28922' 'Amsterdam, NL'
 	#speedtest1 '24447' 'Shanghai, CN'
 	#speedtest1 '5530'  'Chongqing, CN'
 	#speedtest1 '60572' 'Guangzhou, CN'
-	speedtest1 '32155' 'Hongkong, CN'
-	speedtest1 '23647' 'Mumbai, IN'
+	#speedtest1 '32155' 'Hongkong, CN'
+	#speedtest1 '23647' 'Mumbai, IN'
 	#speedtest1 '13623' 'Singapore, SG'
 	#speedtest1 '21569' 'Tokyo, JP'
 }
