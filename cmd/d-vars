@@ -1,9 +1,0 @@
-#!/bin/bash
-# ADMIN ; [VAR1 ...] ; list deploy env vars
-. mmlib
-
-_f() {
-	md_vars "$@"
-	printf "%s" "${R1[@]}"
-}
-MM_DEPLOY=1 each_md _f "$@"
