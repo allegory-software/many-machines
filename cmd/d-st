@@ -1,8 +1,0 @@
-#!/bin/bash
-# STAT ;; deployment status
-. mmlib
-
-d_custom_list \
-	"%-10s %-10s" \
-	"APP APP_STATUS" \
-	"%-10s %-19s"

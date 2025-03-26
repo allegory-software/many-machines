@@ -8,14 +8,6 @@ a command-line UI from which to perform and automate all your sysadmin tasks
 like SSH key management, scheduled backups, automated deployments,
 SSL certificate issuing, real-time app monitoring, etc.
 
-Accompanying that is a web server with a web UI for real-time monitoring
-and performing admin tasks, which also exposes a HTTP API for automation.
-The server is written in Lua using the [Allegory SDK]. The web UI is written
-in Lua and JavaScript using the Allegory SDK and [Canvas-UI].
-
-[Allegory SDK]: https://github.com/allegory-software/allegory-sdk
-[Canvas-UI]:    https://github.com/allegory-software/canvas-ui
-
 # Design
 
 * File-based config database

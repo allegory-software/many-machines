@@ -102,7 +102,7 @@ md_status() { # [DOWN=1] ["SERVICE1 ..."]
 			if deploy_is_running_$SERVICE; then
 				[[ $DOWN ]] && continue
 				STATUS=${LIGHTGRAY}up${ENDCOLOR}
-				SERVICE=${LIGHTGRAY}${SERVICE}${ENDCOLOR}
+				SERVICE=${LIGHTGRAY}${LIGHTGRAY}${SERVICE}${ENDCOLOR}
 			else
 				STATUS=${LIGHTRED}DOWN!${ENDCOLOR}
 				SERVICE=${BG_RED}${WHITE}${SERVICE}${ENDCOLOR}
