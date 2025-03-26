@@ -73,6 +73,7 @@ acme_cert_backup() {
 }
 
 acme_cert_restore() {
+	must md_var domain; local DOMAIN=$R1
 	checkvars MACHINE DOMAIN
 	check_machine $MACHINE
 	local d=.acme.sh.etc/${DOMAIN}_ecc

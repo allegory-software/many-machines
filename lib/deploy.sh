@@ -96,13 +96,3 @@ deploy_rename_mysql() {
 deploy_secret_gen() {
 	must openssl rand 46 | base64 # result is 64 chars
 }
-
-test_task() {
-	local n=0
-	while true; do
-		n=$((n+1))
-		say "Testing $n (E)"
-		echo "Testing $n (O)"
-		sleep .5
-	done
-}

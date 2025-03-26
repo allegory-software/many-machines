@@ -6,4 +6,4 @@ _f() {
 	md_vars "$@"
 	printf "%s" "${R1[@]}"
 }
-each_machine _f "$@"
+each_md _f "$@"
