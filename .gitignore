@@ -1,5 +1,6 @@
 /device
 /machine
+/machines
 /var*
 *.deb
 *.tgz
