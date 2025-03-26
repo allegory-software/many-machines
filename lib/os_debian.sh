@@ -80,6 +80,12 @@ service_stop() {
 
 # installers -----------------------------------------------------------------
 
+install_vbox() {
+    apt install -y build-essential dkms linux-headers-$(uname -r)
+    mount -o remount,ro,exec /media/cdrom
+    /media/cdrom/VBoxLinuxAdditions.run
+}
+
 install_libssl1() {
 	say; sayn "Installing OpenSSL 1.1 ... "
 	dpkg-query -l libssl1.1 2>/dev/null >/dev/null && { say "already installed."; return 0; }
