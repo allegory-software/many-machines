@@ -124,7 +124,7 @@ Modules are those with an install function. `grep install_ lib/*` will give you
 a list of available modules with a custom installer, otherwise OS packages
 with a matching name are installed by default.
 Add a `modules` file inside your machine dir with a list of module names separated
-by space and/or newlines. Example: `timezone hostname secure_proc git curl` etc.
+by space and/or newlines (eg. `timezone hostname secure_proc git curl`).
 
 ## `mm` vs `mmd`
 
