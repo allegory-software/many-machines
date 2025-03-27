@@ -126,6 +126,9 @@ with a matching name are installed by default.
 Add a `modules` file inside your machine dir with a list of module names separated
 by space and/or newlines (eg. `timezone hostname secure_proc git curl`).
 
+Modules can be installed manually with `mm install MODULE`. Modules declared
+in the `modules` file can be installed with `mm prepare`.
+
 ## `mm` vs `mmd`
 
 `mm` is the frontend UI for the commands in `/cmd`. `mm` takes a list of
