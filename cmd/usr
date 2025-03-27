@@ -5,7 +5,7 @@
 WHERE=${1:-1=1}
 checkvars WHERE-
 
-each_deploy ssh_query "
+each_md ssh_query "
 select
 	u.usr, t.name tenant, u.active, u.email, u.name, u.phone, u.ctime
 	from usr u, tenant t
