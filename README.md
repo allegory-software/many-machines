@@ -109,6 +109,11 @@ Then run `mm pubkey` to see your SSH public key and paste it into the machine's
 Type `mm m` to see your machines. Type `mm free` to check on the machine's
 resources. Try some other reporting commands too.
 
+## Debugging
+
+If anything goes wrong or you want to know exactly what a command does,
+type `DEBUG=1 mm ...`. Commands are prefixed `die.sh`
+
 ## Modules
 
 Next you might want to define the modules that should be installed on the machine.

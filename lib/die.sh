@@ -28,6 +28,7 @@ BG_BLUE=$'\e[44m'
 BG_MAGENTA=$'\e[45m'
 BG_CYAN=$'\e[46m'
 
+# NOTE: these are one byte longer, so they mess the printf widths.
 BG_BRIGHTBLACK=$'\e[100m'
 BG_BRIGHTRED=$'\e[101m'
 BG_BRIGHTGREEN=$'\e[102m'
