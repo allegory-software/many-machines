@@ -114,7 +114,8 @@ resources. Try some other reporting commands too.
 If anything goes wrong or you want to know what commands do underneath,
 type `DEBUG=1 mm ...`. There's an entire vocabulary for printing, tracing,
 error reporting and arg checking in `lib/die.sh` that all the scripts use,
-so getting familiar with that now will make it easier to read the MM code.
+so getting familiar with that now will make it easier to read the MM code
+in the future.
 
 ## Modules
 
