@@ -9,8 +9,8 @@ like SSH key management, scheduled backups, automated deployments,
 SSL certificate issuing, real-time app monitoring, etc.
 
 MM is the complete opposite of tools like Ansible, Terraform, Puppet, etc.
-in that it is a fully programmable, bottom-up, DIY toolbox rather than
-a gargantuan black box with 500,000 LOC all trying to convince you that you
+in that it is a fully programmable, bottom-up, DIY toolbox rather than a
+gargantuan black box with 500,000 LOC all trying to convince you that you
 don't need to learn programming to be a sysadmin.
 
 # Functionality
@@ -35,7 +35,7 @@ don't need to learn programming to be a sysadmin.
   * mysql databases, tables, table structure
   * app users, sessions, tenants
 * Ops
-  * remote shells and commands
+  * remote shells, commands, tunnels
   * remote scripts with vars
   * service and app control
   * rsync between machines
@@ -57,7 +57,11 @@ don't need to learn programming to be a sysadmin.
   * simple backup and restore with tar, gz, gpg, rsync and git.
   * leverage symlinks for referencing shared values and entities.
   * include dirs (multiple inheritance with overrides in OOP slang),
-  a power feature that I will explain later with examples.
+  a powerful feature that allows defining groups of config values
+  and including them into machine and deployment configurations.
+* Distributed (like git)
+  * MM is an offline tool with a local database. If you have multiple laptops
+  you need to sync the db between them manually or push/pull it in the cloud.
 * Written in Bash
   * no dependencies, less bit rot.
   * expandable, meaning you can add:
@@ -87,9 +91,12 @@ don't need to learn programming to be a sysadmin.
 
 # Getting started
 
-## Install
+## Installation
 
-	./install
+	fork the project
+	login as root
+	git clone git@github.com:your-account/many-machines mm
+	mm/install
 
 This puts two commands in PATH, `mm` and `mmd`, and also `mmlib` which is
 not a command but the MM library to be included in scripts with `. mmlib`.
