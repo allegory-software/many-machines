@@ -32,8 +32,15 @@ is_listening() { # IP=|MACHINE= PORT
 progress_bar() {
 	local total=$1 free=$2
 	local width=9
-	local n_free=$(( width * free / total ))
-	local n_filled=$((width - n_free))
+	local n_free
+	local n_filled
+	if ((total == 0)); then
+		n_free=width
+		n_filled=0
+	else
+		n_free=$((width * free / total))
+		n_filled=$((width - n_free))
+	fi
 	local s1=; for ((i = 0; i < n_filled; i++)); do s1+="#"; done
 	local s2=; for ((i = 0; i < n_free; i++)); do s2+="."; done
 	printf "%s%s\n" "$s1" "$s2"
@@ -45,9 +52,14 @@ get_FREE_RAM_GB() { cat /proc/meminfo | awk '/MemAvailable/  { printf "%.1f\n", 
 get_FREE_RAM_KB() { cat /proc/meminfo | awk '/MemAvailable/  { print $2 }'; }
 get_RAM_RATIO()   { printf "%s/%s G\n" $(get_FREE_RAM_GB) $(get_RAM_GB); }
 get_RAM_BAR()     { progress_bar "$(get_RAM_KB)" "$(get_FREE_RAM_KB)"; }
+
 get_SWAP_GB()     { cat /proc/meminfo | awk '/SwapTotal/     { printf "%.1f\n", $2/(1024*1024) }'; }
+get_SWAP_KB()     { cat /proc/meminfo | awk '/SwapTotal/     { printf $2 }'; }
 get_FREE_SWAP_GB(){ cat /proc/meminfo | awk '/SwapFree/      { printf "%.1f\n", $2/(1024*1024) }'; }
-get_SWAP_RATIO()  { printf "%s/%s\n" "$(get_FREE_SWAP_GB)" "$(get_SWAP_GB)"; }
+get_FREE_SWAP_KB(){ cat /proc/meminfo | awk '/SwapFree/      { printf $2 }'; }
+get_SWAP_RATIO()  { printf "%s/%s G\n" "$(get_FREE_SWAP_GB)" "$(get_SWAP_GB)"; }
+get_SWAP_BAR()    { progress_bar "$(get_SWAP_KB)" "$(get_FREE_SWAP_KB)"; }
+
 get_HDD_GB()      { df -l / | awk '(NR > 1) { printf "%.0f\n", $2/(1024*1024) }'; }
 get_HDD_KB()      { df -l / | awk '(NR > 1) { print $2 }'; }
 get_FREE_HDD_GB() { df -l / | awk '(NR > 1) { printf "%.0f\n", $4/(1024*1024) }'; }
