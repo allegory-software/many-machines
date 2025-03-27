@@ -111,8 +111,10 @@ resources. Try some other reporting commands too.
 
 ## Debugging
 
-If anything goes wrong or you want to know exactly what a command does,
-type `DEBUG=1 mm ...`. Commands are prefixed `die.sh`
+If anything goes wrong or you want to know what a commands do underneath,
+type `DEBUG=1 mm ...`. There's an entire vocabulary for printing, tracing,
+error reporting and arg checking in `lib/die.sh` that all the scripts use,
+so getting familiar with that now will make it easier to read the MM code.
 
 ## Modules
 
