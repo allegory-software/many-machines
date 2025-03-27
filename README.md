@@ -10,7 +10,7 @@ SSL certificate issuing, real-time app monitoring, etc.
 
 MM is the complete opposite of tools like Ansible, Terraform, Puppet, etc.
 in that it is a fully programmable, bottom-up, DIY toolbox rather than
-a gargantual black box with 500,000 LOC all trying to convince you that you
+a gargantuan black box with 500,000 LOC all trying to convince you that you
 don't need to learn programming to be a sysadmin.
 
 # Functionality
