@@ -41,7 +41,7 @@ git_config_user() { # email name
 git_clone_for() { # USER REPO DIR [VERSION]
 	local USER=$1 REPO=$2 DIR=$3 VERSION=${4:-master}
 	checkvars USER REPO DIR
-	say "Pulling $DIR $VERSION ..."
+	say "Pulling $DIR $VERSION from $REPO ..."
 	(
 	local QUIET; [[ $DEBUG ]] || QUIET=-q
 	must mkdir -p $DIR

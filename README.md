@@ -188,14 +188,41 @@ your machines _from_, then you need to sync the database between them, which
 means they need to have a public IP and be both online at the same time to do
 the transfer. This is unlikely, so a better way is to sync the database using
 the machines that you administer as "cloud storage", since those are always
-online anyway. Use `mm var-download` and `mm var-upload` for this.
+online anyway. This is done with `mm var-download` and `mm var-upload`. For it
+to work you need to create a file inside mm called `var-secret` with a random
+string in it of 30 chars+ so that the database is kept encrypted in the cloud.
+You can also use a github repo that you have read/write access to as storage.
+Put the repo URL in `var/var_repo` and use `mm var-push` and `mm var-pull`
+to sync. The data on the repo will still be encrypted so you don't have to
+trust the cloud provider.
 
-Another way to store the database is to put it in git in a private repo.
+Another way to sync the database is via git. Still using your always-on machines
+but non-encrypted this time, if you can trust it. The advantage here is that
+multiple sysadmins can work together on the same infrastructure and sync their
+changes with branches and merges. For this MM doesn't provide any utilities,
+just do `git init` inside the `var` dir, `git remote add ssh://IP/root/mm/var`
+and go from there. This will work since you can already ssh to your machines.
 
-## The var system
+## The Vars System
 
-The mm database is the `var` dir.
+Configuration data for machines and deployments is kept in one-value-per-file in
+`var/machines/MACHINE/VAR_NAME` and `var/deploys/DEPLOY/VAR_NAME` respectively.
+Some values will be common to multiple MDs, in which case you can put them
+in other dirs of your chosing in `var` (or directly in `var`) and just symlink
+them into the right places. This can become tedious when entire groups of values
+are common, like eg. when specifying the details of a a SMTP server which
+includes host, user, password, etc. For that you can use an include dir: make
+a dir in `var` eg. `var/.my-smtp-server` and symlink it into the MD dir that
+needs those values. Notice the dir starts with a dot, which makes its contents
+be included in the MD just like if you were making individual symlinks from it.
 
+You can have multiple include dirs symlinked into an MD dir. They are processed
+in alphabetical order, so you can override values from the ones that come before
+in the ones that come later.
+
+In practice you will most likely have a `.0-defaults` include dir for machines
+and one for deployments that you wil symlink into every MD, and other include
+dirs on top of that based on your situation.
 
 # Status
 

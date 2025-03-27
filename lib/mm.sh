@@ -46,8 +46,9 @@ var_unpack() { # FILE
 }
 
 _var_clone() {
+	cat_varfile var var_repo; local VAR_REPO=$R1
 	on_exit run rm -rf tmp/mm-var
-	git_clone_for root git@github.com:allegory-software/mm-var tmp/mm-var
+	git_clone_for root $VAR_REPO tmp/mm-var
 }
 
 var_pull() {

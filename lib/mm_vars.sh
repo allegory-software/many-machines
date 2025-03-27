@@ -5,7 +5,7 @@ varfile() { # DIR VAR
 	local FILE="${2,,}"
 	R1=
 	[ -f $DIR/$FILE ] && { R1=$DIR/$FILE; return 0; }
-	local INC; for INC in `find -L $DIR -maxdepth 10 -name '.?*'`; do
+	local INC; for INC in `find -L $DIR -maxdepth 10 -name '.?*' | sort`; do
 		[ -d $INC ] || continue
 		[ -f $INC/$FILE ] && { R1=$INC/$FILE; return 0; }
 	done
@@ -33,7 +33,7 @@ cat_all_varfiles() { # [LOCAL="local "] DIR
 	declare -A R2
 	_add_varfiles $DIR
 	# NOTE: this dives into the `machine` symlink and includes all machine vars!
-	local INC; for INC in `find -L $DIR -maxdepth 10 -name '.?*'`; do 
+	local INC; for INC in `find -L $DIR -maxdepth 10 -name '.?*' | sort`; do
 		[ -d $INC ] || continue
 		_add_varfiles $INC
 	done
