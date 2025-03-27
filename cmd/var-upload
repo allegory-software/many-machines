@@ -1,6 +1,8 @@
 #!/bin/bash
 # ADMIN MM ;; upload var.tar.gz to machine
+. mmlib
 
+[[ $MACHINES ]] || die "MACHINE(s) required."
 on_exit run rm -f var.tar.gz.gpg
 var_pack
-mm upload var.tar.gz.gpg /opt/mm
+mm upload var.tar.gz.gpg /root/mm

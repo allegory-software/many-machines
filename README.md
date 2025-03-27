@@ -93,10 +93,10 @@ don't need to learn programming to be a sysadmin.
 
 ## Installation
 
-	fork the project
-	login as root
-	git clone git@github.com:your-account/many-machines mm
-	mm/install
+	Fork the project.
+	Login as root.
+	~# git clone git@github.com:YOUR-ACCOUNT/many-machines mm
+	~# mm/install
 
 This puts two commands in PATH, `mm` and `mmd`, and also `mmlib` which is
 not a command but the MM library to be included in scripts with `. mmlib`.
@@ -110,8 +110,10 @@ the `public_ip` file so that you can run commands on it. So go ahead and
 define one machine with its IP address. It can even be the machine that
 you are currently on.
 
-Then run `mm pubkey` to see your SSH public key and paste it into the machine's
+Then run `mm pubkey` to see your SSH public key and add it to the machine's
 `/root/.ssh/authorized_keys` file so that you can ssh into the machine freely.
+You also need to update the machine's figerprint with `mm MACHINE hostkey-update`
+before you can ssh into the machine with mm.
 
 Type `mm m` to see your machines. Type `mm free` to check on the machine's
 resources. Try some other reporting commands. Type `mm MACHINE` to ssh into it
@@ -124,6 +126,26 @@ type `DEBUG=1 mm ...`. There's an entire vocabulary for printing, tracing,
 error reporting and arg checking in `lib/die.sh` that all the scripts use,
 so getting familiar with that now will make it easier to read the MM code
 in the future.
+
+## SSH Host Fingerprint Management
+
+SSH uses host fingerprints to mitigate MITM. MM keeps these hashes separate
+from `~/.ssh/known_hosts` so you need to do `mm MACHINE hostkey-update` before
+you can ssh into a machine through MM, since you won't get prompted for that.
+The reason for keeping these inside mm's database is so that you don't have
+to update them on any new device you happen to work from.
+
+## SSH Key Management
+
+MM assumes key-based auth for SSH. `mm pubkeys` lists the current SSH public
+keys found on each machine/user. The `device` column allows you to associate
+a pubkey with the device that holds the private key of that pubkey so that
+you can keep track of which device has access to which machine/user. To register
+the machine you're on right now as a device type `mm set-device DEVICE`.
+Type `mm pubkeys` again: you should now see your device showing next to the pubkey.
+If your private key gets compromised, refresh it with `mm ssh-keygen` and then
+add it to all machines with `mm pubkey-add`. Then remove the old one with
+`mm pubkey-remove PUBKEY`.
 
 ## Modules
 
@@ -152,11 +174,23 @@ Most commands, when no machines/deploys (let's call them MDs from now on)
 are given act on all MDs in the database. Some more dangerous commands will
 refuse to act on all of them and ask you to be specific.
 
-## The help system
+## The Help System
 
 The second line of a cmd script is important: it's a comment that describes
 the command's section, its args if any and a description. This line is parsed
 and used when typing `mm`, `mm help`, `mm help SECTION` and `mm COMMAND ?`.
+
+## The MM Database
+
+The mm database is the `var` dir inside MM. Since this is a local offline
+database and not a centralized server, if you use multiple computers to manage
+your machines _from_, then you need to sync the database between them, which
+means they need to have a public IP and be both online at the same time to do
+the transfer. This is unlikely, so a better way is to sync the database using
+the machines that you administer as "cloud storage", since those are always
+online anyway. Use `mm var-download` and `mm var-upload` for this.
+
+Another way to store the database is to put it in git in a private repo.
 
 ## The var system
 

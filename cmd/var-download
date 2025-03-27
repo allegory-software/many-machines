@@ -3,5 +3,5 @@
 . mmlib
 
 on_exit run rm -f var.tar.gz.gpg
-mm download /opt/mm/./var.tar.gz.gpg /opt/mm
+mm download /root/mm/./var.tar.gz.gpg /root/mm
 var_unpack
