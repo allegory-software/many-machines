@@ -99,13 +99,15 @@ not a command but the MM library to be included in scripts with `. mmlib`.
 Machines and deployments are what MM is all about, so you need to define
 some in order to make MM useful. The MM database is the `var` dir inside mm.
 Machines are `var/machines/MACHINE` dirs which must contain at least
-the `public_ip` file so that you can run commands on it.
+the `public_ip` file so that you can run commands on it. So go ahead and
+define one machine with its IP address. It can even be the machine that
+you are currently on.
 
-First run `mm pubkey` to see your SSH public key and paste it into the machine's
+Then run `mm pubkey` to see your SSH public key and paste it into the machine's
 `/root/.ssh/authorized_keys` file so that you can ssh into the machine freely.
 
 Type `mm m` to see your machines. Type `mm free` to check on the machine's
-resources.
+resources. Try some other reporting commands too.
 
 ## Modules
 
