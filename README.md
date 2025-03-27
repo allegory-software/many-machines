@@ -127,7 +127,8 @@ Add a `modules` file inside your machine dir with a list of module names separat
 by space and/or newlines (eg. `timezone hostname secure_proc git curl`).
 
 Modules can be installed manually with `mm install MODULE`. Modules declared
-in the `modules` file can be installed with `mm prepare`.
+in the `modules` file can be installed with `mm prepare`, which is what you
+should run on a new machine right after you get SSH access to it.
 
 ## `mm` vs `mmd`
 
