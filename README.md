@@ -114,7 +114,8 @@ Then run `mm pubkey` to see your SSH public key and paste it into the machine's
 `/root/.ssh/authorized_keys` file so that you can ssh into the machine freely.
 
 Type `mm m` to see your machines. Type `mm free` to check on the machine's
-resources. Try some other reporting commands too.
+resources. Try some other reporting commands. Type `mm MACHINE` to ssh into it
+as root or `mm MACHINE ssh COMMAND ARGS...` to run a command on it.
 
 ## Debugging
 
