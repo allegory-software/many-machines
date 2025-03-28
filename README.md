@@ -224,6 +224,24 @@ In practice you will most likely have a `.0-defaults` include dir for machines
 and one for deployments that you wil symlink into every MD, and other include
 dirs on top of that based on your situation.
 
+## Remote Scripts
+
+MM can run any function from `lib/*.sh` on any machine. You can even do it from
+the command line with `mm MACHINE1 fn FUNCTION ARGS...`. This works because when
+running any command on a machine remotely, MM first sends the contents of
+`lib/*.sh` to the machine along with all the vars in `var/machines/MACHINE`
+which are set as env vars on the remote machine. 
+
+This is implemented in `lib/ssh.sh`.
+
+Note that on syntax errors, line numbers are not reported correctly due to the
+fact that all the scripts in the `lib` folder as sent out as one giant script.
+To get correct line numbers for debugging, set `MM_DEBUG_LIB=1`.
+
+Note that vars that start with a dot are not sent over to the remote machine.
+Those are "local" vars, usually secrets that we don't want to leak to the remote
+machine, not even temporarily while we run the script.
+
 # Status
 
 In active development, see TODO.txt.
