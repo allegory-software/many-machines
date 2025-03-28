@@ -1,0 +1,7 @@
+#!/bin/bash
+# ADMIN MM ; [REPO] ; init var dir for git
+. mmlib
+
+var_git_init "$@"
+
+

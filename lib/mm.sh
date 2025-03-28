@@ -24,10 +24,10 @@ version_mm() {
 var_pack() { # FILE
 	local FILE=${1:-var.tar.gz.gpg}
 	checkvars FILE
-	must chmod 440 var-secret
+	must chmod 440 var_secret
 	on_exit run rm -f tmp/var.tar.gz
-	must tar --exclude-from var/.ignore -czf tmp/var.tar.gz var
-	must gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-file var-secret tmp/var.tar.gz
+	must tar -czf tmp/var.tar.gz var
+	must gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-file var_secret tmp/var.tar.gz
 	must mv tmp/var.tar.gz.gpg $FILE
 	du -sh $FILE
 }
@@ -36,7 +36,7 @@ var_unpack() { # FILE
 	local FILE=${1:-var.tar.gz.gpg}
 	checkvars FILE
 	on_exit run rm -f tmp/var.tar.gz
-	must gpg --decrypt --batch --yes --passphrase-file var-secret $FILE > tmp/var.tar.gz
+	must gpg --decrypt --batch --yes --passphrase-file var_secret $FILE > tmp/var.tar.gz
 	must rm -rf tmp/var
 	must mkdir tmp/var
 	on_exit run rm -rf tmp/var
@@ -45,22 +45,59 @@ var_unpack() { # FILE
 	must chmod 770 var
 }
 
-_var_clone() {
-	cat_varfile var var_repo; local VAR_REPO=$R1
-	on_exit run rm -rf tmp/mm-var
-	git_clone_for root $VAR_REPO tmp/mm-var
+var_git_init() { # [REPO]
+	local REPO=$1
+	package_version git-crypt >/dev/null || package_install git-gcrypt
+	must mkdir -p var
+	(
+	must cd var
+	[[ -d .git ]] || git init
+	[[ ! -f .gitattributes && ! $REPO ]] && {
+		save "\
+* filter=git-crypt diff=git-crypt
+.gitattributes !filter !diff
+" .gitattributes
+	}
+	if [[ -f ../var_git_crypt_key ]]; then
+		git-crypt unlock ../var_git_crypt_key
+	else
+		git-crypt init
+		git-crypt export-key ../var_git_crypt_key
+	fi
+	[[ $REPO ]] && {
+		run git remote add origin $REPO
+		git pull origin master
+	}
+	must chmod 770 .
+	)
 }
 
-var_pull() {
-	_var_clone
-	var_unpack tmp/mm-var/var.tar.gz.gpg
+var_clone() { # REPO
+	local REPO=$1
+	checkvars REPO
+	package_version git-crypt >/dev/null || package_install git-gcrypt
+	checkfile var_git_crypt_key
+	on_exit run rm -rf tmp/mm-var
+	git_clone_for root $REPO tmp/mm-var
+	must mv --backup=numbered tmp/mm-var var
+	must chmod 770 var
+	(
+	must cd var
+	must git-crypt unlock ../var_git_crypt_key
+	)
+}
+
+var_pull() { # [REPO]
+	[[ -d var ]] || var_clone "$@"
+	(
+	must cd var
+	must git pull
+	)
 }
 
 var_push() { # [COMMIT_MSG]
-	_var_clone
-	var_pack tmp/mm-var/var.tar.gz.gpg
 	(
-	must cd tmp/mm-var
+	must cd var
 	must git add .
 	must git commit -m "${COMMIT_MSG:-unimportant}"
 	must git push
