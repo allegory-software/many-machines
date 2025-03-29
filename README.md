@@ -183,29 +183,31 @@ and used when typing `mm`, `mm help`, `mm help SECTION` and `mm COMMAND ?`.
 
 The mm database is the `/root/mm/var` dir. Since this is a local offline
 database and not a centralized server, if you use multiple laptops to manage
-your machines _from_, then you need to sync the database between them.
+your machines from, you will need a way to sync the database between them.
 
 Since your laptops most likely can't see each other and are not online at the
-same time anyway, you can sync the database using the machines that you administer
-as "cloud storage" for the database using `mm var-download` and `mm var-upload`.
-Make a password first with `mm random 40 > /root/mm/var_secret` so that the
-database is encrypted in storage.
+same time anyway, the best way to sync the database between them is by using
+your online machines as "cloud storage" (and/or using github) via git and
+git-crypt. This is much better than rsync, as you now have a team developer
+workflow where you can track changes made by multiple people to a shared
+infrastructure. To do this, first, create a bare repo on a machine with
+`mm MACHINE ssh git init --bare /root/mm-var` (or if using github, create a new
+repo through the web interface). On your current laptop init a git repo
+in var with `mm var-git-init ssh://MACHINE/root/mm-var` (or if using
+github with `mm var-git init git@github.com:YOUR-ACCOUNT/REPO-NAME`).
+That will also push all the var files to the remote, but on the remote they
+will be encrypted. Now you can use `mm var-push [MESSAGE]` to add/commit/push
+to the cloud. On your second laptop, use `mm var-clone REPO-URL`
+and `mm var-unlock "KEY"` where KEY is the one you got from the first laptop
+with `mm var-lock-key`.
 
-Another way to sync the db is by git with encryption by git-crypt, either using
-github or again, your online machines as cloud storage. This is far better
-as you now have a team developer workflow where you can track changes made by
-multiple people to a shared infrastructure. To do this, first, create a bare
-repo on a machine with `mm MACHINE git init --bare /root/mm-var` (or if using
-github, create a new repo through the web interface). On your current laptop
-init an encrypted git repo in var with `mm var-git-init ssh://MACHINE/root/mm-var`
-(or if using github, `mm var-git init git@github.com:YOUR-ACCOUNT/REPO-NAME`).
-Now you can use `mm var-push [MESSAGE]` to add/commit/push to the cloud.
-On your second laptop, use `mm var-clone REPO-URL`, and `mm var-unlock "KEY"`
-where KEY is the one you got from the first laptop with `mm var-lock-key`.
+You can also make git push to multiple remotes at the same time with
+`git remote set-url --add --push origin URL` so you can later pull from
+a backup if needed.
 
 Note that with git-crypt, only the file contents are encrypted while the
-directory structure itself is held in clear. If you're using github for this,
-it won't let Microsoft see your keys but they'll know about what you're doing.
+directory structure itself is not. If you're using github for this, it won't
+let Microsoft see your keys but they'll know about what you're doing.
 
 ## The Vars System
 

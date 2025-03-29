@@ -1,5 +1,0 @@
-#!/bin/bash
-# ADMIN MM ; [FILE] ; pack and encrypt var dir to file (var.tar.gz.gpg)
-. mmlib
-
-var_pack "$1"

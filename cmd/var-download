@@ -1,7 +1,0 @@
-#!/bin/bash
-# ADMIN MM ;; download var.tar.gz from machine
-. mmlib
-
-on_exit run rm -f var.tar.gz.gpg
-mm download /root/mm/./var.tar.gz.gpg /root/mm
-var_unpack

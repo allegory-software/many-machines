@@ -1,6 +1,0 @@
-#!/bin/bash
-# ADMIN MM ; please [FILE] ; decrypt and unpack file (var.tar.gz.gpg) to var dir
-. mmlib
-
-[[ $1 == please ]] || die "Say please"
-var_unpack "$2"

@@ -21,30 +21,6 @@ version_mm() {
 
 # var dir ops ----------------------------------------------------------------
 
-var_pack() { # FILE
-	local FILE=${1:-var.tar.gz.gpg}
-	checkvars FILE
-	must chmod 440 var_secret
-	on_exit run rm -f tmp/var.tar.gz
-	must tar -czf tmp/var.tar.gz var
-	must gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-file var_secret tmp/var.tar.gz
-	must mv tmp/var.tar.gz.gpg $FILE
-	du -sh $FILE
-}
-
-var_unpack() { # FILE
-	local FILE=${1:-var.tar.gz.gpg}
-	checkvars FILE
-	on_exit run rm -f tmp/var.tar.gz
-	must gpg --decrypt --batch --yes --passphrase-file var_secret $FILE > tmp/var.tar.gz
-	must rm -rf tmp/var
-	must mkdir tmp/var
-	on_exit run rm -rf tmp/var
-	must tar xzf tmp/var.tar.gz -C tmp/var --overwrite
-	must mv --backup=numbered tmp/var/var .
-	must chmod 770 var
-}
-
 var_git_init() { # REPO
 	local REPO=$1
 	checkvars REPO
