@@ -51,6 +51,7 @@ var_git_init() { # [REPO]
 	must mkdir -p var
 	(
 	must cd var
+	must chmod 770 .
 	[[ -d .git ]] || git init
 	[[ ! -f .gitattributes && ! $REPO ]] && {
 		save "\
@@ -58,37 +59,24 @@ var_git_init() { # [REPO]
 .gitattributes !filter !diff
 " .gitattributes
 	}
-	if [[ -f ../var_git_crypt_key ]]; then
-		git-crypt unlock ../var_git_crypt_key
-	else
-		git-crypt init
-		git-crypt export-key ../var_git_crypt_key
-	fi
+	[[ -f .git/git-crypt/keys/default ]] || must git-crypt init
 	[[ $REPO ]] && {
 		run git remote add origin $REPO
 		git pull origin master
 	}
-	must chmod 770 .
 	)
 }
 
 var_clone() { # REPO
 	local REPO=$1
 	checkvars REPO
-	package_version git-crypt >/dev/null || package_install git-gcrypt
-	checkfile var_git_crypt_key
-	on_exit run rm -rf tmp/mm-var
-	git_clone_for root $REPO tmp/mm-var
-	must mv --backup=numbered tmp/mm-var var
+	on_exit run rm -rf var.new
+	git_clone_for root $REPO var.new
+	must mv --backup=numbered var.new var
 	must chmod 770 var
-	(
-	must cd var
-	must git-crypt unlock ../var_git_crypt_key
-	)
 }
 
-var_pull() { # [REPO]
-	[[ -d var ]] || var_clone "$@"
+var_pull() {
 	(
 	must cd var
 	must git pull
@@ -101,6 +89,25 @@ var_push() { # [COMMIT_MSG]
 	must git add .
 	must git commit -m "${COMMIT_MSG:-unimportant}"
 	must git push
+	)
+}
+
+var_unlock() { # KEY
+	local KEY=$1
+	checkvars KEY-
+	package_version git-crypt >/dev/null || package_install git-gcrypt
+	(
+	must cd var
+	on_exit run rm -f ../var_git_crypt_key
+	printf "%s" "$KEY" | must base64 -d - > ../var_git_crypt_key
+	must git-crypt unlock ../var_git_crypt_key
+	)
+}
+
+var_lock_key() {
+	(
+	must cd var
+	git-crypt export-key /proc/self/fd/1 | base64 -
 	)
 }
 

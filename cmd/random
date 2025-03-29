@@ -1,0 +1,8 @@
+#!/bin/bash
+# COMMAND ; N ; create a random string of N printable chars
+. mmlib
+
+N=$1
+checkvars N
+head -c $N /dev/urandom | base64 | head -c $N
+echo

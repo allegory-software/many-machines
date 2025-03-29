@@ -1,0 +1,5 @@
+#!/bin/bash
+# ADMIN MM ; REPO ; clone var dir from github
+. mmlib
+
+var_clone "$@"

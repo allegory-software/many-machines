@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN MM ; [REPO] ; pull & decrypt var dir from github
+# ADMIN MM ;; pull var dir from github
 . mmlib
 
 var_pull "$@"

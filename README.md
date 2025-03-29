@@ -93,10 +93,9 @@ don't need to learn programming to be a sysadmin.
 
 ## Installation
 
-	Fork the project.
-	Login as root.
-	~# git clone git@github.com:YOUR-ACCOUNT/many-machines mm
-	~# mm/install
+	Fork the project, then from a root shell:
+	# git clone git@github.com:YOUR-ACCOUNT/many-machines /root/mm
+	# /root/mm/install
 
 This puts two commands in PATH, `mm` and `mmd`, and also `mmlib` which is
 not a command but the MM library to be included in scripts with `. mmlib`.
@@ -182,26 +181,31 @@ and used when typing `mm`, `mm help`, `mm help SECTION` and `mm COMMAND ?`.
 
 ## The MM Database
 
-The mm database is the `var` dir inside MM. Since this is a local offline
-database and not a centralized server, if you use multiple computers to manage
-your machines _from_, then you need to sync the database between them, which
-means they need to have a public IP and be both online at the same time to do
-the transfer. This is unlikely, so a better way is to sync the database using
-the machines that you administer as "cloud storage", since those are always
-online anyway. This is done with `mm var-download` and `mm var-upload`. For it
-to work you need to create a file inside mm called `var-secret` with a random
-string in it of 30 chars+ so that the database is kept encrypted in the cloud.
-You can also use a github repo that you have read/write access to as storage.
-Put the repo URL in `var/var_repo` and use `mm var-push` and `mm var-pull`
-to sync. The data on the repo will still be encrypted so you don't have to
-trust the cloud provider.
+The mm database is the `/root/mm/var` dir. Since this is a local offline
+database and not a centralized server, if you use multiple laptops to manage
+your machines _from_, then you need to sync the database between them.
 
-Another way to sync the database is via git. Still using your always-on machines
-but non-encrypted this time, if you can trust it. The advantage here is that
-multiple sysadmins can work together on the same infrastructure and sync their
-changes with branches and merges. For this MM doesn't provide any utilities,
-just do `git init` inside the `var` dir, `git remote add ssh://IP/root/mm/var`
-and go from there. This will work since you can already ssh to your machines.
+Since your laptops most likely can't see each other and are not online at the
+same time anyway, you can sync the database using the machines that you administer
+as "cloud storage" for the database using `mm var-download` and `mm var-upload`.
+Make a password first with `mm random 40 > /root/mm/var_secret` so that the
+database is encrypted in storage.
+
+Another way to sync the db is by git with encryption by git-crypt, either using
+github or again, your online machines as cloud storage. This is far better
+as you now have a team developer workflow where you can track changes made by
+multiple people to a shared infrastructure. To do this, first, create a bare
+repo on a machine with `mm MACHINE git init --bare /root/mm-var` (or if using
+github, create a new repo through the web interface). On your current laptop
+init an encrypted git repo in var with `mm var-git-init ssh://MACHINE/root/mm-var`
+(or if using github, `mm var-git init git@github.com:YOUR-ACCOUNT/REPO-NAME`).
+Now you can use `mm var-push [MESSAGE]` to add/commit/push to the cloud.
+On your second laptop, use `mm var-clone REPO-URL`, and `mm var-unlock "KEY"`
+where KEY is the one you got from the first laptop with `mm var-lock-key`.
+
+Note that with git-crypt, only the file contents are encrypted while the
+directory structure itself is held in clear. If you're using github for this,
+it won't let Microsoft see your keys but they'll know about what you're doing.
 
 ## The Vars System
 
@@ -230,17 +234,17 @@ MM can run any function from `lib/*.sh` on any machine. You can even do it from
 the command line with `mm MACHINE1 fn FUNCTION ARGS...`. This works because when
 running any command on a machine remotely, MM first sends the contents of
 `lib/*.sh` to the machine along with all the vars in `var/machines/MACHINE`
-which are set as env vars on the remote machine. 
+which are set as env vars on the remote machine.
 
 This is implemented in `lib/ssh.sh`.
 
-Note that on syntax errors, line numbers are not reported correctly due to the
-fact that all the scripts in the `lib` folder as sent out as one giant script.
-To get correct line numbers for debugging, set `MM_DEBUG_LIB=1`.
+Note that on syntax errors, line numbers are not reported correctly because all
+the scripts in the `lib` folder as sent out as one giant script. To get correct
+line numbers, set `MM_DEBUG_LIB=1`.
 
 Note that vars that start with a dot are not sent over to the remote machine.
 Those are "local" vars, usually secrets that we don't want to leak to the remote
-machine, not even temporarily while we run the script.
+machine, not even temporarily while you run the script.
 
 # Status
 
