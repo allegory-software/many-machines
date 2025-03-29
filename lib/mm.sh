@@ -45,25 +45,26 @@ var_unpack() { # FILE
 	must chmod 770 var
 }
 
-var_git_init() { # [REPO]
+var_git_init() { # REPO
 	local REPO=$1
+	checkvars REPO
 	package_version git-crypt >/dev/null || package_install git-gcrypt
+	[[ -d var/.git ]] && die "Remove var/.git first."
+	[[ -f var/.gitattributes ]] && die "Remove var/.gitattributes first."
 	must mkdir -p var
 	(
 	must cd var
 	must chmod 770 .
-	[[ -d .git ]] || git init
-	[[ ! -f .gitattributes && ! $REPO ]] && {
-		save "\
+	git init
+	save "\
 * filter=git-crypt diff=git-crypt
 .gitattributes !filter !diff
 " .gitattributes
-	}
-	[[ -f .git/git-crypt/keys/default ]] || must git-crypt init
-	[[ $REPO ]] && {
-		run git remote add origin $REPO
-		git pull origin master
-	}
+	must git-crypt init
+	must git add .
+	must git commit -m "init"
+	must git remote add origin $REPO
+	must git push -u origin master
 	)
 }
 
@@ -87,7 +88,8 @@ var_push() { # [COMMIT_MSG]
 	(
 	must cd var
 	must git add .
-	must git commit -m "${COMMIT_MSG:-unimportant}"
+	run git diff --quiet && run git diff --staged --quiet || \
+		must git commit -m "${COMMIT_MSG:-unimportant}"
 	must git push
 	)
 }
