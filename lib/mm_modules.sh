@@ -7,23 +7,12 @@
 # - install only what's needed, and have a library of installers ready.
 # - split code into package-specific and distro-specific libraries.
 
-_with_action() { # ACTION= NAME1 ...
-	declare -F default_${DEPLOY:+deploy_}${ACTION} >/dev/null && return 0
-	R1=
-	local name
-	for name in "$@"; do
-		if declare -F ${DEPLOY:+deploy_}${ACTION}_${name} >/dev/null; then
-			R1+=" $name"
-		fi
-	done
-}
 md_modules() {
 	must md_var ${DEPLOY:+DEPLOY_}MODULES
-	[[ $ACTION ]] && _with_action $R1
 }
+
 md_services() {
 	must md_var ${DEPLOY:+DEPLOY_}SERVICES
-	[[ $ACTION ]] && _with_action $R1
 }
 
 _each() { # ACTION= [DRY=1] NAME1 ...

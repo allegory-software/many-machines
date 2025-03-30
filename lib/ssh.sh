@@ -34,6 +34,9 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= COMMAND ARGS...
 	ssh_cmd; local cmd=("${R1[@]}")
 	quote_args "$@"; local args=("${R1[@]}")
 	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -i -u $AS_USER" || sudo="su - $AS_USER"; }
+	# NOTE: ssh relays the remote command's exit code back to the user,
+	# so it's hard to tell when ssh fails from when the command fails,
+	# so all scripts must exit with code 0, anything else will cause an abort.
 	run "${cmd[@]}" $sudo "${args[@]}" || die "MACHINE=$MACHINE ssh_to: [$?]"
 }
 
@@ -48,7 +51,7 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 		# slower (takes ~1s) but reports line numbers correctly on errors.
 		QUIET=1 SRC_DIR=lib    DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
 		QUIET=1 SRC_DIR=libopt DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
-		run ssh_to bash -s <<< "
+		local code="
 $VARS
 $FUNCS
 . /root/.mm/lib/all
@@ -56,6 +59,11 @@ mkdir -p /root/.mm/tmp
 cd /root/.mm || exit 1
 $SCRIPT $ARGS
 "
+		debug "ssh_to code:"
+		debug "-------------------------------------------------------"
+		debug "$code"
+		debug "-------------------------------------------------------"
+		run ssh_to bash -s <<< "$code"
 	else
 		# include lib contents in the script:
 		# faster but doesn't report line numbers correctly on errors in lib code.
@@ -64,8 +72,8 @@ $VARS
 set -f # disable globbing
 shopt -s nullglob
 set -o pipefail
-mkdir -p /root/.mm/tmp
-cd /root/.mm || exit 1
+mkdir -p ~/.mm/tmp
+cd ~/.mm || exit 1
 $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
 $(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)
 $FUNCS

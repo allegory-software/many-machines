@@ -73,11 +73,11 @@ acme_cert_backup() {
 }
 
 acme_cert_restore() {
-	must md_var domain; local DOMAIN=$R1
+	must md_var DOMAIN; local DOMAIN=$R1
 	checkvars MACHINE DOMAIN
 	check_machine $MACHINE
 	local d=.acme.sh.etc/${DOMAIN}_ecc
-	ssh_script "[[ -d /root/$d ]]" && {
+	[[ $(ssh_script "[[ -d /root/$d ]] && echo yes || true") == yes ]] && {
 		say "Not uploading SSL certificate: dir '/root/$d' already present."
 		return 1
 	}

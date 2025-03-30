@@ -24,7 +24,7 @@ deploy_nginx_config() { # DOMAIN= HTTP_UNIX_SOCKET=|HTTP_PORT=
 
 	local proxy_options="\
 		${HTTP_PORT:+proxy_pass http://127.0.0.1:$HTTP_PORT;}
-		${HTTP_UNIX_SOCKET:+proxy_pass http://unix:/home/$DEPLOY/app/$HTTP_UNIX_SOCKET;}
+		${HTTP_UNIX_SOCKET:+proxy_pass http://unix:/home/$DEPLOY/http.sock;}
 		proxy_set_header X-Forwarded-Host \$http_host;
 		proxy_set_header X-Forwarded-For  \$proxy_add_x_forwarded_for;
 		proxy_set_header X-Forwarded-Port \$server_port;
@@ -113,6 +113,10 @@ deploy_preinstall_nginx() {
 
 deploy_install_nginx() {
 	[[ $HTTP_PORT || $HTTP_UNIX_SOCKET ]] || return 0
+
+	# add www-data to app's group so that it can see the app's unix socket file.
+	must usermod -aG $DEPLOY www-data
+
 	deploy_nginx_copy_5xx_html
 	deploy_nginx_ln_ssl_files
 	deploy_nginx_config

@@ -1,0 +1,7 @@
+#!/bin/bash
+# RUN ; [SERVICE|all] ; restart a service
+. mmlib
+
+[[ $1 ]] || QUIET=1
+each_md md_stop "$@"
+each_md md_start "$@"
