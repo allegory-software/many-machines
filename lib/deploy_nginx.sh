@@ -122,7 +122,7 @@ deploy_install_nginx() {
 	deploy_nginx_config
 	nginx_reload
 	if [[ ! $NOSSL && $DOMAIN ]]; then
-		acme_cert_check || acme_cert_issue
+		acme_cert_issue
 		deploy_nginx_ln_ssl_files
 		nginx_reload
 	fi
