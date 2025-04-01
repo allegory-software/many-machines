@@ -20,7 +20,8 @@ install_acme() {
 	acme_sh --set-default-ca --server letsencrypt
 
 	save "\
-/root/.acme.sh/acme.sh --cron --home /root/.acme.sh --config-home $ACME_DIR >/dev/null
+#!/bin/sh
+/root/.acme.sh/acme.sh --cron --home /root/.acme.sh --config-home $ACME_DIR 2>&1 >/dev/null
 nginx -s reload
 " /etc/cron.daily/acme root 755
 
