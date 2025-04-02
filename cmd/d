@@ -2,12 +2,13 @@
 # DEPLOY ;; list deployments
 . mmlib
 
-FMT="%-10s %-10s %-10s %-10s %-10s\n"
+FMT="%-10s %-10s %-10s %-10s %-10s %s\n"
 _f() {
 	md_var APP; local APP=$R1
 	md_var ENV; local ENV=$R1
 	md_var APP_VERSION; local APP_VERSION=$R1
-	printf "$FMT" "$MACHINE" "$DEPLOY" "$APP" "$ENV" "$APP_VERSION"
+	md_var DOMAIN; local DOMAIN=$R1
+	printf "$FMT" "$MACHINE" "$DEPLOY" "$APP" "$ENV" "$APP_VERSION" "$DOMAIN"
 }
-printf "$WHITE$FMT$ENDCOLOR" MACHINE DEPLOY APP ENV APP_VERSION
+printf "$WHITE$FMT$ENDCOLOR" MACHINE DEPLOY APP ENV APP_VERSION DOMAIN
 QUIET=1 INACTIVE=1 each_deploy _f

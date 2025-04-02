@@ -69,13 +69,27 @@ service_is_running() {
 service_start() {
 	local SERVICE=$1; checkvars SERVICE
 	say "Starting $SERVICE..."
-	must service $SERVICE start
+	must systemctl start $SERVICE
 }
 
 service_stop() {
 	local SERVICE=$1; checkvars SERVICE
 	say "Stopping $SERVICE..."
-	must service $SERVICE stop
+	must systemctl stop $SERVICE
+}
+
+service_disable() {
+	local SERVICE=$1; checkvars SERVICE
+	service_is_running $SERVICE && \
+		service_stop $SERVICE
+	say "Disabling $SERVICE..."
+	must systemctl disable $SERVICE
+}
+
+service_enable() {
+	local SERVICE=$1; checkvars SERVICE
+	say "Enabling $SERVICE..."
+	must systemctl enable $SERVICE
 }
 
 # installers -----------------------------------------------------------------
@@ -145,4 +159,9 @@ install_tarantool() { # tarantool 3.0
 	# remove the source repo or it breaks apt-get. this means no updates, just fresh installs every time.
 	rm_dir /etc/apt/sources.list.d/tarantool_3.list
 	say "Tarantool install done."
+}
+
+install_disable_rpcbind() {
+	service_disable rpcbind.socket
+	service_disable rpcbind
 }

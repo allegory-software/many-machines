@@ -78,6 +78,10 @@ acme_cert_restore() {
 	checkvars MACHINE DOMAIN
 	check_machine $MACHINE
 	local d=.acme.sh.etc/${DOMAIN}_ecc
+	[[ -d var/$d ]] || {
+		say "SSL certificate dir not found: var/$d."
+		return 1
+	}
 	[[ $(ssh_script "[[ -d /root/$d ]] && echo yes || true") == yes ]] && {
 		say "Not uploading SSL certificate: dir '/root/$d' already present."
 		return 1

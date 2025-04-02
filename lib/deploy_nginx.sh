@@ -103,8 +103,14 @@ deploy_nginx_copy_5xx_html() {
 }
 
 deploy_nginx_ln_ssl_files() {
-	acme_cert_keyfile; [[ -f $R1 ]] || R1=/etc/nginx/selfsigned.key; ln_file $R1 /home/$DEPLOY/ssl_certificate_key;
-	acme_cert_cerfile; [[ -f $R1 ]] || R1=/etc/nginx/selfsigned.crt; ln_file $R1 /home/$DEPLOY/ssl_certificate;
+	acme_cert_keyfile; local KEY=$R1
+	acme_cert_cerfile; local CER=$R2
+	[[ -f $KEY && -f $CER ]] || {
+		KEY=/etc/nginx/selfsigned.key
+		CER=/etc/nginx/selfsigned.crt
+	}
+	ln_file $KEY /home/$DEPLOY/ssl_certificate_key;
+	ln_file $CER /home/$DEPLOY/ssl_certificate;
 }
 
 deploy_preinstall_nginx() {
