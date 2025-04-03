@@ -6,7 +6,7 @@ ssh_cmd_opt() { # MACHINE=
 -o PreferredAuthentications=publickey
 -o UserKnownHostsFile=var/machines/$MACHINE/.ssh_hostkey
 -o ControlMaster=auto
--o ControlPath=$HOME/.ssh/control-%h-%p-%r
+-o ControlPath=$HOME/.ssh/control-$MACHINE-$USER
 -o ControlPersist=600
 )
 	# try current key but also any old keys, in case the pubkey was not updated

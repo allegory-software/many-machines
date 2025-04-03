@@ -1,12 +1,17 @@
 #!/bin/bash
-# COMMAND ;; close persistent ssh connection
+# COMMAND ; [list] ; close persistent ssh connection
 . mmlib
 
+[[ $1 == list ]] && {
+	(cd ~/.ssh && find -name control-* | while read -r f; do
+		printf "%s\n" ${f#./control-}
+	done)
+	exit
+}
+
 _f() {
-	md_var PUBLIC_IP; local PUBLIC_IP=$R1
-	[[ $PUBLIC_IP ]] || return 0
-	find ~/.ssh -name control-$PUBLIC_IP-22-* | while read -r f; do
+	find ~/.ssh -name control-$MACHINE-* | while read -r f; do
 		must rm_file $f
 	done
 }
-AS_DEPLOY=1 each_md _f
+QUIET=1 each_md _f
