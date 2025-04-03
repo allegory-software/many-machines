@@ -104,7 +104,7 @@ deploy_nginx_copy_5xx_html() {
 
 deploy_nginx_ln_ssl_files() {
 	acme_cert_keyfile; local KEY=$R1
-	acme_cert_cerfile; local CER=$R2
+	acme_cert_cerfile; local CER=$R1
 	[[ -f $KEY && -f $CER ]] || {
 		KEY=/etc/nginx/selfsigned.key
 		CER=/etc/nginx/selfsigned.crt
