@@ -3,5 +3,5 @@
 . mmlib
 
 md_custom_list \
-	"%6s %6s %10s %-10s %10s %-10s %10s %-10s" \
-	"CPUS CORES RAM_RATIO RAM_BAR HDD_RATIO HDD_BAR SWAP_RATIO SWAP_BAR"
+	"%10s %-10s %10s %-10s %10s %-10s" \
+	"RAM_RATIO RAM_BAR HDD_RATIO HDD_BAR SWAP_RATIO SWAP_BAR"

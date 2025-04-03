@@ -1,5 +1,5 @@
 #!/bin/bash
-# cds to mm's dir, sets up bash options and loads all .sh scripts in this dir.
+# chdirs to mm's dir, sets up bash options and loads all .sh scripts in this dir.
 # exposed in PATH as mmlib, so any script can just `. mmlib` to load all the mm
 # functions and user's (i.e. machine or deploy) vars into the script's environment.
 cd `dirname $(readlink -f $BASH_SOURCE)`/.. || exit 1
