@@ -65,6 +65,7 @@ deploy_files_backup() { # MACHINE= DEPLOY= BACKUP_DIR [PREV_BACKUP_DIR]
 	md_varfile backup_files; local backup_files_file=$R1
 	local PDIR=$PREV_BACKUP_DIR
 	[[ -d PDIR ]] && PDIR=`realpath $PDIR`
+	must mkdir -p $BACKUP_DIR
 	FILE_LIST_FILE=$backup_files_file \
 		SRC_MACHINE=$MACHINE \
 		DST_MACHINE= \
@@ -102,14 +103,13 @@ deploy_restore_app() {
 	deploy_files_restore $BACKUP_DIR/files $DST_MACHINE $DST_DEPLOY
 }
 
-md_backup() { # MACHINE=|DEPLOY=
+md_backup() { # MACHINE=|DEPLOY= [all|MODULE1 ...]
 	local MD=${DEPLOY:-$MACHINE}
 	checkvars MD
 	backup_date; local DATE=$R1
 	local BACKUP_DIR=backups/$MD/$DATE
-	local PREV_BACKUP_DIR=backups/$MD/latest/files
-	must mkdir -p $BACKUP_DIR/files
-	_md_backup
+	local PREV_BACKUP_DIR=backups/$MD/latest
+	_md_backup "$@"; [[ $? == 2 ]] && { R1=; return 2; }
 	ln_file $DATE backups/$MD/latest
 	R1=$DATE
 }

@@ -15,7 +15,8 @@ md_services() {
 	must md_var ${DEPLOY:+DEPLOY_}SERVICES
 }
 
-_each() { # ACTION= [DRY=1] NAME1 ...
+_md_with_action_fn() { # ACTION= [DEPLOY=] NAME1 ...
+	R1=
 	local name
 	for name in "$@"; do
 		local fn=${DEPLOY:+deploy_}${ACTION}_${name}
@@ -25,10 +26,26 @@ _each() { # ACTION= [DRY=1] NAME1 ...
 				continue
 			fi
 		fi
-		dry $fn $name
+		R1+="$name "
 	done
 	return 0
 }
+
+_each() { # ACTION= [DRY=1] [DEPLOY=] NAME1 ...
+	local name
+	for name in "$@"; do
+		local fn=${DEPLOY:+deploy_}${ACTION}_${name}
+		if ! declare -F $fn > /dev/null; then
+			fn=default_${DEPLOY:+deploy_}${ACTION}
+			if ! declare -F $fn > /dev/null; then
+				continue
+			fi
+		fi
+		dry $FN $fn $name
+	done
+	return 0
+}
+
 _md_list() { # LIST=
 	$LIST; local names=($R1)
 	if [[ $DEPLOY ]]; then
@@ -40,7 +57,7 @@ _md_list() { # LIST=
 _md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] all | NAME1 ...
 	checkvars ACTION
 	local NAMES=$*
-	[[ $NAMES ]] || { _md_list; return 0; }
+	[[ $NAMES ]] || { _md_list; return 2; }
 	if [[ $NAMES == all ]]; then
 		$LIST; NAMES=$R1
 		[[ $REVERSE ]] && NAMES=`awk '{for(i=NF;i>0;i--) printf("%s ",$i)}' <<<"$NAMES"`
@@ -80,8 +97,9 @@ deploy_start()  { ACTION=start LIST=_deploy_services _md_action "$@"; }
 deploy_stop()   { ACTION=stop  LIST=_deploy_services _md_action "$@"; }
 
 # executed locally on the mm machine.
-_md_backup()  { ACTION=backup  LIST=md_modules _md_action "$@"; }
-_md_restore() { ACTION=restore LIST=md_modules _md_action "$@"; }
+_md_backup_modules() { md_modules; _md_with_action_fn $R1; }
+_md_backup()  { ACTION=backup  LIST=_md_backup_modules _md_action "$@"; }
+_md_restore() { ACTION=restore LIST=_md_backup_modules _md_action "$@"; }
 
 md_status() { # [DOWN=1] ["SERVICE1 ..."]
 	if [[ $DEPLOY ]]; then
