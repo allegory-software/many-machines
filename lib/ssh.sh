@@ -239,6 +239,7 @@ rsync_cmd() {
 	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
 	R1=(rsync
 		--recursive --relative --links --perms --times --devices --specials --hard-links --timeout=5
+		--ignore-missing-args
 		${PROGRESS:+--info=progress2}
 		${LINK_DIR:+--link-dest="$LINK_DIR"}
 		${MOVE:+--remove-source-files}

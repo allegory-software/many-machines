@@ -38,8 +38,12 @@ rm_dir() { # DIR
 	checkvars dir
 	check_abs_filepath "$dir"
 	sayn "Removing dir: $dir ... "
-	must dry rm -rf "$dir"
-	say OK
+	if [[ ! -d $dir ]]; then
+		say "not found"
+	else
+		must dry rm -rf "$dir"
+		say OK
+	fi
 }
 
 rm_file() { # FILE
@@ -47,7 +51,7 @@ rm_file() { # FILE
 	checkvars file
 	check_abs_filepath "$file"
 	sayn "Removing file: $file ... "
-	if [[ ! -f $file ]]; then
+	if [[ ! -e $file ]]; then
 		say "not found"
 	else
 		must dry rm -f "$file"

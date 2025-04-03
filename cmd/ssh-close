@@ -1,0 +1,12 @@
+#!/bin/bash
+# COMMAND ;; close persistent ssh connection
+. mmlib
+
+_f() {
+	md_var PUBLIC_IP; local PUBLIC_IP=$R1
+	[[ $PUBLIC_IP ]] || return 0
+	find ~/.ssh -name control-$PUBLIC_IP-22-* | while read -r f; do
+		must rm_file $f
+	done
+}
+AS_DEPLOY=1 each_md _f

@@ -34,9 +34,9 @@ version_acme() {
 
 acme_sh() {
 	local cmd_args="/root/.acme.sh/acme.sh --config-home $ACME_DIR"
-	run $cmd_args "$@"
-	local ret=$?; [[ $ret == 2 ]] && ret=0 # skipping gets exit code 2.
-	[[ $ret == 0 ]] || die "$cmd_args $@ [$ret]"
+	run $cmd_args "$@"; local ret=$?
+	# skipping gets exit code 2.
+	[[ $ret == 0 || $ret == 2 ]] || die "$cmd_args $@ [$ret]"
 }
 
 acme_cert_keyfile() { R1=$ACME_DIR/${DOMAIN}_ecc/$DOMAIN.key; }
@@ -52,6 +52,7 @@ acme_cert_issue() { # DOMAIN=
 	checkvars DOMAIN
 	say "Issuing SSL certificate for domain: '$DOMAIN' ... "
 	acme_sh --issue -d $DOMAIN --stateless "$@"
+	[[ $? == 2 ]] && return 2
 	nginx_reload
 }
 
@@ -59,6 +60,7 @@ acme_cert_renew() { # DOMAIN=
 	checkvars DOMAIN
 	say "Renewing SSL certificate for domain: '$DOMAIN' ... "
 	acme_sh --renew -d $DOMAIN "$@"
+	[[ $? == 2 ]] && return 2
 	nginx_reload
 }
 
@@ -66,10 +68,6 @@ acme_cert_backup() {
 	checkvars DEPLOY DOMAIN
 	check_machine $MACHINE
 	local d=.acme.sh.etc/${DOMAIN}_ecc
-	if [[ ! -d /root/$d ]]; then
-		say "No SSL certificate to back up for domain: '$DOMAIN'."
-		return 1
-	fi
 	SRC_DIR=/root/./$d DST_DIR=/root/mm/var SRC_MACHINE=$MACHINE rsync_dir
 }
 
