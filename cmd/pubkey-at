@@ -1,0 +1,10 @@
+#!/bin/bash
+# ADMIN SSH ; [USER] ; get ssh public key from machine
+. mmlib
+
+OF_USER=$1
+[[ $OF_USER ]] && checkvars OF_USER
+VARS="OF_USER" each_md ssh_script '
+	ssh_pubkey "$OF_USER"
+	printf "%s\n" "$R1"
+'

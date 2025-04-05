@@ -4,7 +4,5 @@
 
 OF_USER=$1
 [[ $OF_USER ]] && checkvars OF_USER
-VARS="OF_USER" each_md ssh_script '
-	ssh_pubkey "$OF_USER"
-	printf "%s\n" "$R1"
-'
+ssh_pubkey "$OF_USER"
+printf "%s\n" "$R1"
