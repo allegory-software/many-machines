@@ -46,7 +46,7 @@ while [[ $# > 0 ]]; do
 			[[ ! $ARGS || $ARGS =~ ^\[.*\]$ ]] \
 				|| die "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 		fi
-		if [[ $# == 1 && ( $1 == help || $1 == "--help" || $1 == "?" || $1 == "-h" ) ]]; then # special arg 'help' treated here
+		if [[ $# == 1 && ( $1 == help || $1 == "--help" || $1 == "?" || $1 == "-?" || $1 == "-h" ) ]]; then # special arg 'help' treated here
 			local SECTION ARGS DESCR; cmd_metadata
 			say "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 			exit
