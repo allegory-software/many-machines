@@ -1,6 +1,10 @@
 #!/bin/bash
-# ADMIN SSH ;; get a usable ssh public key
+# ADMIN SSH ; [USER] ; get ssh public key to put in ~/.ssh/authorized_keys
 . mmlib
 
-ssh_pubkey
-printf "%s\n" "$R1"
+OF_USER=$1
+[[ $OF_USER ]] && checkvars OF_USER
+VARS="OF_USER" each_md ssh_script '
+	ssh_pubkey "$OF_USER"
+	printf "%s\n" "$R1"
+'

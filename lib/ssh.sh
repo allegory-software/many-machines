@@ -153,7 +153,10 @@ Host $HOST
 	save "$s" $CONFIG $USER 600
 }
 
-ssh_pubkey() {
+ssh_pubkey() { # [USER=]
+	local USER=${1:-$USER}
+	checkvars USER
+	local HOME; [[ $USER == root ]] && HOME=/root || HOME=/home/$USER
 	R1=`must ssh-keygen -y -f $HOME/.ssh/id_rsa` || exit
 }
 

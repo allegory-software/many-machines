@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN SSH ; [DEVICE|"PUBKEY"|?] ["USER1 ..."] ; add a ssh public key on machine(s)
+# ADMIN SSH ; [DEVICE|"PUBKEY"|?] ["USER1 ..."] ; remove a ssh public key on machine(s)
 . mmlib
 
 PUBKEY=$1 USERS=$2
