@@ -1,4 +1,4 @@
 #!/bin/bash
-# STAT ; ["SERVICE1 ..."] ; print service(s) that are down
+# STATUS ; ["SERVICE1 ..."] ; print service(s) that are down
 
 DOWN=1 VARS=DOWN mm status "$@"

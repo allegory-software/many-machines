@@ -1,5 +1,5 @@
 #!/bin/bash
-# STAT ;; find and report problems
+# STATUS ;; find and report problems
 . mmlib
 
 MIN_FREE_HDD_KB=$((1024 * 10000)) # 10 GB

@@ -140,7 +140,7 @@ MM assumes key-based auth for SSH. `mm pubkeys` lists the current SSH public
 keys found on each machine/user. The `device` column allows you to associate
 a pubkey with the device that holds the private key of that pubkey so that
 you can keep track of which device has access to which machine/user. To register
-the machine you're on right now as a device type `mm set-device DEVICE`.
+the machine you're on right now as a device, type `mm set-device DEVICE`.
 Type `mm pubkeys` again: you should now see your device showing next to the pubkey.
 If your private key gets compromised, refresh it with `mm ssh-keygen` and then
 add it to all machines with `mm pubkey-add`. Then remove the old one with
@@ -156,8 +156,11 @@ Add a `modules` file inside your machine dir with a list of module names separat
 by space and/or newlines (eg. `timezone hostname secure_proc git curl`).
 
 Modules can be installed manually with `mm install MODULE`. Modules declared
-in the `modules` file can be installed with `mm prepare`, which is what you
-should run on a new machine right after you get SSH access to it.
+in the `modules` file can be installed with `mm install all`, which is what you
+should run on a newly provisioned machine right after you get SSH access to it.
+
+NOTE: There is no dependency tree for modules, so you need to declare them
+in the right order.
 
 ## `mm` vs `mmd`
 
@@ -226,7 +229,7 @@ You can have multiple include dirs symlinked into an MD dir. They are processed
 in alphabetical order, so you can override values from the ones that come before
 in the ones that come later.
 
-In practice you will most likely have a `.0-defaults` include dir for machines
+In practice you will likely have a `.0-defaults` include dir for machines
 and one for deployments that you wil symlink into every MD, and other include
 dirs on top of that based on your situation.
 

@@ -2,4 +2,6 @@
 # COMMAND ; DIR ; print dir's lean size
 . mmlib
 
-dir_lean_size "$1"; echo "$R1" | numfmt --to=iec
+DIR="$1"
+checkvars DIR-
+AS_DEPLOY=1 VARS=DIR md_custom_list "%-10s %s" "DIR_SIZE DIR"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# STAT ;; deploy version status
+# STATUS ;; deploy version status
 . mmlib
 
 # TODO: filter for old

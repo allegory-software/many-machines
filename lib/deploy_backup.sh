@@ -36,7 +36,7 @@ list_deploy_backups() {
 	done
 }
 
-deploy_mysql_backup() { # [BACKUP_FILE]
+deploy_mysql_backup() { # MACHINE= DEPLOY= [BACKUP_FILE]
 	local BACKUP_FILE=${1:-/dev/stdout}
 	checkvars MACHINE DEPLOY
 	ssh_script "mysql_backup_db $DEPLOY" > $BACKUP_FILE

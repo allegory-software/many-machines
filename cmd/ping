@@ -1,9 +1,21 @@
 #!/bin/bash
-# STAT ; [ping options...] ; ping machine
+# STATUS ;; ping machine(s) and show latency
 . mmlib
 
+FMT="%-10s %-16s %-16s %-7s\n"
 _f() {
-	must md_var PUBLIC_IP
-	ping "$@" $R1
+	must md_var PUBLIC_IP; local IP=$R1
+	local s=$(ping -c 4 -i 0 -W 1 $IP)
+	local loss=$(printf "%s\n" "$s" | grep -oP '\d+(?=% packet loss)')
+	local ping=$(printf "%s\n" "$s" | tail -n 1 | awk -F'/' '{print int($5)}')
+	if [[ $loss == 100 ]]; then
+		loss=${RED}100${ENDCOLOR}
+		ping=${RED}???${ENDCOLOR}
+	else
+		loss=${LIGHTGRAY}$loss${ENDCOLOR}
+		ping=${LIGHTGRAY}$ping${ENDCOLOR}
+	fi
+	printf "$FMT" "$MACHINE" "$IP" "$ping" "$loss"
 }
-each_machine _f "$@"
+printf "$WHITE$FMT$ENDCOLOR" MACHINE IP "${WHITE}LAT ms${ENDCOLOR}" "${WHITE}LOSS %${ENDCOLOR}"
+QUIET=1 each_machine _f

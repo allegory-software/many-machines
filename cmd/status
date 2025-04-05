@@ -1,5 +1,5 @@
 #!/bin/bash
-# STAT ; ["SERVICE1 ..."] ; print service(s) status
+# STATUS ; ["SERVICE1 ..."] ; print service(s) status
 . mmlib
 
 md_ssh_list md_status \

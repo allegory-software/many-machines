@@ -3,7 +3,7 @@
 . mmlib
 
 [[ $1 == please ]] || die "Say please."
-[[ -L device ]] || die "Run $WHITEmm set-device$ENDCOLOR first."
+[[ -L device ]] || die "Run ${WHITE}mm set-device${ENDCOLOR} first."
 DEVICE=`basename $(readlink device)`
 checkvars DEVICE
 

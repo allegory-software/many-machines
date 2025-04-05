@@ -92,6 +92,16 @@ get_CITY()    { wget -q -T10 -O- ipinfo.io/city; }
 get_COUNTRY() { wget -q -T10 -O- ipinfo.io/country; }
 get_REGION()  { wget -q -T10 -O- ipinfo.io/region; }
 
+get_DIR() {
+	DIR=${DIR/#\~/$HOME}
+	printf "%s\n" "$DIR"
+}
+get_DIR_SIZE() {
+	checkvars DIR-
+	DIR=${DIR/#\~/$HOME}
+	dir_lean_size "$DIR"; echo "$R1" | numfmt --to=iec
+}
+
 # installers -----------------------------------------------------------------
 
 install_disable_cloudinit() {

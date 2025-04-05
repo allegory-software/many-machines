@@ -1,5 +1,5 @@
 #!/bin/bash
-# STAT ;; list available RAM & HDD
+# STATUS ;; list available RAM & HDD
 . mmlib
 
 md_custom_list \

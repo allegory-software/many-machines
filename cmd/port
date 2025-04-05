@@ -1,5 +1,5 @@
 #!/bin/bash
-# STAT ; [PORT] ; check if a port is open from this machine
+# STATUS ; [PORT] ; check if a port is open from this machine
 . mmlib
 
 PORT=${1:-22}

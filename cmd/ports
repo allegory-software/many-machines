@@ -1,5 +1,5 @@
 #!/bin/bash
-# STAT ; [IP|port] ; list bound IP & ports
+# STATUS ; [IP|port] ; list bound IP & ports
 . mmlib
 
 printf "$WHITE%-10s %-11s %-10s %8s %9s %s$ENDCOLOR\n" MACHINE TYPE IP PORT PID BIN
