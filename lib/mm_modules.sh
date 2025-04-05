@@ -6,6 +6,10 @@
 #   that runs on the mm machine so we can rsync files as part of installation.
 # - install only what's needed, and have a library of installers ready.
 # - split code into package-specific and distro-specific libraries.
+#
+# the module logic is reused for machine-level and deploy-level services
+# too, which is why we use $NAMES instead of $MODULES when we're abstracting.
+#
 
 md_modules() {
 	must md_var ${DEPLOY:+DEPLOY_}MODULES
@@ -41,7 +45,7 @@ _each() { # ACTION= [DRY=1] [DEPLOY=] NAME1 ...
 				continue
 			fi
 		fi
-		dry $FN $fn $name
+		dry $fn $name
 	done
 	return 0
 }
@@ -73,9 +77,12 @@ _md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] all | NAME1 ...
 # executed both locally (pre/post functions) and remotely (main function).
 _md_combined_action() { # ACTION= [MODULE1 ...]
 	[[ $# > 0 ]] || { _md_list; return; } # list only once
-	ACTION=pre$ACTION  _md_action "$@"
-	REMOTE=1           _md_action "$@"
-	ACTION=post$ACTION _md_action "$@"
+	local module
+	for module in $*; do
+		ACTION=pre$ACTION  _md_action $module
+		REMOTE=1           _md_action $module
+		ACTION=post$ACTION _md_action $module
+	done
 }
 md_install()   { ACTION=install   LIST=md_modules           _md_combined_action "$@"; }
 md_uninstall() { ACTION=uninstall LIST=md_modules REVERSE=1 _md_combined_action "$@"; }
