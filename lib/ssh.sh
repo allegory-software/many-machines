@@ -46,23 +46,29 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 	quote_args "$@"; local ARGS="${R1[*]}"
 	[[ $FUNCS ]] && local FUNCS=$(declare -f $FUNCS)
 	local VARS=$(declare -p DEBUG VERBOSE DRY MACHINE MM_LIBS $VARS 2>/dev/null)
+	debug "ssh_to SCRIPT ARGS:"
+	debug "-------------------------------------------------------"
+	debug "$SCRIPT $ARGS"
+	debug "-------------------------------------------------------"
 	if [ "$MM_DEBUG_LIB" ]; then
 		# rsync lib to machine and load from there:
 		# slower (takes ~1s) but reports line numbers correctly on errors.
-		QUIET=1 SRC_DIR=lib    DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
-		QUIET=1 SRC_DIR=libopt DST_DIR=/root/.mm DST_MACHINE=$MACHINE rsync_dir
+		local DST_DIR=/root/.mm
+		local DST_USER=root
+		[[ $AS_USER ]] && {
+			DST_DIR=/home/$AS_USER/.mm
+			DST_USER=$AS_USER
+		}
+		QUIET=1 SRC_DIR=lib    DST_MACHINE=$MACHINE rsync_dir
+		QUIET=1 SRC_DIR=libopt DST_MACHINE=$MACHINE rsync_dir
 		local code="
 $VARS
 $FUNCS
-. /root/.mm/lib/all
-mkdir -p /root/.mm/tmp
-cd /root/.mm || exit 1
+. ~/.mm/lib/all
+mkdir -p ~/.mm
+cd ~/.mm || exit 1
 $SCRIPT $ARGS
 "
-		debug "ssh_to code:"
-		debug "-------------------------------------------------------"
-		debug "$code"
-		debug "-------------------------------------------------------"
 		run ssh_to bash -s <<< "$code"
 	else
 		# include lib contents in the script:
@@ -72,7 +78,7 @@ $VARS
 set -f # disable globbing
 shopt -s nullglob
 set -o pipefail
-mkdir -p ~/.mm/tmp
+mkdir -p ~/.mm
 cd ~/.mm || exit 1
 $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
 $(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)

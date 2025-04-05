@@ -8,9 +8,9 @@ checkvars NEW_DB
 _f() {
 	checkvars MACHINE
 	ssh_script "
-on_exit run rm -f tmp/$DEPLOY.$$.qp
-mysql_backup_db $DEPLOY tmp/$DEPLOY.$$.qp
-mysql_restore_db $NEW_DB tmp/$DEPLOY.$$.qp
+on_exit run rm -f $DEPLOY.$$.qp
+mysql_backup_db $DEPLOY $DEPLOY.$$.qp
+mysql_restore_db $NEW_DB $DEPLOY.$$.qp
 "
 }
 NOALL=1 each_deploy _f
