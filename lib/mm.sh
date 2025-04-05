@@ -2,14 +2,21 @@
 
 # mm module ------------------------------------------------------------------
 
+preinstall_mm() {
+	local VAR_LOCK_KEY=`var_lock_key` || die "var_lock_key error: $?"
+	VARS="VAR_LOCK_KEY" ssh_script '
+	git_clone_for root git@github.com:allegory-software/many-machines /root/mm master
+	(
+	must cd /root/mm
+	./install
+	git_clone_for root git@github.com:allegory-software/mm-var /root/mm/var master
+	var_unlock "$VAR_LOCK_KEY"
+	)
+	'
+}
+
 install_mm() {
-	git_clone_for root git@github.com:allegory-software/many-machines2 /root/mm master
-	# install globally
-	must ln -sf /root/mm/mm      /usr/bin/mm
-	must ln -sf /root/mm/mmd     /usr/bin/mmd
-	must ln -sf /root/mm/lib/all /usr/bin/mmlib
-	remove_line /root/mm/mm-autocomplete.sh /root/.bashrc
-	append ". /root/mm/mm-autocomplete.sh" /root/.bashrc
+	true
 }
 
 version_mm() {
@@ -24,7 +31,7 @@ version_mm() {
 var_git_init() { # REPO
 	local REPO=$1
 	checkvars REPO
-	package_version git-crypt >/dev/null || package_install git-gcrypt
+	package_version git-crypt >/dev/null || package_install git-crypt
 	[[ -d var/.git ]] && die "Remove var/.git first."
 	[[ -f var/.gitattributes ]] && die "Remove var/.gitattributes first."
 	must mkdir -p var
@@ -73,10 +80,10 @@ var_push() { # [COMMIT_MSG]
 var_unlock() { # KEY
 	local KEY=$1
 	checkvars KEY-
-	package_version git-crypt >/dev/null || package_install git-gcrypt
+	package_version git-crypt >/dev/null || package_install git-crypt
 	(
 	must cd var
-	on_exit run rm -f ../var_git_crypt_key
+	#on_exit run rm -f ../var_git_crypt_key
 	printf "%s" "$KEY" | must base64 -d - > ../var_git_crypt_key
 	must git-crypt unlock ../var_git_crypt_key
 	)
