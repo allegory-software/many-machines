@@ -1,4 +1,4 @@
-# Bash quick ref & coding tips
+# Bash quick ref & coding tips for MM
 
 ## Unquoted vars
 
@@ -16,7 +16,7 @@ Assignments of form `a=$b` or `a=$(cmd)` do not need quoting.
 
 Variables are not exported by default, i.e. they are not inherited
 by exec'ed programs. However, they are always inherited by functions
-both locals and globals, including inside sub-processes created with `()`.
+(both locals and globals), including inside sub-processes created with `()`.
 
 ## Unsafe constructs
 
