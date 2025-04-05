@@ -45,10 +45,14 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 	checkvars MACHINE SCRIPT-
 	quote_args "$@"; local ARGS="${R1[*]}"
 	[[ $FUNCS ]] && local FUNCS=$(declare -f $FUNCS)
-	local VARS=$(declare -p DEBUG VERBOSE DRY MACHINE MM_LIBS $VARS 2>/dev/null)
-	debug "ssh_to SCRIPT ARGS:"
+	local VARNAMES="DEBUG VERBOSE DRY MACHINE MM_LIBS $VARS"
+	local VARS=$(declare -p $VARNAMES 2>/dev/null)
 	debug "-------------------------------------------------------"
-	debug "$SCRIPT $ARGS"
+	debug "ssh_to ARGS   : $ARGS"
+	debug "ssh_to SCRIPT :"
+	debug "-------------------------------------------------------"
+	debug "$VARS"
+	debug "$SCRIPT"
 	debug "-------------------------------------------------------"
 	if [ "$MM_DEBUG_LIB" ]; then
 		# rsync lib to machine and load from there:
