@@ -154,10 +154,9 @@ log_bin_trust_function_creators = 1
 
 install_tarantool() { # tarantool 3.0
 	say; say "Installing Tarantool..."
-	must curl -L https://tarantool.io/oBlHHAA/release/3/installer.sh | bash
+	curl -L https://tarantool.io/release/3/installer.sh | bash
 	apt_get_install tarantool
-	# remove the source repo or it breaks apt-get. this means no updates, just fresh installs every time.
-	rm_dir /etc/apt/sources.list.d/tarantool_3.list
+	apt_get_install tt
 	say "Tarantool install done."
 }
 

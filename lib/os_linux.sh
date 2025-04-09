@@ -15,6 +15,10 @@ version_kernel() {
 	uname -r
 }
 
+version_glibc() {
+	ldd --version | head -1 | awk '{print $NF}'
+}
+
 version_cron() {
 	package_version cron
 }
@@ -157,14 +161,41 @@ uninstall_secure_proc() {
 	true
 }
 
+kernel_config_add() { # FILE LINES
+	local FILE=$1
+	local LINES=$2
+	checkvars FILE LINES-
+	say "Adding kernel config rules:"
+	say "$LINES"
+	say "in file: $FILE ..."
+	save "$LINES" /etc/sysctl.d/$FILE
+	must sysctl --system >/dev/null
+}
+kernel_config_remove() { # FILE
+	local FILE=$1
+	checkvars FILE
+	say "Removing kernel config rule file: $FILE ..."
+	rm_file /etc/sysctl.d/$FILE
+	must sysctl --system >/dev/null
+}
+
 install_low_ports() {
 	say; say "Configuring kernel to allow binding to ports < 1024 by any user ..."
-	save 'net.ipv4.ip_unprivileged_port_start=0' \
-		/etc/sysctl.d/50-unprivileged-ports.conf
-	must sysctl --system >/dev/null
+	kernel_config_add 50-unprivileged-ports.conf 'net.ipv4.ip_unprivileged_port_start=0'
 }
 uninstall_low_ports() {
 	say; say "Removing kernel config that allows binding to ports < 1024 by any user ..."
-	rm_file /etc/sysctl.d/50-unprivileged-ports.conf
-	must sysctl --system >/dev/null
+	kernel_config_remove 50-unprivileged-ports.conf
+}
+
+install_tcp_keepalive_tuning() {
+	say; say "Tuning TCP keep-alive parameters ..."
+	kernel_config_add 50-tcp-keepalive.conf "
+net.ipv4.tcp_keepalive_time=60
+net.ipv4.tcp_keepalive_intvl=5
+net.ipv4.tcp_keepalive_probes=5
+"
+}
+uninstall_tcp_keepalive_tuning() {
+	kernel_config_remove 50-tcp-keepalive.conf
 }
