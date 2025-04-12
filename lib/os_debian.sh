@@ -164,3 +164,13 @@ install_disable_rpcbind() {
 	service_disable rpcbind.socket
 	service_disable rpcbind
 }
+
+install_disable_avahi_daemon() {
+	service_disable avahi-daemon.socket
+	service_disable avahi-daemon
+}
+
+install_clear_iptables() {
+	iptables -F
+	rm -f /etc/iptables/rules*
+}

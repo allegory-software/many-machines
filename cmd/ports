@@ -2,24 +2,25 @@
 # STATUS ; [IP|port] ; list bound IP & ports
 . mmlib
 
-printf "$WHITE%-10s %-11s %-10s %8s %9s %s$ENDCOLOR\n" MACHINE TYPE IP PORT PID BIN
+printf "$WHITE%-10s %-6s %-16s %8s %9s %s$ENDCOLOR\n" MACHINE TYPE IP PORT PID BIN
+SCRIPT=$(cat <<'EOS'
 _f() {
-	local lines s
-	if lines=`ssh_to netstat -ltunp 2>&1`; then
-		printf "%s" "$lines" | while read s; do
-			[[ $s == Proto* || $s == Active* ]] && continue
-			local stype=${s:0:11}
-			local ip_port=${s:20:23}; trim ip_port
-			local ip=${ip_port%:*}
-			local port=${ip_port##*:}
-			local pid_bin=${s:80}
-			local pid=${pid_bin%%/*}
-			local bin=${pid_bin#*/}
+	if lines=$(ss -tulnp 2>&1 | tail -n +2); then
+		printf "%s" "$lines" | while read -r line; do
+			local stype=$(echo $line | awk '{print $1}')
+			local ip_port=$(echo $line | awk '{print $5}')
+			local port=${ip_port##*:}  # Everything after the last ':'
+			local ip=${ip_port%:*}     # Everything before the last ':'
+			local pids=$(echo $line | grep -oP 'pid=\K[0-9]+')
 			[[ $1 && $ip_port != *$1* ]] && continue
-			printf "%-10s %-11s %-10s %8s %9s %s\n" "$MACHINE" "$stype" "$ip" "$port" "$pid" "$bin"
+			for pid in $pids; do
+				local bin=$(cat /proc/$pid/cmdline 2>/dev/null | tr '\000' ' ')
+				printf "%-10s %-6s %-16s %8s %9s %s\n" "$MACHINE" "$stype" "$ip" "$port" "$pid" "$bin"
+			done
 		done
-	else
-		say "$lines"
 	fi
 }
-QUIET=1 each_machine _f "$@"
+_f
+EOS
+)
+QUIET=1 each_machine ssh_script "$SCRIPT" "$@"
