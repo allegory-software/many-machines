@@ -163,7 +163,7 @@ active_machines() {
 active_deploys() {
 	local S
 	local DEPLOY
-	for DEPLOY in `ls -1 var/deploys`; do
+	for DEPLOY in `[ -d deploys ] && ls -1 deploys || ls -1 var/deploys`; do
 		if [[ $INACTIVE ]] || deploy_is_active; then S+=" $DEPLOY"; fi
 	done
 	R1=$S
