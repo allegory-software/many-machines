@@ -1,0 +1,11 @@
+#!/bin/bash
+# STATUS ; [PORTS]; scan for open ports with masscan
+. mmlib
+
+PORTS=${1:-1-65535}
+_f() {
+	must md_var PUBLIC_IP; local IP=$R1
+	on_exit run rm -f paused.conf
+	must masscan -p$PORTS $IP --wait 0 --rate 100000
+}
+each_machine _f

@@ -164,13 +164,55 @@ install_disable_rpcbind() {
 	service_disable rpcbind.socket
 	service_disable rpcbind
 }
+uninstall_disable_rpcbind() {
+	service_enable rpcbind
+	service_enable rpcbind.socket
+}
 
 install_disable_avahi_daemon() {
 	service_disable avahi-daemon.socket
 	service_disable avahi-daemon
 }
+uninstall_disable_avahi_daemon() {
+	service_enable avahi-daemon
+	service_enable avahi-daemon.socket
+}
 
-install_clear_iptables() {
+install_disable_iptables() {
+	service_disable netfilter-persistent
 	iptables -F
-	rm -f /etc/iptables/rules*
+}
+uninstall_disable_iptables() {
+	service_enable netfilter-persistent
+	service_start netfilter-persistent
+}
+
+install_nftables() {
+	save "
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+	chain input {
+		type filter hook input priority 0; policy drop;
+
+		iif lo accept
+
+		ct state established,related accept
+
+		ip protocol icmp accept
+		#ip6 icmpv6 accept
+
+		tcp dport { ${TCP_PORTS//[[:space:]]/,} } accept
+		udp dport { ${UDP_PORTS//[[:space:]]/,} } accept
+	}
+}
+" /etc/nftables.conf
+	nft -f /etc/nftables.conf
+	service_enable nftables
+}
+uninstall_nftables() {
+	systemctl disable nftables
+	nft flush ruleset
 }

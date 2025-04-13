@@ -23,12 +23,18 @@ version_cron() {
 	package_version cron
 }
 
-is_listening() { # IP=|MACHINE= PORT
-	local PORT=$1
+open_ports() { # IP=|MACHINE= [UDP=1] PORTS ...
+	local PORTS="$@"
 	[[ $IP ]] || {
 		must md_var PUBLIC_IP
 		local IP=$R1
 	}
+	checkvars IP PORTS-
+	nc -zv -w 1 ${UDP:+-u} $IP $PORTS 2>&1 | grep -Po '(?<=\s)(\d+)(?=\s.* open$)' | tr '\n' ' '
+}
+
+is_listening() { # IP=|MACHINE= PORT
+	local PORT=$1
 	checkvars IP PORT
 	nc -zw1 $IP $PORT
 }
@@ -149,16 +155,18 @@ install_timezone() {
 uninstall_timezone() { true; }
 
 # remount /proc so we can pass in secrets via cmdline without them leaking.
-install_secure_proc() {
-	say; say "Remounting /proc with option to hide command line args ..."
-	must mount -o remount,rw,nosuid,nodev,noexec,relatime,hidepid=2 /proc
+_remount_proc() { # HIDEPID
+	say; say "Remounting /proc with hidepid=$1 ..."
+	must mount -o remount,rw,nosuid,nodev,noexec,relatime,hidepid=$1 /proc
 	# make that permanent...
 	must sed -i '/^proc/d' /etc/fstab
-	append "proc  /proc  proc  defaults,nosuid,nodev,noexec,relatime,hidepid=1  0  0" /etc/fstab
+	append "proc  /proc  proc  defaults,nosuid,nodev,noexec,relatime,hidepid=$1  0  0" /etc/fstab
+}
+install_secure_proc() {
+	_remount_proc 1
 }
 uninstall_secure_proc() {
-	# TODO
-	true
+	_remount_proc 0
 }
 
 kernel_config_add() { # FILE LINES
@@ -188,7 +196,7 @@ uninstall_low_ports() {
 	kernel_config_remove 50-unprivileged-ports.conf
 }
 
-install_tcp_keepalive_tuning() {
+install_tcp_tuning() {
 	say; say "Tuning TCP keep-alive parameters ..."
 	kernel_config_add 50-tcp-keepalive.conf "
 net.ipv4.tcp_keepalive_time=60

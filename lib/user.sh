@@ -1,13 +1,13 @@
 # user admin ops: runs as root on a machine administered by mm.
 
 user_exists() { # USER
-	local user="$1"
+	local user=$1
 	checkvars user
 	id -u $user &>/dev/null
 }
 
 user_create() { # USER
-	local user="$1"
+	local user=$1
 	checkvars user
 	sayn "Creating user '$user' ... "
 	user_exists $user || must useradd -m $user
@@ -17,7 +17,7 @@ user_create() { # USER
 }
 
 user_lock_pass() { # USER
-	local user="$1"
+	local user=$1
 	checkvars user
 	sayn "Locking password for user '$user' ... "
 	must passwd -l $user >/dev/null
@@ -28,16 +28,23 @@ user_check_can_remove() {
 	ps -u "$1" &>/dev/null && die "User $1 still has running processes."
 }
 
+user_in_group() { # USER GROUP
+	local user=$1 group=$2
+	checkvars user group
+	id -nG $user | grep -qw $group
+}
+
 user_remove() { # USER
 	local user="$1"
 	checkvars user
 	user_check_can_remove $user
-
+	local u
+	for u in $(getent group $user | cut -d: -f4 | tr ',' ' '); do
+		sayn "Removing user '$u' from group '$user' ... "
+		user_in_group "$u" $user && must deluser --quiet "$u" $user && say OK || say "not found"
+	done
 	sayn "Removing user '$user' ... "
-	user_exists $user && must userdel $user
-	say OK
-
-	rm_dir /home/$user
+	user_exists $user && must userdel -r $user && say OK || say "not found"
 }
 
 user_rename() { # OLD_USER NEW_USER

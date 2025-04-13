@@ -1,0 +1,15 @@
+#!/bin/bash
+# STATUS ; [UDP=1] [PORTS ...]; scan for open ports
+. mmlib
+
+PORTS="${@:-22}"
+FMT="%-10s %-6s %-16s %-10s %-5s\n"
+_f() {
+	must md_var PUBLIC_IP; local IP=$R1
+	UDP=${UDP:+udp}
+	local TYPE=${UDP:-tcp}
+	local OPEN=$(open_ports $PORTS)
+	printf "$FMT" "$MACHINE" "$TYPE" "$IP" "$PORTS" "$OPEN"
+}
+printf "$WHITE$FMT$ENDCOLOR" MACHINE TYPE IP PORTS OPEN
+QUIET=1 each_machine _f
