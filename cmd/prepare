@@ -1,0 +1,7 @@
+#!/bin/bash
+# ADMIN ;; install all machine or deploy modules
+. mmlib
+
+QUIET=1
+_f() { md_modules;           md_install   $R1; }; each_md _f
+_f() { md_modules_uninstall; md_uninstall $R1; }; each_md _F

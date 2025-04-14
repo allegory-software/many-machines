@@ -12,9 +12,11 @@
 #
 
 md_modules() {
-	must md_var ${DEPLOY:+DEPLOY_}MODULES
+	must md_var ${DEPLOY:+DEPLOY_}MODULES$1
 }
-
+md_modules_uninstall() {
+	md_modules _UNINSTALL
+}
 md_services() {
 	must md_var ${DEPLOY:+DEPLOY_}SERVICES
 }

@@ -78,6 +78,12 @@ service_stop() {
 	must systemctl stop $SERVICE
 }
 
+service_restart() {
+	local SERVICE=$1; checkvars SERVICE
+	say "Restarting $SERVICE..."
+	must systemctl restart $SERVICE
+}
+
 service_disable() {
 	local SERVICE=$1; checkvars SERVICE
 	service_is_running $SERVICE && \
