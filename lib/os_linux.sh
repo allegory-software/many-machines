@@ -114,15 +114,15 @@ get_DIR_SIZE() {
 
 # installers -----------------------------------------------------------------
 
-install_disable_cloudinit() {
-	say; say "Disabling cloud-init because it resets our changes on reboot ..."
-	[[ -d /etc/cloud ]] || return 0
-	touch /etc/cloud/cloud-init.disabled
-}
-uninstall_disable_cloudinit() {
+install_cloudinit() {
 	say; say "Removing cloud-init.disabled ..."
 	[[ -d /etc/cloud ]] || return 0
 	rm_file /etc/cloud/cloud-init.disabled
+}
+uninstall_cloudinit() {
+	say; say "Disabling cloud-init because it resets our changes on reboot ..."
+	[[ -d /etc/cloud ]] || return 0
+	touch /etc/cloud/cloud-init.disabled
 }
 
 set_hostname() { # HOST

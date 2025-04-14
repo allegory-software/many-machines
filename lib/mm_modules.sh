@@ -58,27 +58,33 @@ _md_list() { # LIST=
 		printf "$WHITE%-10s$ENDCOLOR %s\n" $MACHINE "${names[*]}"
 	fi
 }
-_md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] all | NAME1 ...
-	checkvars ACTION
-	local NAMES=$*
-	[[ $NAMES ]] || { _md_list; return 2; }
-	if [[ $NAMES == all ]]; then
-		$LIST; NAMES=$R1
-		[[ $REVERSE ]] && NAMES=`awk '{for(i=NF;i>0;i--) printf("%s ",$i)}' <<<"$NAMES"`
+_md_names() { # [REVERSE=1] LIST= [all | NAME1 ...]
+	local names=$*
+	[[ $names ]] || { _md_list; return 2; }
+	if [[ $names == all ]]; then
+		$LIST; names=$R1
+		[[ $REVERSE ]] && names=`awk '{for(i=NF;i>0;i--) printf("%s ",$i)}' <<<"$names"`
 	fi
-	checkvars NAMES-
+	checkvars names-
+	R1=$names
+}
+_md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] [all | NAME1 ...]
+	checkvars ACTION
+	_md_names "$@"; [[ $? == 2 ]] && return
+	local names=$R1
 	if [[ $REMOTE ]]; then
-		VARS="ACTION $VARS" md_ssh_script _each $NAMES
+		VARS="ACTION $VARS" md_ssh_script _each $names
 	else
-		_each $NAMES
+		_each $names
 	fi
 }
 
 # executed both locally (pre/post functions) and remotely (main function).
 _md_combined_action() { # ACTION= [MODULE1 ...]
-	[[ $# > 0 ]] || { _md_list; return; } # list only once
+	_md_names "$@"; [[ $? == 2 ]] && return
+	local names=$R1
 	local module
-	for module in $*; do
+	for module in $names; do
 		ACTION=pre$ACTION  _md_action $module
 		REMOTE=1           _md_action $module
 		ACTION=post$ACTION _md_action $module

@@ -82,13 +82,17 @@ service_disable() {
 	local SERVICE=$1; checkvars SERVICE
 	service_is_running $SERVICE && \
 		service_stop $SERVICE
-	say "Disabling $SERVICE..."
-	must systemctl disable $SERVICE
+	if service_is_installed $SERVICE; then
+		say; say "Disabling $SERVICE ..."
+		must systemctl disable $SERVICE
+	else
+		say; say "Disabling $SERVICE ... not installed."
+	fi
 }
 
 service_enable() {
 	local SERVICE=$1; checkvars SERVICE
-	say "Enabling $SERVICE..."
+	say; say "Enabling $SERVICE..."
 	must systemctl enable $SERVICE
 }
 
@@ -160,31 +164,31 @@ install_tarantool() { # tarantool 3.0
 	say "Tarantool install done."
 }
 
-install_disable_rpcbind() {
-	service_disable rpcbind.socket
-	service_disable rpcbind
-}
-uninstall_disable_rpcbind() {
+install_rpcbind() {
 	service_enable rpcbind
 	service_enable rpcbind.socket
 }
-
-install_disable_avahi_daemon() {
-	service_disable avahi-daemon.socket
-	service_disable avahi-daemon
+uninstall_rpcbind() {
+	service_disable rpcbind.socket
+	service_disable rpcbind
 }
-uninstall_disable_avahi_daemon() {
+
+install_avahi_daemon() {
 	service_enable avahi-daemon
 	service_enable avahi-daemon.socket
 }
-
-install_disable_iptables() {
-	service_disable netfilter-persistent
-	iptables -F
+uninstall_avahi_daemon() {
+	service_disable avahi-daemon.socket
+	service_disable avahi-daemon
 }
-uninstall_disable_iptables() {
+
+install_iptables() {
 	service_enable netfilter-persistent
 	service_start netfilter-persistent
+}
+uninstall_iptables() {
+	service_disable netfilter-persistent
+	iptables -F
 }
 
 install_nftables() {
