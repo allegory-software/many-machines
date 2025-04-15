@@ -1,14 +1,12 @@
 # ssh lib: ssh config and operation wrappers.
 
-ssh_cmd_opt() { # MACHINE=
-	R1=(ssh
--o ConnectTimeout=3
--o PreferredAuthentications=publickey
--o UserKnownHostsFile=var/machines/$MACHINE/.ssh_hostkey
--o ControlMaster=auto
--o ControlPath=$HOME/.ssh/control-$MACHINE-$USER
--o ControlPersist=600
-)
+ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [MM_SSH_TTY=1]
+	[[ $REMOTE_PORT ]] && R1=(autossh) || R1=(ssh)
+	R1+=(
+		-o ConnectTimeout=3
+		-o PreferredAuthentications=publickey
+		-o UserKnownHostsFile=/root/mm/var/machines/$MACHINE/.ssh_hostkey
+	)
 	# try current key but also any old keys, in case the pubkey was not updated
 	# on the remote host when the privkey was renewed.
 	set +f # enable globbing
@@ -18,17 +16,24 @@ ssh_cmd_opt() { # MACHINE=
 	for ((i=n-1; i>=0; i--)); do
 		R1+=(-i ${a[$i]})
 	done
-
-	[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
+	[[ $REMOTE_PORT ]] || R1+=(
+		-o ControlMaster=auto
+		-o ControlPath=$HOME/.ssh/control-$MACHINE-$USER
+		-o ControlPersist=600
+	)
+	[[ $REMOTE_PORT ]] && R1+=(
+		-fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT
+	)
+	[[ ! $REMOTE_PORT && $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 }
 
-ssh_cmd() { # MACHINE= HOST=
+ssh_cmd() { # MACHINE=
 	ip_of "$MACHINE"; local HOST=$R1
 	ssh_cmd_opt
 	R1+=(root@$HOST)
 }
 
-ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= COMMAND ARGS...
+ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [SSH_TTY=1] [COMMAND ARGS...]
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
 	ssh_cmd; local cmd=("${R1[@]}")
@@ -106,6 +111,11 @@ ${R1[*]}
 $SCRIPT" "$@"
 }
 
+ssh_kill_tunnel() { # LOCAL_PORT
+	local LOCAL_PORT=$1
+	checkvars LOCAL_PORT
+	lsof -i :$LOCAL_PORT -sTCP:LISTEN -nP | awk '/autossh/ { print $2 }' # | xargs kill
+}
 
 # ssh config -----------------------------------------------------------------
 

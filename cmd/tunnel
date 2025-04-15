@@ -1,0 +1,17 @@
+#!/bin/bash
+# COMMAND ; [REMOTE_PORT] [LOCAL_PORT] ; ssh tunnel remote port to local port
+. mmlib
+
+[[ $1 ]] || {
+	echo "L-PORT R-PORT R-IP" | awk "{printf \"${WHITE}%-15s %-6s -> %-6s${ENDCOLOR}\n\", \$3, \$2, \$1}"
+	ps aux | grep -E -- '-L [0-9]+:localhost:[0-9]+ root@[0-9.]+' \
+		| sed -nE 's/.*-L ([0-9]+):localhost:([0-9]+) root@([0-9.]+).*/\1 \2 \3/p' \
+		| awk '{printf "%-15s %-6s -> %-6s\n", $3, $2, $1}'
+	exit
+}
+
+REMOTE_PORT=$1
+LOCAL_PORT=$2
+checkvars REMOTE_PORT
+shift 2
+AS_DEPLOY=1 each_md ssh_to "$@"

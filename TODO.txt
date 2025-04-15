@@ -1,14 +1,11 @@
 
-- acme-check
+- d-backups: copy
+- m-backups: list, backup, restore, copy
 
 - ssh tunnels
 - sshfs mounts
 
 - m-rename
-- d-remove
 - d-rename
-
-- d-backups: copy
-- m-backups: list, backup, restore, copy
 
 - EPIC: add mm to mm2 repo and rewrite it to invoke mm2
