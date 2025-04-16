@@ -1,7 +1,13 @@
 # ssh lib: ssh config and operation wrappers.
 
 ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REMOTE_DIR=] [MM_SSH_TTY=1]
-	[[ $REMOTE_PORT ]] && R1=(autossh) || R1=(ssh)
+	if [[ $REMOTE_PORT ]]; then
+		R1=(autossh)
+	elif [[ $REMOTE_DIR ]]
+		then R1=(sshfs -o reconnect)
+	else
+		R1=(ssh)
+	fi
 	R1+=(
 		-o ConnectTimeout=3
 		-o PreferredAuthentications=publickey
@@ -14,24 +20,35 @@ ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REMOTE_DIR=] [MM_SSH_TT
 	set -f
 	local i n=${#a[@]}
 	for ((i=n-1; i>=0; i--)); do
-		R1+=(-i ${a[$i]})
+		R1+=(-o IdentityFile=${a[$i]})
 	done
 	[[ $REMOTE_PORT ]] || R1+=(
 		-o ControlMaster=auto
 		-o ControlPath=$HOME/.ssh/control-$MACHINE-$USER
 		-o ControlPersist=600
 	)
-	[[ ! $REMOTE_PORT && $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
-	[[ $REMOTE_PORT ]] && R1+=(-fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT)
+	if [[ $REMOTE_PORT ]]; then
+		R1+=(-fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT)
+	elif [[ $REMOTE_DIR ]]; then
+		true
+	elif [[ $MM_SSH_TTY ]]; then
+		R1+=(-t)
+	else
+		R1+=(-o BatchMode=yes)
+	fi
 }
 
-ssh_cmd() { # MACHINE=
+ssh_cmd() { # MACHINE= [REMOTE_DIR=] [MOUNT_DIR=]
 	ip_of "$MACHINE"; local HOST=$R1
 	ssh_cmd_opt
-	R1+=(root@$HOST)
+	R1+=(root@$HOST${REMOTE_DIR:+:$REMOTE_DIR})
+	[[ $MOUNT_DIR ]] && R1+=($MOUNT_DIR)
 }
 
-ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [SSH_TTY=1] [COMMAND ARGS...]
+ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REMOTE_DIR=] [SSH_TTY=1] [COMMAND ARGS...]
+	local LOCAL_PORT=${LOCAL_PORT:-$REMOTE_PORT}
+	[[ $REMOTE_PORT ]] && lsof -i :$LOCAL_PORT >/dev/null && die "Port already bound: $LOCAL_PORT"
+	[[ $MOUNT_DIR ]] && mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
 	ssh_cmd; local cmd=("${R1[@]}")
@@ -109,7 +126,7 @@ ${R1[*]}
 $SCRIPT" "$@"
 }
 
-ssh_kill_tunnel() { # LOCAL_PORT
+ssh_tunnel_kill() { # LOCAL_PORT
 	local LOCAL_PORT=$1
 	checkvars LOCAL_PORT
 	lsof -i :$LOCAL_PORT -sTCP:LISTEN -nP | awk '/ssh/ { print $2 }' | xargs kill

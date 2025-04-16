@@ -16,7 +16,7 @@ preinstall_mm() {
 }
 
 install_mm() {
-	true
+	apt_get_install autossh sshfs
 }
 
 version_mm() {

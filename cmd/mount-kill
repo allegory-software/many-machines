@@ -1,0 +1,7 @@
+#!/bin/bash
+# COMMAND ; MOUNT_DIR ; unmount dir
+. mmlib
+
+MOUNT_DIR=$1
+checkvars MOUNT_DIR
+must umount $MOUNT_DIR

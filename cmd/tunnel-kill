@@ -4,4 +4,4 @@
 
 LOCAL_PORT=$1
 checkvars LOCAL_PORT
-ssh_kill_tunnel $LOCAL_PORT
+ssh_tunnel_kill $LOCAL_PORT

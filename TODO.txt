@@ -2,8 +2,6 @@
 - d-backups: copy
 - m-backups: list, backup, restore, copy
 
-- sshfs mounts
-
 - m-rename
 - d-rename
 

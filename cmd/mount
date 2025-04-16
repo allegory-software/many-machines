@@ -1,9 +1,28 @@
 #!/bin/bash
-# COMMAND ; [DIR] [MOUNT_POINT] ; mount remote dir via sshfs
+# COMMAND ; [REMOTE_DIR MOUNT_DIR] ; mount remote dir via sshfs
 . mmlib
 
-REMOTE_PORT=$1
-LOCAL_PORT=$2
-checkvars REMOTE_PORT
+[[ $1 ]] || {
+	fmt="%-15s %-15s -> %s\n"
+	printf "$WHITE$fmt$ENDCOLOR" MACHINE DIR MOUNT
+	mount | grep fuse.sshfs | while read -r line; do
+		read -ra fields <<< "$line"
+		s=${fields[0]}
+		mount=${fields[2]}
+		userhost=${s%%:*}
+		user=${userhost%@*}
+		host=${userhost#*@}
+		dir=${s#*:}
+		machine_by_ip $host && host=$R1
+		printf "$fmt" "$host" "$dir" "$mount"
+	done
+	exit
+}
+
+REMOTE_DIR=$1
+MOUNT_DIR=$2
 shift 2
+checkvars REMOTE_DIR MOUNT_DIR
+check_abs_filepath $REMOTE_DIR
+rel_path $MOUNT_DIR $PWD0; MOUNT_DIR=$R1
 NOALL=1 AS_DEPLOY=1 each_md ssh_to "$@"

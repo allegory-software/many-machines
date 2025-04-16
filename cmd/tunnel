@@ -3,7 +3,7 @@
 . mmlib
 
 [[ $1 ]] || {
-	printf "${WHITE}%-15s %-6s -> %-6s %s${ENDCOLOR}\n" MACHINE PORT L.PORT L.IP
+	printf "${WHITE}%-15s %-6s -> %-6s %s${ENDCOLOR}\n" MACHINE PORT L-PORT L-IP
 	ps aux | while read -r line; do
 		[[ $line != *autossh* ]] && continue
 		read -ra fields <<< "$line"
