@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ;; remove old backups according to retention policy
+# DB BACKUP ;; remove old backups according to retention policy
 . mmlib
 
 deploy_backups_sweep

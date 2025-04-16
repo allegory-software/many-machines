@@ -1,5 +1,5 @@
 #!/bin/bash
-# SEE ;; list machines
+# STATUS ;; list machines
 . mmlib
 
 FMT="%-10s %-7s %-15s\n"

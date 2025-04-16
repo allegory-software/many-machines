@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN DB ; BACKUP_FILE DST_MACHINE DST_DB ; restore database from backup
+# DB BACKUP ; BACKUP_FILE DST_MACHINE DST_DB ; restore database from backup
 . mmlib
 
 deploy_db_restore "$@"

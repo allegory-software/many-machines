@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN MM ;; run git diff on var dir
+# MM VAR ;; run git diff on var dir
 . mmlib
 
 (cd var; git diff "$@")

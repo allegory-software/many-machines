@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN MYSQL ;; generate the root mysql password for all machines.
+# MYSQL PASS ;; generate the root mysql password for all machines.
 . mmlib
 
 say "Generating a new MySQL root password ..."

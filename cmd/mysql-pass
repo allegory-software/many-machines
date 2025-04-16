@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN MYSQL ; ["USER1 ..."] ; list MySQL passwords
+# MYSQL PASS ; ["USER1 ..."] ; list MySQL passwords
 . mmlib
 
 USERS="$2"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN MM ;; pull var dir from github
+# MM VAR ;; pull var dir from github
 . mmlib
 
 var_pull "$@"

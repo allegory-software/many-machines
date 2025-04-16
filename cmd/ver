@@ -1,5 +1,5 @@
 #!/bin/bash
-# SEE ; [COMPONENT1 ...] ; list versions
+# STATUS ; [COMPONENT1 ...] ; list versions
 . mmlib
 
 md_ssh_list md_component_version \

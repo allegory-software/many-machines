@@ -1,5 +1,5 @@
 #!/bin/bash
-# SEE ;; list CPU info
+# STATUS ;; list CPU info
 . mmlib
 
 m_custom_list \

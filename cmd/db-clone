@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN DB ; NEW_DB ; clone a database
+# DB BACKUP ; NEW_DB ; clone a database
 . mmlib
 
 NEW_DB=$1

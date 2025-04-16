@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN MYSQL ;; update a deployment MySQL password
+# MYSQL PASS ;; update a deployment MySQL password
 . mmlib
 
 _f() {

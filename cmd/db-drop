@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN DB ; DB please ; drop database
+# DB BACKUP ; DB please ; drop database
 . mmlib
 
 DB=$1; checkvars DB

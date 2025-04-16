@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN MM ;; show var git-crypt key in base64
+# MM VAR ;; show var git-crypt key in base64
 . mmlib
 
 var_lock_key "$@"
