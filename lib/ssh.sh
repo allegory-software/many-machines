@@ -21,10 +21,8 @@ ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [MM_SSH_TTY=1]
 		-o ControlPath=$HOME/.ssh/control-$MACHINE-$USER
 		-o ControlPersist=600
 	)
-	[[ $REMOTE_PORT ]] && R1+=(
-		-fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT
-	)
 	[[ ! $REMOTE_PORT && $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
+	[[ $REMOTE_PORT ]] && R1+=(-fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT)
 }
 
 ssh_cmd() { # MACHINE=
@@ -114,7 +112,7 @@ $SCRIPT" "$@"
 ssh_kill_tunnel() { # LOCAL_PORT
 	local LOCAL_PORT=$1
 	checkvars LOCAL_PORT
-	lsof -i :$LOCAL_PORT -sTCP:LISTEN -nP | awk '/autossh/ { print $2 }' # | xargs kill
+	lsof -i :$LOCAL_PORT -sTCP:LISTEN -nP | awk '/ssh/ { print $2 }' | xargs kill
 }
 
 # ssh config -----------------------------------------------------------------

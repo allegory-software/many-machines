@@ -124,7 +124,7 @@ machine_of_deploy() { # DEPLOY
 	[[ $R1 ]] || die "No machine set for deploy: $1."
 }
 
-machine_of() { # MACHINE|DEPLOY -> MACHINE, , [DEPLOY]
+machine_of() { # MACHINE|DEPLOY -> MACHINE, [DEPLOY]
 	checknosp "$1" "MACHINE or DEPLOY required"
 	if [[ -d var/deploys/$1 ]]; then
 		machine_of_deploy $1; R3=$1
@@ -139,6 +139,17 @@ ip_of() { # MD -> IP, MACHINE, [DEPLOY]
 	machine_of "$1"; R2=$R1
 	checkfile var/machines/$R2/public_ip
 	R1=$(cat $R1)
+}
+
+machine_by_ip() { # IP
+	local IP=$1
+	checkvars IP
+	local m
+	for m in `ls -1 var/machines`; do
+		ip_of $m; [[ $IP == $R1 ]] && { R1=$m; return 0; }
+	done
+	R1=$IP
+	return 1
 }
 
 machine_is_active() {
