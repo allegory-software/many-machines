@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; [USER] ; add user on machine
+# USERS ; [USER] ; add user on machine
 . mmlib
 
 [[ $1 ]] || { list_users; exit; }

@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; [list] ; close persistent ssh connection
+# SSH ; [list] ; close persistent ssh connection
 . mmlib
 
 [[ $1 == list ]] && {

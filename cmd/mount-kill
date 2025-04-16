@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; MOUNT_DIR ; unmount dir
+# FILES ; MOUNT_DIR ; unmount dir
 . mmlib
 
 MOUNT_DIR=$1

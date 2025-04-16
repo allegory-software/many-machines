@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; SRC_DIR DST_DIR ; download dir from machine
+# FILES ; SRC_DIR DST_DIR ; download dir from machine
 . mmlib
 
 NOALL=1 each_md rsync_download "$@"

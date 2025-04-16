@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; [REMOTE_DIR MOUNT_DIR] ; mount remote dir via sshfs
+# FILES ; [REMOTE_DIR MOUNT_DIR] ; mount remote dir via sshfs
 . mmlib
 
 [[ $1 ]] || {

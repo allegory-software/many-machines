@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN SSH ; please ; generate a new ssh key for this host
+# SSH KEYS ; please ; generate a new ssh key for this host
 . mmlib
 
 [[ $1 == please ]] || die "Say please."

@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN SSH ; [USER] ; get ssh public key from machine
+# SSH KEYS ; [USER] ; get ssh public key from machine
 . mmlib
 
 OF_USER=$1

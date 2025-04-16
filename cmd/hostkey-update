@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN SSH ;; make machine(s) known to mm
+# SSH HOSTS ;; make machine(s) known to mm
 . mmlib
 
 NOALL=1 each_machine ssh_hostkey_update

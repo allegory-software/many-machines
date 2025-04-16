@@ -1,5 +1,5 @@
 #!/bin/bash
-# BACKUP CMD ; BACKUP_DIR [PREV_BACKUP_DIR] ; backup deploy files here
+# FILES BACKUP ; BACKUP_DIR [PREV_BACKUP_DIR] ; backup deploy files here
 . mmlib
 
 BACKUP_DIR=$1; checkvars BACKUP_DIR

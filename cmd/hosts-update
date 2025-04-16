@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN SSH ;; update /etc/hosts and set up SSH for access to machines
+# SSH HOSTS ;; update /etc/hosts and set up SSH for access to machines
 #
 # TODO: this doesn't work because:
 # 1. SSH's HostKeyAlgorithms != rsa-sha2-256 and SSH tries ECDSA only and gives up.

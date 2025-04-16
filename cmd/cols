@@ -1,5 +1,5 @@
 #!/bin/bash
-# SEE DB ; [DB=] TABLE ; list table columns
+# DB ; [DB=] TABLE ; list table columns
 . mmlib
 
 TABLE="$1"

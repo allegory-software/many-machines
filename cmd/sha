@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; DIR ; compute file or dir SHA
+# FILES ; DIR ; compute file or dir SHA
 . mmlib
 
 dir_sha "$1"

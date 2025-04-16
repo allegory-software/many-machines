@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; [DB=] [MYSQL-ARGS...] ; get a mysql remote terminal
+# DB ; [DB=] [MYSQL-ARGS...] ; get a mysql remote terminal
 . mmlib
 
 _f() {

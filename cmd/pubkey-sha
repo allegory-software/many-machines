@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN SSH ;; get SHA256 of ssh public key
+# SSH KEYS ;; get SHA256 of ssh public key
 . mmlib
 
 ssh_pubkey

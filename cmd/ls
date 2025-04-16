@@ -1,3 +1,3 @@
 #!/bin/bash
-# COMMAND ;; run ls on machine(s)
+# FILES ; [...] ; run ls on machine(s)
 mm ssh ls "$@"

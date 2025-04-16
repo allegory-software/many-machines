@@ -1,5 +1,5 @@
 #!/bin/bash
-# SEE DB APP ; [DB=] [where expr] ; select from usrtoken table
+# DB APP ; [DB=] [where expr] ; select from usrtoken table
 . mmlib
 
 WHERE=${1:-1=1}

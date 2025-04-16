@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN SSH ; DEVICE ; set device
+# SSH KEYS ; DEVICE ; set device
 . mmlib
 
 DEVICE=$1

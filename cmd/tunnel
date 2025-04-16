@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; [REMOTE_PORT] [LOCAL_PORT] ; ssh tunnel remote port to local port
+# SSH ; [REMOTE_PORT] [LOCAL_PORT] ; ssh tunnel remote port to local port
 . mmlib
 
 [[ $1 ]] || {

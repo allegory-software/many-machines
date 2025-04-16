@@ -1,5 +1,5 @@
 #!/bin/bash
-# SEE DB ; [DB=] ; list MySQL tables
+# DB ; [DB=] ; list MySQL tables
 . mmlib
 
 each_md ssh_query "show tables"

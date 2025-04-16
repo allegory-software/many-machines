@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; LOCAL_PORT ; kill ssh tunnel remote port to local port
+# SSH ; LOCAL_PORT ; kill ssh tunnel remote port to local port
 . mmlib
 
 LOCAL_PORT=$1

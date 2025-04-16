@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; DIR ; print dir's lean size
+# FILES ; DIR ; print dir's lean size
 . mmlib
 
 DIR="$1"

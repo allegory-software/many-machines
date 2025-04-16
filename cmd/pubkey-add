@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN SSH ; [DEVICE] ["USER1 ..."] ; add a ssh public key on machine(s)
+# SSH KEYS ; [DEVICE] ["USER1 ..."] ; add a ssh public key on machine(s)
 . mmlib
 
 DEVICE=$1 USERS=$2

@@ -1,5 +1,5 @@
 #!/bin/bash
-# COMMAND ; [OLD_USER NEW_USER] ; rename user on machine
+# USERS ; [OLD_USER NEW_USER] ; rename user on machine
 . mmlib
 
 [[ $1 ]] || { list_users; exit; }
