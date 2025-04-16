@@ -4,4 +4,5 @@
 
 MOUNT_DIR=$1
 checkvars MOUNT_DIR
-must umount $MOUNT_DIR
+must dry umount $MOUNT_DIR
+must dry rmdir -p --ignore-fail-on-non-empty $MOUNT_DIR

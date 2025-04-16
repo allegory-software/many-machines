@@ -25,4 +25,5 @@ shift 2
 checkvars REMOTE_DIR MOUNT_DIR
 check_abs_filepath $REMOTE_DIR
 rel_path $MOUNT_DIR $PWD0; MOUNT_DIR=$R1
+must mkdir -p $MOUNT_DIR
 NOALL=1 AS_DEPLOY=1 each_md ssh_to "$@"
