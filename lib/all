@@ -2,7 +2,7 @@
 # chdirs to mm's dir, sets up bash options and loads all .sh scripts in this dir.
 # exposed in PATH as mmlib, so any script can just `. mmlib` to load all the mm
 # functions and user's (i.e. machine or deploy) vars into the script's environment.
-export PWD0=$PWD
+[[ $PWD0 ]] || export PWD0=$PWD
 cd `dirname $(readlink -f $BASH_SOURCE)`/.. || exit 1
 
 MM_STD_LIBS=(lib/*.sh)

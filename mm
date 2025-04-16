@@ -1,5 +1,5 @@
 #!/bin/bash
-export PWD0=$PWD
+[[ $PWD0 ]] || export PWD0=$PWD
 cd /root/mm || exit 1
 
 export DEPLOYS
