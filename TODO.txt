@@ -2,7 +2,6 @@
 - d-backups: copy
 - m-backups: list, backup, restore, copy
 
-- ssh tunnels
 - sshfs mounts
 
 - m-rename

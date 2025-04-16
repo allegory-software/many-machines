@@ -1,6 +1,6 @@
 # ssh lib: ssh config and operation wrappers.
 
-ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [MM_SSH_TTY=1]
+ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REMOTE_DIR=] [MM_SSH_TTY=1]
 	[[ $REMOTE_PORT ]] && R1=(autossh) || R1=(ssh)
 	R1+=(
 		-o ConnectTimeout=3
