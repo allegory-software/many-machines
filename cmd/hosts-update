@@ -13,9 +13,14 @@ update_host() {
 	ip_of $MACHINE; local IP=$R1
 	printf -v s "%-20s %-20s %s\n" "$IP" "${DEPLOY:-$MACHINE}" "# added by mm"
 	append "$s" /etc/hosts
+}
+each_machine update_host
+each_deploy  update_host
+
+update_known_hosts() {
+	ip_of $MACHINE; local IP=$R1
 	must catfile var/machines/$MACHINE/.ssh_hostkey
 	ssh-keygen -f $HOME/.ssh/known_hosts -R $IP
 	append "$R1"$'\n' $HOME/.ssh/known_hosts
 }
-each_machine update_host
-each_deploy  update_host
+each_machine update_known_hosts

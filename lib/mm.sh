@@ -197,7 +197,7 @@ each_machine() { # [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND AR
 		MACHINES+=" $M"
 	done
 	if [[ ${#mm[@]} == 0 ]]; then
-		[[ $NOALL  && ! $ALL ]] && die "MACHINE(s) required"
+		[[ $NOALL && ! $ALL ]] && die "MACHINE(s) required"
 		active_machines
 		MACHINES="$R1"
 	fi
