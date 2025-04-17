@@ -1,8 +1,50 @@
 
+- secure backups:
+	- make backup user with rsync wrapper
+		- removes old backups to make space
+		- protects disk quota
+		- protects bandwidth
+	- add/remove machines' root pubkeys to backup users
+		- updating root's key updates its pubkey it to all remote backup users
+	- backup to machine command that pushes to backup user
+
+
 - d-backups: copy
 - m-backups: list, backup, restore, copy
+
 
 - m-rename
 - d-rename
 
+
+- machine-to-machine tunnels:
+	ssh -L [local_port_on_C]:hostB:[target_port_on_B] user@hostA
+	ssh -R [remote_port_on_A]:hostB:[target_port_on_B] user@hostA
+	This makes A connectable to B through C, even if A and B don’t trust each other.
+	alternative:
+		ssh -o ProxyCommand="ssh user@hostC nc hostB 22" user@hostB
+		This works if A can’t SSH to B directly but can reach it via C.
+
+
 - EPIC: add mm to mm2 repo and rewrite it to invoke mm2
+
+
+- monitoring:
+	- log locally to binary file: timestamp,graph_id,value
+	- graph defs: id, min, max
+	- logrotate log file on N lines
+	- rsync in to get log files to show graphs
+	- log to a local tcp port
+		- port is bound by the monitoring app via ssh tunnel
+
+- alert conditions:
+	- SERVICE DOWN
+	- DISK LOW
+	- CORE HIGH FOR TOO LONG
+	- RAM LOW FOR TOO LONG
+	- NET HIGH FOR TOO LONG
+	- SWAP PATTERNS ?
+		- SWAP USED AT ALL
+		- SWAP > SIZE FOR TOO LONG
+
+- alert via: ntfy

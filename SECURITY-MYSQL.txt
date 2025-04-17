@@ -1,0 +1,41 @@
+Shared MySQL Instance Security Risks:
+
+
+1. Misconfigured Users
+
+	Granting GRANT OPTION, SUPER, FILE, or PROCESS lets users:
+		Create other users
+		Read files on disk
+		See all running queries (including from other apps)
+		Kill other sessions
+
+2. Stored Procedures / Functions
+
+	If marked SQL SECURITY DEFINER, they execute with creator’s privileges.
+	A buggy or malicious proc can access data outside the app's scope.
+
+3. Information Schema / Performance Schema
+
+	Users can infer metadata: DB names, table names, sometimes query stats or timing.
+	With PROCESS privilege, they can see full query text from all users.
+
+4. User Locks (GET_LOCK)
+
+	Shared locks can be abused to coordinate or block behavior across apps.
+
+5. Logging and Temporary Files
+
+	Errors, slow query logs, or temp files might reveal query contents or schema.
+	If logs are world-readable, they leak info.
+
+6. Plugin or UDF misuse
+
+	If one app can load a plugin or user-defined function, it may execute arbitrary code.
+
+Mitigation:
+
+	Strict least-privilege user setup
+	No SUPER, FILE, or GRANT OPTION
+	Disable insecure features (e.g., UDFs, symbolic-links)
+	Use MySQL 8's roles and partial revokes
+	Monitor grants regularly
