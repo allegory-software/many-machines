@@ -1,0 +1,44 @@
+#!/bin/bash
+# MONITOR ; [start|stop|restart|status [-q]] ; contiunous monitoring service
+. mmlib
+
+mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
+
+if [[ $1 == start ]]; then
+	pid=`mon_pid` && die "Already running. PID: $pid"
+	nohup "$0" daemon > mon.log 2> mon-error.log &
+	exit
+elif [[ $1 == stop ]]; then
+	pid=`mon_pid` || die "Not running."
+	kill $pid
+	exit
+elif [[ $1 == restart ]]; then
+	"$@" stop
+	"$@" start
+	exit
+elif [[ $1 == status ]]; then
+	pid=`mon_pid`; x=$?
+	[[ $2 == -q ]] || { [[ $x == 0 ]] && say "Running. PID: $pid" || say "Not running."; }
+	exit $x
+fi
+
+log() { # 
+	printf "%010d %-09s %010d\n" $TIME ${K:0:9} ${V:0:10} # 32-bytes lines
+	
+}
+
+stop=0
+trap 'stop=1' SIGTERM SIGINT
+
+RAM=`get_RAM_KB`
+HDD=`get_HDD_KB`
+
+# 6307200 entries / year / 5s interval * 32 bytes = 200 MB/year
+
+while [[ $stop -eq 0 ]]; do
+	TIME=`date +%s`
+	K=RAM V=`get_FREE_RAM_KB` log $RAM
+	K=HDD V=`get_FREE_HDD_KB` log $HDD
+	sleep 5
+done
+say "Stopped."
