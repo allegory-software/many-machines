@@ -6,7 +6,7 @@ mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
 
 if [[ $1 == start ]]; then
 	pid=`mon_pid` && die "Already running. PID: $pid"
-	nohup "$0" daemon > mon.log 2> mon-error.log &
+	nohup "$0" daemon 2>&1 > mon.log &
 	exit
 elif [[ $1 == stop ]]; then
 	pid=`mon_pid` || die "Not running."
@@ -22,23 +22,75 @@ elif [[ $1 == status ]]; then
 	exit $x
 fi
 
-log() { # 
-	printf "%010d %-09s %010d\n" $TIME ${K:0:9} ${V:0:10} # 32-bytes lines
-	
+# config ---------------------------------------------------------------------
+
+MIN_RAM_MB=100
+MIN_HDD_MB=2000
+
+TICK=60
+
+# ----------------------------------------------------------------------------
+
+RAM_KB=`get_RAM_KB`
+HDD_KB=`get_HDD_KB`
+
+MIN_RAM_KB=$((MIN_RAM_MB * 1024))
+MIN_HDD_KB=$((MIN_HDD_MB * 1024))
+
+set_file() {
+	T0=`date -d '00:00' +%s`
+	T1=`date -d 'tomorrow 00:00' +%s`
+	FILE=`date +%F`
+}
+set_file
+
+log() { # K= V= MIN= MAX= N= P= T= T0= DIR= FILE=
+	[[ -d $DIR/$K ]] || {
+		must mkdir -p $DIR/$K
+		printf "%d\n" $MIN > $DIR/$K/min
+		printf "%d\n" $MAX > $DIR/$K/max
+	}
+	printf "%05d %s\n" $((T - T0)) $V >> $DIR/$K/$FILE.sam
+	((V < MIN || V > MAX)) && alert
 }
 
-stop=0
+alert() { # K=
+	local file=mon/alerts/$K
+	[[ -f $file ]] && return
+	must mkdir -p mon/alerts
+	touch $file
+	mm ntfy ""
+}
+
+stop=
 trap 'stop=1' SIGTERM SIGINT
 
-RAM=`get_RAM_KB`
-HDD=`get_HDD_KB`
+N=0
+while [[ ! $stop ]]; do
+	((N % $TICK == 0)) || continue
 
-# 6307200 entries / year / 5s interval * 32 bytes = 200 MB/year
+	T=`date +%s`
+	((T1 > T)) || set_file
 
-while [[ $stop -eq 0 ]]; do
-	TIME=`date +%s`
-	K=RAM V=`get_FREE_RAM_KB` log $RAM
-	K=HDD V=`get_FREE_HDD_KB` log $HDD
-	sleep 5
+	DIR=mon/samples
+
+	K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_RAM_KB log
+	K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_HDD_KB log
+
+	md_var DEPLOY_SERVICES; DEPLOY_SERVICES=$R1
+	md_var APP; APP=$R1
+	for SERVICE in $DEPLOY_SERVICES; do
+		deploy_is_running_$SERVICE && V=1 || V=0
+		K=d-${DEPLOY}_${SERVICE} MAX=1 MIN=0 log
+	done
+
+	md_var SERVICES; SERVICES=$R1
+	for SERVICE in $SERVICES; do
+		service_is_running $SERVICE && V=1 || V=0
+		K=s-$SERVICE MAX=1 MIN=0 log
+	done
+
+	sleep 1
+	N=$((N+1))
 done
 say "Stopped."

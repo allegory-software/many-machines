@@ -1,0 +1,10 @@
+#!/bin/bash
+# MM VAR ;; send vars to machine so it can use mm locally
+. mmlib
+
+_f() {
+	md_vars
+	local s=`printf "%s\n" "${R1[@]}"`
+	ssh_save "$s\n\n" \~/.mm/vars
+}
+each_md _f

@@ -1,5 +1,5 @@
 #!/bin/bash
-# MM VAR ;; pack and push var dir to github
+# MM VAR ;; push var dir to github
 . mmlib
 
 var_push

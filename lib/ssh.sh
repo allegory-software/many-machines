@@ -1,13 +1,7 @@
 # ssh lib: ssh config and operation wrappers.
 
-ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REMOTE_DIR=] [MM_SSH_TTY=1]
-	if [[ $REMOTE_PORT ]]; then
-		R1=(autossh)
-	elif [[ $REMOTE_DIR ]]
-		then R1=(sshfs -o reconnect)
-	else
-		R1=(ssh)
-	fi
+# common ssh options for ssh, autossh, sshfs and rsync
+ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
 	R1+=(
 		-o ConnectTimeout=3
 		-o PreferredAuthentications=publickey
@@ -27,31 +21,24 @@ ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REMOTE_DIR=] [MM_SSH_TT
 		-o ControlPath=$HOME/.ssh/control-$MACHINE-$USER
 		-o ControlPersist=600
 	)
-	if [[ $REMOTE_PORT ]]; then
-		R1+=(-fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT)
-	elif [[ $REMOTE_DIR ]]; then
-		true
-	elif [[ $MM_SSH_TTY ]]; then
-		R1+=(-t)
-	else
-		R1+=(-o BatchMode=yes)
-	fi
-}
-
-ssh_cmd() { # MACHINE= [REMOTE_DIR=] [MOUNT_DIR=]
-	ip_of "$MACHINE"; local HOST=$R1
-	ssh_cmd_opt
-	R1+=(root@$HOST${REMOTE_DIR:+:$REMOTE_DIR})
-	[[ $MOUNT_DIR ]] && R1+=($MOUNT_DIR)
 }
 
 ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REMOTE_DIR=] [SSH_TTY=1] [COMMAND ARGS...]
 	local LOCAL_PORT=${LOCAL_PORT:-$REMOTE_PORT}
-	[[ $REMOTE_PORT ]] && lsof -i :$LOCAL_PORT >/dev/null && die "Port already bound: $LOCAL_PORT"
-	[[ $MOUNT_DIR ]] && mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
-	ssh_cmd; local cmd=("${R1[@]}")
+	ip_of "$MACHINE"; local HOST=$R1
+	local cmd; ssh_cmd_opt
+	if [[ $REMOTE_PORT ]]; then # tunnel
+		lsof -i :$LOCAL_PORT >/dev/null && die "Port already bound: $LOCAL_PORT"
+		cmd=(autossh "${R1[@]}" -fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT)
+	elif [[ $REMOTE_DIR ]]; then # mount
+		mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
+		cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
+	else # shell
+		cmd=(ssh "${R1[@]}")
+		[[ $MM_SSH_TTY ]] && cmd+=(-t) || cmd+=(-o BatchMode=yes)
+	fi
 	quote_args "$@"; local args=("${R1[@]}")
 	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -i -u $AS_USER" || sudo="su - $AS_USER"; }
 	# NOTE: ssh relays the remote command's exit code back to the user,
@@ -89,7 +76,6 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 $VARS
 $FUNCS
 . ~/.mm/lib/all
-mkdir -p ~/.mm
 cd ~/.mm || exit 1
 $SCRIPT $ARGS
 "
@@ -130,6 +116,13 @@ ssh_tunnel_kill() { # LOCAL_PORT
 	local LOCAL_PORT=$1
 	checkvars LOCAL_PORT
 	lsof -i :$LOCAL_PORT -sTCP:LISTEN -nP | awk '/ssh/ { print $2 }' | xargs kill
+}
+
+ssh_save() { # S FILE
+	local S=$1 FILE=$2
+	checkvars FILE
+	# use bash crazy feature of getting stdin after encountering 'exit'.
+	printf "mkdir -p \`dirname $FILE\` && cat > $FILE; exit$S" | ssh_to bash -s
 }
 
 # ssh config -----------------------------------------------------------------
@@ -272,7 +265,7 @@ rsync_cmd() {
 	[[ $DRY ]] && local VERBOSE=1
 	[[ $PROGRESS ]] && say
 
-	local ssh_cmd; [[ $MACHINE ]] && ssh_cmd_opt; ssh_cmd=("${R1[@]}")
+	local ssh_cmd; [[ $MACHINE ]] && { ssh_cmd_opt; ssh_cmd=(ssh "${R1[@]}"); }
 
 	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
 	R1=(rsync

@@ -2,6 +2,7 @@
 /machine
 /machines
 /deploys
+/mon
 /var*
 *.deb
 *.tgz
