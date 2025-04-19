@@ -2,7 +2,7 @@
 
 # common ssh options for ssh, autossh, sshfs and rsync
 ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
-	R1+=(
+	R1=(
 		-o ConnectTimeout=3
 		-o PreferredAuthentications=publickey
 		-o UserKnownHostsFile=/root/mm/var/machines/$MACHINE/.ssh_hostkey
@@ -28,16 +28,17 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REM
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
 	ip_of "$MACHINE"; local HOST=$R1
-	local cmd; ssh_cmd_opt
+	local cmd
 	if [[ $REMOTE_PORT ]]; then # tunnel
 		lsof -i :$LOCAL_PORT >/dev/null && die "Port already bound: $LOCAL_PORT"
-		cmd=(autossh "${R1[@]}" -fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT)
+		ssh_cmd_opt; cmd=(autossh "${R1[@]}" -fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT)
 	elif [[ $REMOTE_DIR ]]; then # mount
 		mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
-		cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
+		ssh_cmd_opt; cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
 	else # shell
-		cmd=(ssh "${R1[@]}")
-		[[ $MM_SSH_TTY ]] && cmd+=(-t) || cmd+=(-o BatchMode=yes)
+		ssh_cmd_opt
+		[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
+		cmd=(ssh "${R1[@]}" $HOST)
 	fi
 	quote_args "$@"; local args=("${R1[@]}")
 	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -i -u $AS_USER" || sudo="su - $AS_USER"; }
@@ -118,11 +119,14 @@ ssh_tunnel_kill() { # LOCAL_PORT
 	lsof -i :$LOCAL_PORT -sTCP:LISTEN -nP | awk '/ssh/ { print $2 }' | xargs kill
 }
 
-ssh_save() { # S FILE
-	local S=$1 FILE=$2
-	checkvars FILE
+# TODO: make this safe with temp file!
+ssh_save() { # S FILE [USER] [MODE]
+	local s=$1 file=$2
+	checkvars s- file
+	sayn "Saving ${#s} bytes to remote file: '$file' ... " # TODO: ${user:+ user=$user}${mode:+ mode=$mode} ... "
 	# use bash crazy feature of getting stdin after encountering 'exit'.
-	printf "mkdir -p \`dirname $FILE\` && cat > $FILE; exit$S" | ssh_to bash -s
+	printf "mkdir -p \`dirname $file\` && cat > $file; exit$s" | dry ssh_to bash -s
+	say OK
 }
 
 # ssh config -----------------------------------------------------------------
