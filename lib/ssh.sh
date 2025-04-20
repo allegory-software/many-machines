@@ -250,10 +250,10 @@ ssh_pubkey_remove() { _ssh_pubkey_do _ssh_pubkey_remove "$@"; }
 
 # rsync ----------------------------------------------------------------------
 
-# SRC_DIR= [FILE_LIST_FILE=] [DST_DIR=] [SRC_MACHINE=] [DST_MACHINE=] \
+# SRC_DIR= [FILE_LIST_FILE=] [FILE_LIST=] [DST_DIR=] [SRC_MACHINE=] [DST_MACHINE=] \
 #   [MOVE=1] [NODELETE=1] [LINK_DIR=] [DST_USER=] [DST_GROUP=] \
-#   [PROGRESS=1] [DRY=1] [VERBOSE=1] rsync_cmd
-rsync_cmd() {
+#   [PROGRESS=1] [DRY=1] [VERBOSE=1] rsync_dir
+rsync_dir() {
 	local SRC=$SRC_DIR
 	local DST=${DST_DIR:-$SRC_DIR}
 	local PROGRESS=$PROGRESS; [[ $TERM ]] || PROGRESS=
@@ -283,14 +283,15 @@ rsync_cmd() {
 		${DRY:+--dry-run}
 		${VERBOSE:+-v}
 	)
+	[[ $FILE_LIST ]] && R1+=()
 	[[ $NODELETE ]] || R1+=(--delete)
 	[[ $ssh_cmd ]] && R1+=(-e "${ssh_cmd[*]}")
-	R1+=("$SRC" "$DST")
-}
-
-rsync_dir() {
-	rsync_cmd
-	must "${R1[@]}"
+	if [[ $FILE_LIST ]]; then
+		sayn "(with FILE_LIST) ... "
+		must "${R1[@]}" --files-from=<(printf "%s\n" "$FILE_LIST") "$SRC" "$DST"
+	else
+		must "${R1[@]}" "$SRC" "$DST"
+	fi
 	[[ $PROGRESS ]] || say OK
 }
 

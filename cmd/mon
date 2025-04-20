@@ -37,6 +37,7 @@ HDD_KB=`get_HDD_KB`
 MIN_RAM_KB=$((MIN_RAM_MB * 1024))
 MIN_HDD_KB=$((MIN_HDD_MB * 1024))
 
+# change log file when today becomes tomorrow.
 set_file() {
 	T0=`date -d '00:00' +%s`
 	T1=`date -d 'tomorrow 00:00' +%s`
