@@ -4,6 +4,7 @@ cd /root/mm || exit 1
 
 export DEPLOYS
 export MACHINES
+export MACHINE
 
 set -f # disable globbing
 set -o pipefail
@@ -53,6 +54,7 @@ while [[ $# > 0 ]]; do
 			say "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 			exit
 		fi
+		[[ $MACHINE ]] || MACHINE=`basename "$(readlink machine)"`
 		run cmd/$CMD "$@"
 		exit
 	elif [[ -d var/deploys/$1 ]]; then

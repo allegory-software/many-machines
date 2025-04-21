@@ -116,6 +116,17 @@ _md_backup_modules() { md_modules; _md_with_action_fn $R1; }
 _md_backup()  { ACTION=backup  LIST=_md_backup_modules _md_action "$@"; }
 _md_restore() { ACTION=restore LIST=_md_backup_modules _md_action "$@"; }
 
+# executed locally on the target machine.
+md_is_running() { # SERVICE
+	local SERVICE=$1
+	checkvars SERVICE
+	if [[ $DEPLOY ]]; then
+		deploy_is_running_$SERVICE
+	else
+		service_is_running $SERVICE
+	fi
+}
+
 md_status() { # [DOWN=1] ["SERVICE1 ..."]
 	if [[ $DEPLOY ]]; then
 		for SERVICE in $DEPLOY_SERVICES; do

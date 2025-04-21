@@ -4,7 +4,7 @@
 
 [[ $1 == please ]] || die "Say please."
 [[ -L device ]] || die "Run ${WHITE}mm set-device${ENDCOLOR} first."
-DEVICE=`basename $(readlink device)`
+DEVICE=`basename "$(readlink device)"`
 checkvars DEVICE
 
 KEYFILE=$HOME/.ssh/id_rsa

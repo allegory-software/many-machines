@@ -2,11 +2,13 @@
 # MONITOR ; [start|stop|restart|status [-q]] ; contiunous monitoring service
 . mmlib
 
+checkvars MACHINE
+
 mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
 
 if [[ $1 == start ]]; then
 	pid=`mon_pid` && die "Already running. PID: $pid"
-	nohup "$0" daemon 2>&1 > mon.log &
+	nohup "$0" daemon >/dev/null 2> mon.log &
 	exit
 elif [[ $1 == stop ]]; then
 	pid=`mon_pid` || die "Not running."
@@ -27,7 +29,7 @@ fi
 MIN_RAM_MB=100
 MIN_HDD_MB=2000
 
-TICK=60
+TICK=60 # probing interval
 
 # ----------------------------------------------------------------------------
 
@@ -52,6 +54,7 @@ log() { # K= V= MIN= MAX= N= P= T= T0= DIR= FILE=
 		printf "%d\n" $MAX > $DIR/$K/max
 	}
 	printf "%05d %s\n" $((T - T0)) $V >> $DIR/$K/$FILE.sam
+	printf "%15s %s\n" $K $V
 	((V < MIN || V > MAX)) && alert
 }
 
@@ -73,23 +76,31 @@ while [[ ! $stop ]]; do
 	T=`date +%s`
 	((T1 > T)) || set_file
 
+	printf "%15s %s\n" @ "$(date '+%F %T')"
+
 	DIR=mon/samples
 
 	K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_RAM_KB log
 	K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_HDD_KB log
 
-	md_var DEPLOY_SERVICES; DEPLOY_SERVICES=$R1
-	md_var APP; APP=$R1
-	for SERVICE in $DEPLOY_SERVICES; do
-		deploy_is_running_$SERVICE && V=1 || V=0
-		K=d-${DEPLOY}_${SERVICE} MAX=1 MIN=0 log
+	active_deploys; DEPLOYS=$R1
+	for DEPLOY in $DEPLOYS; do
+		md_var DEPLOY_SERVICES; DEPLOY_SERVICES=$R1
+		md_var APP; APP=$R1
+		for SERVICE in $DEPLOY_SERVICES; do
+			md_is_running $SERVICE && V=1 || V=0
+			K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=0 log
+		done
 	done
+	DEPLOY=
 
 	md_var SERVICES; SERVICES=$R1
 	for SERVICE in $SERVICES; do
-		service_is_running $SERVICE && V=1 || V=0
+		md_is_running $SERVICE && V=1 || V=0
 		K=s-$SERVICE MAX=1 MIN=0 log
 	done
+
+	echo
 
 	sleep 1
 	N=$((N+1))
