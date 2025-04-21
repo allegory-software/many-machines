@@ -26,7 +26,7 @@ fi
 
 # config ---------------------------------------------------------------------
 
-MIN_RAM_MB=100
+MIN_RAM_MB=50
 MIN_HDD_MB=2000
 
 TICK=60 # probing interval
