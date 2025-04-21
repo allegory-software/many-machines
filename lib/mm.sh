@@ -2,21 +2,40 @@
 
 # mm module ------------------------------------------------------------------
 
-preinstall_mm() {
-	local VAR_LOCK_KEY=`var_lock_key` || die "var_lock_key error: $?"
-	VARS="VAR_LOCK_KEY" ssh_script '
+install_mm() {
+	apt_get_install autossh sshfs
 	git_clone_for root git@github.com:allegory-software/many-machines /root/mm master
 	(
 	must cd /root/mm
 	./install
-	git_clone_for root git@github.com:allegory-software/mm-var /root/mm/var master
-	var_unlock "$VAR_LOCK_KEY"
 	)
-	'
 }
 
-install_mm() {
-	apt_get_install autossh sshfs
+postinstall_mm() {
+	mm $MACHINE var-sync
+}
+
+uninstall_mm() {
+	/root/mm/uninstall
+	rm_dir /root/mm
+}
+
+install_mm_var() {
+	git_clone_for root git@github.com:allegory-software/mm-var /root/mm/var master
+}
+
+# mm_var package installs the encrypted mm var dir which contains the entire mm database.
+# only install this module on trusted machines that you want to use mm on.
+postinstall_mm_var() {
+	local VAR_LOCK_KEY=`var_lock_key` || die "var_lock_key error: $?"
+	ssh_script var_unlock "$VAR_LOCK_KEY"
+	#VARS="VAR_LOCK_KEY" ssh_script '
+	#var_unlock "$VAR_LOCK_KEY"
+	#'
+}
+
+uninstall_mm_var() {
+	rm_dir /root/mm/var
 }
 
 version_mm() {
@@ -33,7 +52,7 @@ var_unlock() { # KEY
 	checkvars KEY-
 	package_version git-crypt >/dev/null || package_install git-crypt
 	(
-	must cd var
+	must cd /root/mm/var
 	#on_exit run rm -f ../var_git_crypt_key
 	printf "%s" "$KEY" | must base64 -d - > ../var_git_crypt_key
 	must git-crypt unlock ../var_git_crypt_key
@@ -42,7 +61,7 @@ var_unlock() { # KEY
 
 var_lock_key() {
 	(
-	must cd var
+	must cd /root/mm/var
 	git-crypt export-key /proc/self/fd/1 | base64 -
 	)
 }

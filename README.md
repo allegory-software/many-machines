@@ -212,6 +212,8 @@ Note that with git-crypt, only the file contents are encrypted while the
 directory structure itself is not. If you're using github for this, it won't
 let Microsoft see your keys but they'll know about what you're doing.
 
+Some things like realtime monitoring need mm to be configured on a machine.
+
 ## The Vars System
 
 Configuration data for machines and deployments is kept in one-value-per-file in

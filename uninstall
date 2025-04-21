@@ -1,0 +1,7 @@
+#!/bin/bash
+# uninstall mm
+
+rm -f /usr/bin/mm
+rm -f /usr/bin/mmd
+rm -f /usr/bin/mmlib
+sed -i '/mm-autocomplete.sh/d' /root/.bashrc
