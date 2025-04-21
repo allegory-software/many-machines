@@ -29,6 +29,7 @@ _f() {
 	DST_DIR=/root/mm/
 	[[ $DEPLOY ]] && SRC_DIR=var/deploys/$DEPLOY || SRC_DIR=var/machines/$MACHINE
 	rsync_dir_with_link_targets
+	ssh_script 'ln_file var/machines/$MACHINE /root/mm/machine'
 	[[ $DEPLOY ]] || { # sync all deploys on machine
 		local DEPLOY
 		for DEPLOY in `ls -1 var/deploys`; do

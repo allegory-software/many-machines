@@ -65,9 +65,9 @@ ln_file() {
 	checkvars target linkfile
 	sayn "Symlinking: $target -> $linkfile ... "
 	local target0=`readlink $linkfile`
-	[[ $target0 == $target ]] && { say "no change."; return; }
+	[[ $target0 == $target ]] && { [[ -e `realpath $linkfile` ]] && say "no change" || say "no change (broken)"; return; }
 	must dry ln -sfT $target $linkfile
-	[[ -e $target ]] && say OK || say "OK (broken)"
+	[[ -e `realpath $linkfile` ]] && say OK || say "OK (broken)"
 }
 
 _mv() { # TYPE OPT OLD NEW
