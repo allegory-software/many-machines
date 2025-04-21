@@ -19,10 +19,6 @@ version_glibc() {
 	ldd --version | head -1 | awk '{print $NF}'
 }
 
-version_cron() {
-	package_version cron
-}
-
 open_ports() { # IP=|MACHINE= [UDP=1] PORTS ...
 	local PORTS="$@"
 	[[ $IP ]] || {

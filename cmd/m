@@ -4,7 +4,7 @@
 
 FMT="%-10s %-7s %-15s\n"
 _f() {
-	cat_varfile var/machines/$MACHINE active    ; local ACTIVE=$R1
+	local ACTIVE=YES; machine_is_active || ACTIVE=no
 	cat_varfile var/machines/$MACHINE public_ip ; local PUBLIC_IP=$R1
 	printf "$FMT" $MACHINE "$ACTIVE" "$PUBLIC_IP"
 }

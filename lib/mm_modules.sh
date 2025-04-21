@@ -1,13 +1,15 @@
+#
 # machine-level and deploy-level modules with pre & post install hooks.
 #
-# rationale: split machine & deploy installation into modules, so we can:
+# Rationale: split machine & deploy installation into modules, so we can:
 # - have faster dev/run cycle: install single module manually.
 # - split installer into a part that runs on the target machine and a part
 #   that runs on the mm machine so we can rsync files as part of installation.
 # - install only what's needed, and have a library of installers ready.
-# - split code into package-specific and distro-specific libraries.
+# - split code into package-specific and distro-specific libraries so we
+#   can support multiple distros in the future if needed.
 #
-# the module logic is reused for machine-level and deploy-level services
+# The module logic is reused for machine-level and deploy-level services
 # too, which is why we use $NAMES instead of $MODULES when we're abstracting.
 #
 
@@ -21,18 +23,32 @@ md_services() {
 	must md_var ${DEPLOY:+DEPLOY_}SERVICES
 }
 
+md_fn() { # ACTION= [DEPLOY=] NAME
+	local name=$1
+	checkvars name ACTION
+	R1=
+	local fn=${DEPLOY:+deploy_}${ACTION}_${name}
+	if ! declare -F $fn > /dev/null; then
+		fn=default_${DEPLOY:+deploy_}${ACTION}
+		if ! declare -F $fn > /dev/null; then
+			return 1
+		fi
+	fi
+	R1=$fn
+}
+
+md_version() {
+	ACTION=version md_fn "$1" && $fn
+}
+default_version() {
+	package_version $1
+}
+
 _md_with_action_fn() { # ACTION= [DEPLOY=] NAME1 ...
 	R1=
 	local name
 	for name in "$@"; do
-		local fn=${DEPLOY:+deploy_}${ACTION}_${name}
-		if ! declare -F $fn > /dev/null; then
-			fn=default_${DEPLOY:+deploy_}${ACTION}
-			if ! declare -F $fn > /dev/null; then
-				continue
-			fi
-		fi
-		R1+="$name "
+		md_fn $name && R1+="$name "
 	done
 	return 0
 }
@@ -40,14 +56,7 @@ _md_with_action_fn() { # ACTION= [DEPLOY=] NAME1 ...
 _each() { # ACTION= [DRY=1] [DEPLOY=] NAME1 ...
 	local name
 	for name in "$@"; do
-		local fn=${DEPLOY:+deploy_}${ACTION}_${name}
-		if ! declare -F $fn > /dev/null; then
-			fn=default_${DEPLOY:+deploy_}${ACTION}
-			if ! declare -F $fn > /dev/null; then
-				continue
-			fi
-		fi
-		dry $fn $name
+		md_fn $name && dry $R1 $name
 	done
 	return 0
 }
@@ -120,44 +129,27 @@ _md_restore() { ACTION=restore LIST=_md_backup_modules _md_action "$@"; }
 md_is_running() { # SERVICE
 	local SERVICE=$1
 	checkvars SERVICE
-	if [[ $DEPLOY ]]; then
-		deploy_is_running_$SERVICE
-	else
-		service_is_running $SERVICE
-	fi
+	ACTION=is_running md_fn $SERVICE || die "$SERVICE does not have an is_running function."
+	$R1 $SERVICE
 }
+default_is_running() { service_is_running "$1"; }
 
 md_status() { # [DOWN=1] ["SERVICE1 ..."]
-	if [[ $DEPLOY ]]; then
-		for SERVICE in $DEPLOY_SERVICES; do
-			local VERSION=`deploy_version_$SERVICE 2>/dev/null`
-			local STATUS
-			if deploy_is_running_$SERVICE; then
-				[[ $DOWN ]] && continue
-				STATUS=${LIGHTGRAY}up${ENDCOLOR}
-				SERVICE=${LIGHTGRAY}${LIGHTGRAY}${SERVICE}${ENDCOLOR}
-			else
-				STATUS=${LIGHTRED}DOWN!${ENDCOLOR}
-				SERVICE=${BG_RED}${WHITE}${SERVICE}${ENDCOLOR}
-			fi
-			printf "%s\n" $MACHINE $DEPLOY $SERVICE "${STATUS:--}" "${VERSION:--}"
-		done
-	else
-		local SERVICES=${1:-$SERVICES}
-		for SERVICE in $SERVICES; do
-			local VERSION=`version_$SERVICE 2>/dev/null`
-			local STATUS
-			if service_is_running "$SERVICE"; then
-				[[ $DOWN ]] && continue
-				STATUS=${LIGHTGRAY}up${ENDCOLOR}
-				SERVICE=${LIGHTGRAY}${LIGHTGRAY}${SERVICE}${ENDCOLOR}
-			else
-				STATUS=${LIGHTRED}DOWN!${ENDCOLOR}
-				SERVICE=${BG_RED}${WHITE}${SERVICE}${ENDCOLOR}
-			fi
-			printf "%s\n" $MACHINE '*' $SERVICE "${STATUS:--}" "${VERSION:--}"
-		done
-	fi
+	local svar=1; [[ $1 ]] || svar=${DEPLOY:+DEPLOY_}SERVICES
+	local services=${!svar}
+	for SERVICE in $services; do
+		local VERSION=`md_version $SERVICE`
+		local STATUS
+		if md_is_running $SERVICE; then
+			[[ $DOWN ]] && continue
+			STATUS=${LIGHTGRAY}up${ENDCOLOR}
+			SERVICE=${LIGHTGRAY}${LIGHTGRAY}${SERVICE}${ENDCOLOR}
+		else
+			STATUS=${LIGHTRED}DOWN!${ENDCOLOR}
+			SERVICE=${BG_RED}${WHITE}${SERVICE}${ENDCOLOR}
+		fi
+		printf "%s\n" $MACHINE ${DEPLOY:-*} $SERVICE "${STATUS:--}" "${VERSION:--}"
+	done
 }
 
 deploy_rename() { # DEPLOY= NEW_NAME ...

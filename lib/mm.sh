@@ -44,6 +44,12 @@ version_mm() {
 	)
 }
 
+# mm monitor service ---------------------------------------------------------
+
+mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
+
+is_running_mon() { mon_pid >/dev/null; }
+
 # var dir ops ----------------------------------------------------------------
 
 var_unlock() { # KEY
@@ -121,14 +127,19 @@ machine_by_ip() { # IP
 	return 1
 }
 
-machine_is_active() {
-	DEPLOY= md_var ACTIVE 0
-	[[ $R1 != 0 ]]; return $?
+this_machine() {
+	R1=`basename "$(readlink machine)" 2>/dev/null`
 }
 
-deploy_is_active() {
-	md_var ACTIVE 0
-	[[ $R1 != 0 ]]; return $?
+machine_is_active() { # MACHINE=
+	this_machine; [[ $MACHINE == $R1 ]] && return 0
+	DEPLOY= md_var ACTIVE 0; [[ $R1 != 0 ]] || return 1
+}
+
+deploy_is_active() { # DEPLOY=
+	md_var ACTIVE 0; [[ $R1 != 0 ]] || return 1
+	try_machine_of_deploy $DEPLOY || return 2
+	MACHINE=$R1 machine_is_active || return 2
 }
 
 active_machines() {

@@ -8,7 +8,7 @@ _f() {
 	md_var ENV; local ENV=$R1
 	md_var APP_VERSION; local APP_VERSION=$R1
 	md_var DOMAIN; local DOMAIN=$R1
-	md_var ACTIVE; local ACTIVE=$R1
+	local ACTIVE=YES; deploy_is_active || ACTIVE=no
 	printf "$FMT" "$MACHINE" "$DEPLOY" "$ACTIVE" "$APP" "$ENV" "$APP_VERSION" "$DOMAIN"
 }
 printf "$WHITE$FMT$ENDCOLOR" MACHINE DEPLOY ACTIVE APP ENV APP_VERSION DOMAIN
