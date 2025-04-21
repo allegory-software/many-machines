@@ -38,7 +38,7 @@ md_fn() { # ACTION= [DEPLOY=] NAME
 }
 
 md_version() {
-	ACTION=version md_fn "$1" && $fn
+	ACTION=version md_fn "$1" && $R1
 }
 default_version() {
 	package_version $1

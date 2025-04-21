@@ -19,6 +19,11 @@ version_glibc() {
 	ldd --version | head -1 | awk '{print $NF}'
 }
 
+# TODO: remove this after we make the list of versioned components explicit rather than implicit.
+version_cron() {
+	package_version cron
+}
+
 open_ports() { # IP=|MACHINE= [UDP=1] PORTS ...
 	local PORTS="$@"
 	[[ $IP ]] || {
