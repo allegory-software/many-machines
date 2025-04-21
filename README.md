@@ -212,7 +212,12 @@ Note that with git-crypt, only the file contents are encrypted while the
 directory structure itself is not. If you're using github for this, it won't
 let Microsoft see your keys but they'll know about what you're doing.
 
-Some things like realtime monitoring need mm to be configured on a machine.
+There's also installable modules called `mm` and `mm_var` that can install
+mm and the var dir on a machine. By default, all machines get the mm module
+but not the mm_var module, which you should only install on the machines
+that you trust to hold the entire mm database in clear. The mm module uses
+`mm var-sync` as part of the installation to only copy over the parts of the
+var database that are relevant to the machine.
 
 ## The Vars System
 

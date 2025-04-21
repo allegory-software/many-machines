@@ -3,8 +3,9 @@
 # mm module ------------------------------------------------------------------
 
 install_mm() {
+	checkvars MM_REPO
 	apt_get_install autossh sshfs
-	git_clone_for root git@github.com:allegory-software/many-machines /root/mm master
+	git_clone_for root $MM_REPO /root/mm master
 	(
 	must cd /root/mm
 	./install
@@ -21,7 +22,8 @@ uninstall_mm() {
 }
 
 install_mm_var() {
-	git_clone_for root git@github.com:allegory-software/mm-var /root/mm/var master
+	checkvars MM_VAR_REPO
+	git_clone_for root $MM_VAR_REPO /root/mm/var master
 }
 
 # mm_var package installs the encrypted mm var dir which contains the entire mm database.
@@ -29,9 +31,6 @@ install_mm_var() {
 postinstall_mm_var() {
 	local VAR_LOCK_KEY=`var_lock_key` || die "var_lock_key error: $?"
 	ssh_script var_unlock "$VAR_LOCK_KEY"
-	#VARS="VAR_LOCK_KEY" ssh_script '
-	#var_unlock "$VAR_LOCK_KEY"
-	#'
 }
 
 uninstall_mm_var() {
