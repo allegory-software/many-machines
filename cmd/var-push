@@ -1,12 +1,11 @@
 #!/bin/bash
-# MM VAR ;; git-push var dir
+# MM VAR ; [COMMIT-MESSAGE] ; git-push var dir
 . mmlib
 
-COMMIT_MSG=$1
-checkvars COMMIT_MSG-
+COMMIT_MSG=${1:-unimportant}
 
 must cd var
 must git add .
 run git diff --quiet && run git diff --staged --quiet || \
-	must git commit -m "${COMMIT_MSG:-unimportant}"
+	must git commit -m "$COMMIT_MSG"
 must git push
