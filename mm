@@ -40,8 +40,9 @@ main() {
 declare -A mm # mm[MACHINE]=1
 declare -A dm # dm[DEPLOY]=1
 while [[ $# > 0 ]]; do
-	if [[ -f cmd/$1 ]]; then
+	if [[ $1 == "-" || -f cmd/$1 ]]; then
 		local CMD=$1; shift
+		[[ $CMD == "-" ]] && CMD=ssh # we could just symlink `ssh` to `-` in cmd/ but then you can't eg. `wc -l cmd/*`
 		if [[ $# == 0 ]]; then # check if cmd has non-optional args
 			local SECTION ARGS DESCR; cmd_metadata
 			[[ ! $ARGS || $ARGS =~ ^\[.*\]$ ]] \

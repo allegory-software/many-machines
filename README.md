@@ -21,7 +21,6 @@ don't need to learn programming to be a sysadmin.
   * software installation and configuration
   * git key management
   * mysql user management
-  * app user management
   * app deployment
   * SSL certificate management
 * Reporting
