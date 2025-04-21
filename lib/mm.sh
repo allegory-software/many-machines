@@ -46,9 +46,10 @@ version_mm() {
 
 # mm monitor service ---------------------------------------------------------
 
-mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
-
-is_running_mon() { mon_pid >/dev/null; }
+is_running_mon() { mm mon status -q; }
+version_mon() { version_mm; }
+start_mon() { mm mon start; }
+stop_mon() { mm mon stop; }
 
 # var dir ops ----------------------------------------------------------------
 
