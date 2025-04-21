@@ -3,4 +3,4 @@
 . mmlib
 
 must cd var
-must git diff "$@"
+run git diff "$@"

@@ -63,7 +63,7 @@ while [[ $# > 0 ]]; do
 	elif [[ $1 == -v ]]; then
 		export VERBOSE=1
 		shift
-	elif [[ $1 == help ]]; then
+	elif [[ $1 == help || $1 == "--help" || $1 == "?" || $1 == "-?" || $1 == "-h" ]]; then
 		HELP=1
 		shift
 		break

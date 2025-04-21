@@ -14,8 +14,8 @@ all_targets() { # BASE_DIR= DIR
 	return 0
 }
 
-# NOTE: assumes all symlink targets are internal to BASE_DIR.
-# TODO: doesn't itself work with FILE_LIST, only scans SRC_DIR.
+# NOTE: all symlink targets must be internal to BASE_DIR.
+# TODO: doesn't itself work with FILE_LIST, only scans SRC_DIR for symlinks.
 rsync_dir_with_link_targets() {
 	checkvars BASE_DIR SRC_DIR
 	rsync_dir

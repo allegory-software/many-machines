@@ -1,5 +1,5 @@
 #!/bin/bash
-# MM VAR ; "KEY" ; unlock var dir using the key got with `mm var-lock-key`
+# MM VAR ; "KEY" ; unlock the var dir using key got with `mm var-lock-key` from a machine that has it
 . mmlib
 
-var_unlock "$@"
+var_unlock "$1"
