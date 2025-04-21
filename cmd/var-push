@@ -4,6 +4,8 @@
 
 COMMIT_MSG=${1:-unimportant}
 
+/root/mm/fix-links
+
 must cd var
 must git add .
 run git diff --quiet && run git diff --staged --quiet || \
