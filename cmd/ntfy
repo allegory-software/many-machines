@@ -1,6 +1,6 @@
 #!/bin/bash
-# MONITOR ; MESSAGE ... ; notify on phone
+# MONITOR ; -H "Title: TITLE" -d "MESSAGE" ... ; notify on phone
 . mmlib
 
 cat_varfile var ntfy_url || die "ntfy_url var not set."
-curl -d "$*" $R1
+dry curl "$@" $R1

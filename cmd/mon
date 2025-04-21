@@ -30,6 +30,7 @@ MIN_RAM_MB=100
 MIN_HDD_MB=2000
 
 TICK=60 # probing interval
+NOTIFY_TICK=3600
 
 # ----------------------------------------------------------------------------
 
@@ -54,16 +55,26 @@ log() { # K= V= MIN= MAX= N= P= T= T0= DIR= FILE=
 		printf "%d\n" $MAX > $DIR/$K/max
 	}
 	printf "%05d %s\n" $((T - T0)) $V >> $DIR/$K/$FILE.sam
-	printf "%15s %s\n" $K $V
-	((V < MIN || V > MAX)) && alert
+	local ALERT; ((V < MIN || V > MAX)) && ALERT=!
+	printf "%15s %1s %s\n" $K "$ALERT" $V
+	[[ $ALERT != "" ]] && {
+		local file=mon/alerts/$K
+		must mkdir -p mon/alerts
+		printf "%s\n" $V > $file
+	}
 }
 
-alert() { # K=
-	local file=mon/alerts/$K
-	[[ -f $file ]] && return
-	must mkdir -p mon/alerts
-	touch $file
-	mm ntfy ""
+notify() {
+	[[ -f mon/notified && $(find mon/notified -mmin -1440) ]] && return # once a day
+	touch mon/notified
+	must pushd mon/alerts
+	set +f # enable globbing
+	local f s=
+	for f in *; do
+		s="$s$f: $(cat "$f")"$'\n'
+	done
+	must popd
+	mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
 }
 
 stop=
@@ -89,7 +100,7 @@ while [[ ! $stop ]]; do
 		md_var APP; APP=$R1
 		for SERVICE in $DEPLOY_SERVICES; do
 			md_is_running $SERVICE && V=1 || V=0
-			K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=0 log
+			K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=1 log
 		done
 	done
 	DEPLOY=
@@ -97,10 +108,13 @@ while [[ ! $stop ]]; do
 	md_var SERVICES; SERVICES=$R1
 	for SERVICE in $SERVICES; do
 		md_is_running $SERVICE && V=1 || V=0
-		K=s-$SERVICE MAX=1 MIN=0 log
+		K=s-$SERVICE MAX=1 MIN=1 log
 	done
 
 	echo
+
+	((N % $NOTIFY_TICK == 0)) || continue
+	notify
 
 	sleep 1
 	N=$((N+1))
