@@ -1,7 +1,25 @@
 #!/bin/bash
-# MM VAR ; [REPO] ; init var dir for git
+# MM VAR ; ORIGIN-REPO ; git-init var dir and push to empty repo
 . mmlib
 
-var_git_init "$@"
+local REPO=$1
+checkvars REPO
 
+[[ -d var/.git ]] && die "Remove var/.git first."
+[[ -f var/.gitattributes ]] && die "Remove var/.gitattributes first."
 
+package_version git-crypt >/dev/null || package_install git-crypt
+
+must mkdir -p var
+must cd var
+must chmod 770 .
+git init
+save "\
+* filter=git-crypt diff=git-crypt
+.gitattributes !filter !diff
+" .gitattributes
+must git-crypt init
+must git add .
+must git commit -m "init"
+must git remote add origin $REPO
+must git push -u origin master

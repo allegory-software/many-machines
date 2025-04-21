@@ -1,5 +1,6 @@
 #!/bin/bash
-# MM VAR ;; run git status on var dir
+# MM VAR ;; git-status on var dir
 . mmlib
 
-(cd var; git status "$@")
+must cd var
+must git status "$@"

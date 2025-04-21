@@ -2,4 +2,5 @@
 # MM VAR ;; run git diff on var dir
 . mmlib
 
-(cd var; git diff "$@")
+must cd var
+must git diff "$@"

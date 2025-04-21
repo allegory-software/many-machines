@@ -1,5 +1,12 @@
 #!/bin/bash
-# MM VAR ;; push var dir to github
+# MM VAR ;; git-push var dir
 . mmlib
 
-var_push
+COMMIT_MSG=$1
+checkvars COMMIT_MSG-
+
+must cd var
+must git add .
+run git diff --quiet && run git diff --staged --quiet || \
+	must git commit -m "${COMMIT_MSG:-unimportant}"
+must git push

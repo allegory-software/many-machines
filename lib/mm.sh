@@ -28,55 +28,6 @@ version_mm() {
 
 # var dir ops ----------------------------------------------------------------
 
-var_git_init() { # REPO
-	local REPO=$1
-	checkvars REPO
-	package_version git-crypt >/dev/null || package_install git-crypt
-	[[ -d var/.git ]] && die "Remove var/.git first."
-	[[ -f var/.gitattributes ]] && die "Remove var/.gitattributes first."
-	must mkdir -p var
-	(
-	must cd var
-	must chmod 770 .
-	git init
-	save "\
-* filter=git-crypt diff=git-crypt
-.gitattributes !filter !diff
-" .gitattributes
-	must git-crypt init
-	must git add .
-	must git commit -m "init"
-	must git remote add origin $REPO
-	must git push -u origin master
-	)
-}
-
-var_clone() { # REPO
-	local REPO=$1
-	checkvars REPO
-	on_exit run rm -rf var.new
-	git_clone_for root $REPO var.new
-	must mv --backup=numbered var.new var
-	must chmod 770 var
-}
-
-var_pull() {
-	(
-	must cd var
-	must git pull
-	)
-}
-
-var_push() { # [COMMIT_MSG]
-	(
-	must cd var
-	must git add .
-	run git diff --quiet && run git diff --staged --quiet || \
-		must git commit -m "${COMMIT_MSG:-unimportant}"
-	must git push
-	)
-}
-
 var_unlock() { # KEY
 	local KEY=$1
 	checkvars KEY-

@@ -1,5 +1,6 @@
 #!/bin/bash
-# MM VAR ;; pull var dir from github
+# MM VAR ;; git-pull var dir
 . mmlib
 
-var_pull "$@"
+must cd var
+must git pull

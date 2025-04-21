@@ -31,7 +31,8 @@ _f() {
 	rsync_dir_with_link_targets
 	[[ $DEPLOY ]] || { # sync all deploys on machine
 		local DEPLOY
-		for DEPLOY in `machine_deploys`; do
+		for DEPLOY in `ls -1 var/deploys`; do
+			machine_of_deploy $DEPLOY; [[ $R1 == $MACHINE ]] || continue
 			SRC_DIR=var/deploys/$DEPLOY
 			rsync_dir_with_link_targets
 		done

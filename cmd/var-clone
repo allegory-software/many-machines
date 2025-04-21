@@ -1,5 +1,11 @@
 #!/bin/bash
-# MM VAR ; REPO ; clone var dir
+# MM VAR ; REPO ; clone var dir (and backup current var dir)
 . mmlib
 
-var_clone "$@"
+REPO=$1
+checkvars REPO
+
+on_exit run rm -rf var.new
+git_clone_for root $REPO var.new
+must mv --backup=numbered var.new var
+must chmod 770 var
