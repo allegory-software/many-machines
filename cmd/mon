@@ -96,6 +96,7 @@ while [[ ! $stop ]]; do
 
 	active_deploys; DEPLOYS=$R1
 	for DEPLOY in $DEPLOYS; do
+		machine_of_deploy $DEPLOY; [[ $R1 != $MACHINE ]] && continue
 		md_var DEPLOY_SERVICES; DEPLOY_SERVICES=$R1
 		md_var APP; APP=$R1
 		for SERVICE in $DEPLOY_SERVICES; do
