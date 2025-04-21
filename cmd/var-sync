@@ -2,6 +2,8 @@
 # MM VAR ;; sync relevant vars to machine so it can use mm locally
 . mmlib
 
+/root/mm/fix-links
+
 # scan a dir for symlinks and print all their targets.
 # dir targets are scanned again recursively.
 all_targets() { # BASE_DIR= DIR
