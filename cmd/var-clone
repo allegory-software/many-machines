@@ -1,14 +1,16 @@
 #!/bin/bash
-# MM VAR ; REPO "VAR-UNLOCK-KEY" ; clone var dir (and backup current var dir)
+# MM VAR ; REPO ["VAR-UNLOCK-KEY"] ; clone var dir (and backup current var dir)
 . mmlib
 
 REPO=$1 KEY=$2
-checkvars REPO KEY-
+checkvars REPO
 
 on_exit run rm -rf var.new
 git_clone_for root $REPO var.new
 must mv --backup=numbered var.new var
 must chmod 770 var
 
-package_version git-crypt >/dev/null || package_install git-crypt
-var_unlock "$KEY"
+[[ "$KEY" ]] && {
+	package_version git-crypt >/dev/null || package_install git-crypt
+	var_unlock "$KEY"
+}

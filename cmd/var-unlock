@@ -2,4 +2,5 @@
 # MM VAR ; "KEY" ; unlock the var dir using key got with `mm var-lock-key` from a machine that has it
 . mmlib
 
+package_version git-crypt >/dev/null || package_install git-crypt
 var_unlock "$1"
