@@ -1,5 +1,5 @@
 #!/bin/bash
-# MONITOR ; [start|stop|restart|status [-q]] ; contiunous monitoring service
+# MONITOR ; [start|stop|restart|status [-q]|reset] ; contiunous monitoring service
 . mmlib
 
 checkvars MACHINE
@@ -23,6 +23,10 @@ elif [[ $1 == status ]]; then
 	pid=`mon_pid`; x=$?
 	[[ $2 == -q ]] || { [[ $x == 0 ]] && say "Running. PID: $pid" || say "Not running."; }
 	exit $x
+elif [[ $1 == reset ]]; then
+	REL_PATH_OK=1 empty_dir mon/alerts
+	REL_PATH_OK=1 rm_file mon/notified
+	exit
 fi
 
 # config ---------------------------------------------------------------------

@@ -5,7 +5,7 @@ popd()  { command popd  "$@" > /dev/null; }
 
 check_abs_filepath() {
 	[[ $1 == / ]] && return
-	[[ ${1:0:1} == / ]] || die "path not absolute: $1"
+	[[ $REL_PATH_OK || ${1:0:1} == / ]] || die "path not absolute: $1"
 	[[ ${1: -1} == / ]] && die "path ends in slash: $1"
 }
 
@@ -34,7 +34,7 @@ catfile() { # FILE [DEFAULT]
 	trim R1
 }
 
-rm_dir() { # DIR
+rm_dir() { # [REL_PATH_OK=1] DIR
 	local dir=$1
 	checkvars dir
 	check_abs_filepath "$dir"
@@ -47,7 +47,20 @@ rm_dir() { # DIR
 	fi
 }
 
-rm_file() { # FILE
+empty_dir() { # [REL_PATH_OK=1] DIR
+	local dir=$1
+	checkvars dir
+	check_abs_filepath "$dir"
+	sayn "Emptying dir: $dir ... "
+	if [[ ! -d $dir ]]; then
+		say "not found"
+	else
+		must dry rm -rf "$dir/"
+		say OK
+	fi
+}
+
+rm_file() { # [REL_PATH_OK=1] FILE
 	local file=$1
 	checkvars file
 	check_abs_filepath "$file"
