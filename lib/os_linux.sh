@@ -31,7 +31,7 @@ open_ports() { # IP=|MACHINE= [UDP=1] PORTS ...
 		local IP=$R1
 	}
 	checkvars IP PORTS-
-	nc -zv -w 1 ${UDP:+-u} $IP $PORTS 2>&1 | grep -Po '(?<=\s)(\d+)(?=\s.* open$)' | tr '\n' ' '
+	nc -zv -w 1 ${UDP:+-u} $IP $PORTS 2>&1 | awk '/succeeded/ {print $4}' | tr '\n' ' '
 }
 
 is_listening() { # IP=|MACHINE= PORT
