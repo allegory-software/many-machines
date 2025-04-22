@@ -129,6 +129,10 @@ ssh_save() { # S FILE [USER] [MODE]
 	say OK
 }
 
+ssh_lean_script() { # "SCRIPT"
+	printf "$1" | ssh_to bash -s
+}
+
 # ssh config -----------------------------------------------------------------
 
 ssh_hostkey() {
