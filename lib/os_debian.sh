@@ -39,12 +39,12 @@ apt_has_install() { # PACKAGE
 
 # packages -------------------------------------------------------------------
 
-package_install() { # PACKAGE
-	apt_get_install "$1"
+package_install() { # PACKAGE1 ...
+	apt_get_install "$@"
 }
 
-package_uninstall() { # PACKAGE
-	apt_get_purge "$1"
+package_uninstall() { # PACKAGE1 ...
+	apt_get_purge "$@"
 }
 
 package_version() { # PACKAGE
@@ -90,7 +90,7 @@ service_disable() {
 		service_stop $SERVICE
 	if service_is_installed $SERVICE; then
 		say; say "Disabling $SERVICE ..."
-		must systemctl disable $SERVICE
+		must systemctl disable --now $SERVICE
 	else
 		say; say "Disabling $SERVICE ... not installed."
 	fi
@@ -99,7 +99,7 @@ service_disable() {
 service_enable() {
 	local SERVICE=$1; checkvars SERVICE
 	say; say "Enabling $SERVICE..."
-	must systemctl enable $SERVICE
+	must systemctl enable --now $SERVICE
 }
 
 # installers -----------------------------------------------------------------
@@ -132,7 +132,7 @@ install_mysql() {
 	say; say "Installing MySQL (Percona latest)..."
 	service_is_installed mysql && service_stop mysql
 
-	apt_get_install gnupg2 lsb-release
+	package_install gnupg2 lsb-release
 
 	must wget -nv https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb -O percona.deb
 	dpkg_i percona.deb
@@ -140,7 +140,7 @@ install_mysql() {
 
 	must rm percona.deb
 	must percona-release setup -y pxc80
-	apt_get_install percona-xtradb-cluster percona-xtrabackup-80 qpress
+	package_install percona-xtradb-cluster percona-xtrabackup-80 qpress
 
 	mysql_config default "
 
@@ -165,9 +165,12 @@ log_bin_trust_function_creators = 1
 install_tarantool() { # tarantool 3.0
 	say; say "Installing Tarantool..."
 	curl -L https://tarantool.io/release/3/installer.sh | bash
-	apt_get_install tarantool
-	apt_get_install tt
+	package_install tarantool tt
 	say "Tarantool install done."
+}
+uninstall_tarantool() {
+	service_disable tarantool
+	package_uninstall tt tarantool
 }
 
 install_rpcbind() {
@@ -225,4 +228,19 @@ table inet filter {
 uninstall_nftables() {
 	systemctl disable nftables
 	nft flush ruleset
+}
+
+install_gdu() {
+	curl -s -L https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64-x.tgz | tar xzO gdu_linux_amd64-x > /usr/local/bin/gdu
+}
+uninstall_gdu() {
+	rm_file /usr/local/bin/gdu
+}
+
+install_journald() {
+save "\
+[Journal]
+SystemMaxUse=20M
+" /etc/systemd/journald.conf
+	service_restart systemd-journald
 }
