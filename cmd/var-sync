@@ -29,10 +29,6 @@ rsync_dir_with_link_targets() {
 }
 
 _f() {
-	[[ $MACHINE == $THIS_MACHINE ]] && {
-		say "Not sync'ing machine with itself."
-		return
-	}
 	local BASE_DIR=.
 	local DST_MACHINE=$MACHINE
 	local DST_DIR=/root/mm/
@@ -53,4 +49,4 @@ _f() {
 		done
 	}
 }
-each_md _f
+NOTHIS=1 each_md _f

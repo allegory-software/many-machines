@@ -11,8 +11,6 @@ set -f # disable globbing
 shopt -s nullglob
 set -o pipefail
 
-[[ -f ~/.mm/vars ]] && . ~/.mm/vars
-
 for f in "${MM_STD_LIBS[@]}"; do . $f; done
 for f in $MM_LIBS; do . libopt/$f.sh; done
 unset f

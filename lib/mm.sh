@@ -143,11 +143,15 @@ deploy_is_active() { # DEPLOY=
 	MACHINE=$R1 machine_is_active || return 2
 }
 
-active_machines() {
+active_machines() { # [NOTHIS=1]
 	local S
+	local THIS_MACHINE=$MACHINE
 	local MACHINE
 	for MACHINE in `ls -1 machines 2>/dev/null || ls -1 var/machines 2>/dev/null`; do
-		if [[ $INACTIVE ]] || machine_is_active; then  S+=" $MACHINE"; fi
+		if [[ $INACTIVE ]] || machine_is_active; then
+			[[ $NOTHIS && $MACHINE == $THIS_MACHINE ]] && continue
+			S+=" $MACHINE"
+		fi
 	done
 	R1=$S
 }
@@ -163,7 +167,7 @@ active_deploys() {
 
 # NOTE: set NOALL=1 for dangerous commands. User will set ALL=1 to override.
 # NOTE: set NOSUBPROC=1 to break on first error.
-each_machine() { # [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS...
+each_machine() { # [NOTHIS=1] [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND ARGS...
 	declare -A mm
 	local M D
 	local MACHINES="$MACHINES"
@@ -184,9 +188,14 @@ each_machine() { # [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES= DEPLOYS= COMMAND AR
 	fi
 	[[ ! $QUIET && ${#mm[@]} == 1 ]] && QUIET=1
 	local CMD="$1"; shift
+	local THIS_MACHINE=$MACHINE
 	local MACHINE
 	for MACHINE in $MACHINES; do
 		[[ $QUIET ]] || say "On machine $MACHINE:"
+		[[ $NOTHIS && $MACHINE == $THIS_MACHINE ]] && {
+			say "Excluding this machine."
+			continue
+		}
 		if [[ $NOSUBPROC ]]; then
 			"$CMD" "$@"
 		else

@@ -1,5 +1,5 @@
 #!/bin/bash
-# MM VAR ; please ; restore previous var dir
+# MM VAR ; please ; restore previous var dir on this machine
 . mmlib
 
 [[ $1 == please ]] || die "Say please"

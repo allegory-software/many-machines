@@ -1,5 +1,5 @@
 #!/bin/bash
-# MM VAR ; [COMMIT-MESSAGE] ; git-push var dir
+# MM VAR ; [COMMIT-MESSAGE] ; git-push var dir on this machine
 . mmlib
 
 COMMIT_MSG=${1:-unimportant}
@@ -7,6 +7,7 @@ COMMIT_MSG=${1:-unimportant}
 /root/mm/fix-links
 
 must cd var
+[[ -d .git ]] || die "$PWD/.git not found."
 must git add .
 run git diff --quiet && run git diff --staged --quiet || \
 	must git commit -m "$COMMIT_MSG"

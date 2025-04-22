@@ -1,6 +1,8 @@
 #!/bin/bash
-# MM VAR ;; git-pull var dir
+# MM VAR ;; git-pull var dir on machine(s)
 . mmlib
 
-must cd var
-must git pull
+each_md ssh_script '
+must cd ~/mm/var
+[[ -d .git ]] && must git pull || say "$PWD/.git not found. Skipping."
+'

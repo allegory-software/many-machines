@@ -2,5 +2,6 @@
 # MM VAR ;; git-status on var dir
 . mmlib
 
-must cd var
+must cd /root/mm/var
+[[ -d .git ]] || die "$PWD/.git not found."
 must git status "$@"

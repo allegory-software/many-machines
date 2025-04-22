@@ -1,6 +1,7 @@
 #!/bin/bash
-# MM VAR ;; run git diff on var dir
+# MM VAR ;; run git diff on var dir on this machine
 . mmlib
 
 must cd var
+[[ -d .git ]] || die "$PWD/.git not found."
 run git diff "$@"
