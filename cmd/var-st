@@ -4,4 +4,4 @@
 
 must cd /root/mm/var
 [[ -d .git ]] || die "$PWD/.git not found."
-must git status "$@"
+must git status -s "$@"
