@@ -37,10 +37,12 @@ fi
 
 # config ---------------------------------------------------------------------
 
+# thresholds
 MIN_RAM_MB=50
 MIN_HDD_MB=2000
 
-TICK=60 # probing interval
+# intervals
+PROBE_TICK=60
 NOTIFY_TICK=3600
 
 # ----------------------------------------------------------------------------
@@ -51,7 +53,7 @@ HDD_KB=`get_HDD_KB`
 MIN_RAM_KB=$((MIN_RAM_MB * 1024))
 MIN_HDD_KB=$((MIN_HDD_MB * 1024))
 
-# change log file when today becomes tomorrow.
+# change the log file when today becomes tomorrow.
 set_file() {
 	T0=`date -d '00:00' +%s`
 	T1=`date -d 'tomorrow 00:00' +%s`
@@ -59,15 +61,37 @@ set_file() {
 }
 set_file
 
-log() { # K= V= MIN= MAX= N= P= T= T0= DIR= FILE=
+# count consecutive times when value was out of range.
+# we only report values that were out of range more than MAXC times.
+declare -A COUNTS # k->n
+
+log() { # K= V= MIN= MAX= [MAXC=] N= P= T= T0= DIR= FILE=
+
+	# log the value in samples file to show in a graph
 	[[ -d $DIR/$K ]] || {
 		must mkdir -p $DIR/$K
 		printf "%d\n" $MIN > $DIR/$K/min
 		printf "%d\n" $MAX > $DIR/$K/max
 	}
 	printf "%05d %s\n" $((T - T0)) $V >> $DIR/$K/$FILE.sam
-	local ALERT; ((V < MIN || V > MAX)) && ALERT=!
+
+	# check alert thresholds
+	local ALERT
+	if ((V < MIN || V > MAX)); then
+		((COUNTS[$K]++))
+		local C=${COUNTS[$K]}
+		local MAXC=${MAXC:-0}
+		if ((C > MAXC)); then
+			ALERT=!
+		fi
+	else
+		COUNTS[$K]=0
+	fi
+
+	# show the value when running mon in foreground.
 	printf "%15s %1s %s\n" $K "$ALERT" $V
+
+	# record alert
 	[[ $ALERT != "" ]] && {
 		local file=mon/alerts/$K
 		must mkdir -p mon/alerts
@@ -76,28 +100,42 @@ log() { # K= V= MIN= MAX= N= P= T= T0= DIR= FILE=
 }
 
 notify() {
-	[[ -f mon/notified && $(find mon/notified -mmin -1440) ]] && return # once a day
+	[[ -f mon/notified && $(find mon/notified -mmin -1440) ]] && return # notify once a day
 	touch mon/notified
 	must mkdir -p mon/alerts
 	must pushd mon/alerts
-	set +f # enable globbing
 	local f s=
+	set +f # enable globbing
 	for f in *; do
 		s="$s$f: $(cat "$f")"$'\n'
 	done
+	set -f # disable globbing
 	must popd
 	[[ $s ]] || return
 	mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
 }
 
+# stop the loop on Ctrl+C
 stop=
 trap 'stop=1' SIGTERM SIGINT
 
 N=0
+on_tick() { ((N % $1 == 0)); }
+next_tick() {
+	N=$((N+1))
+	printf .
+	sleep 1
+}
 while [[ ! $stop ]]; do
 
-	((N % $TICK == 0)) && [[ ! -f mon/paused ]] && {
+	[[ -f mon/paused ]] && {
+		next_tick
+		continue
+	}
 
+	on_tick $PROBE_TICK && {
+
+		echo
 		echo
 
 		T=`date +%s`
@@ -107,20 +145,49 @@ while [[ ! $stop ]]; do
 
 		DIR=mon/samples
 
+		# proble RAM and HDD free space
+
 		K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_RAM_KB log
 		K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_HDD_KB log
+
+		# probe CPU load
+
+		stats1=()
+		while IFS= read -r line; do
+			[[ $line == cpu[0-9]* ]] && stats1+=("$line")
+		done < /proc/stat
+
+		for i in "${!stats1[@]}"; do # go through all cpu cores
+			read -a f1 <<<"${stats1[i]}"
+			read -a f2 <<<"${stats2[i]}"
+
+			idle1=${f1[4]}
+			idle2=${f2[4]}
+
+			total1=0 total2=0
+			for n in "${f1[@]:1}"; do ((total1+=n)); done
+			for n in "${f2[@]:1}"; do ((total2+=n)); done
+
+			total=$((total2 - total1))
+			idle=$((idle2 - idle1))
+			usage=$((100 * (total - idle) / total))
+			printf "%s usage: %d%%\n" "${f1[0]}" "$usage"
+		done
+
+		# probe deploy service status
 
 		active_deploys; DEPLOYS=$R1
 		for DEPLOY in $DEPLOYS; do
 			machine_of_deploy $DEPLOY; [[ $R1 != $MACHINE ]] && continue
 			md_var DEPLOY_SERVICES; DEPLOY_SERVICES=$R1
-			md_var APP; APP=$R1
 			for SERVICE in $DEPLOY_SERVICES; do
 				md_is_running $SERVICE && V=1 || V=0
 				K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=1 log
 			done
 		done
 		DEPLOY=
+
+		# probe machine service status
 
 		md_var SERVICES; SERVICES=$R1
 		for SERVICE in $SERVICES; do
@@ -132,12 +199,8 @@ while [[ ! $stop ]]; do
 
 	}
 
-	((N % $NOTIFY_TICK == 0)) && [[ ! -f mon/paused ]] && {
-		notify
-	}
+	on_tick $NOTIFY_TICK && notify
 
-	N=$((N+1))
-	printf .
-	sleep 1
+	next_tick
 done
 say "Stopped."
