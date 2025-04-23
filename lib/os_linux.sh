@@ -210,9 +210,33 @@ uninstall_tcp_keepalive_tuning() {
 }
 
 install_gdu() {
-	curl -s -L https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64-x.tgz | tar xzO gdu_linux_amd64-x > /usr/local/bin/gdu
-	chmod 755 /usr/local/bin/gdu
+	sayn "Installing gdu latest ... "
+	must curl -s -L https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64-x.tgz | tar xzO gdu_linux_amd64-x > /usr/local/bin/gdu
+	must chmod 755 /usr/local/bin/gdu
+	say OK
 }
 uninstall_gdu() {
 	rm_file /usr/local/bin/gdu
+}
+
+install_goful() {
+	sayn "Installing goful latest ... "
+	must curl -s -L https://github.com/anmitsu/goful/releases/latest/download/goful_linux_x86_64.tar.gz | tar xzO goful > /usr/local/bin/goful
+	must chmod 755 /usr/local/bin/goful
+	say OK
+}
+uninstall_goful() {
+	rm_file /usr/local/bin/goful
+}
+
+install_lazygit() {
+	local VER=0.49.0
+	sayn "Installing lazygit $VER ... "
+	local file=lazygit_${VER}_Linux_x86_64.tar.gz
+	must curl -s -L https://github.com/jesseduffield/lazygit/releases/latest/download/$file | tar xzO lazygit > /usr/local/bin/lazygit
+	must chmod 755 /usr/local/bin/lazygit
+	say OK
+}
+uninstall_lazygit() {
+	rm_file /usr/local/bin/lazygit
 }

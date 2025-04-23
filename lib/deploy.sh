@@ -107,6 +107,7 @@ secret = '$SECRET'
 --custom vars
 ${HTTP_PORT:+http_port = $HTTP_PORT}
 ${HTTP_UNIX_SOCKET:+http_unix_socket = '/run/$DEPLOY/http.sock'}
+${HTTP_UNIX_SOCKET:+http_unix_socket_perms = '0660'}
 ${HTTP_COMPRESS:+http_compress = $HTTP_COMPRESS}
 ${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
 ${SMTP_HOST:+smtp_user = '$SMTP_USER'}
@@ -142,14 +143,12 @@ deploy_install_user() {
 	user_lock_pass $DEPLOY
 	# make dir for app unix socket that www-data group (nginx process) can see.
 	# this avoids giving nginx full access to the app dir (you might still want
-	# to do that if you want nginx to also server static public files).
+	# to do that if you want nginx to also serve static public files).
 	must mkdir -p /run/$DEPLOY
 	must chown $DEPLOY:www-data /run/$DEPLOY
-	must chmod 750 /run/$DEPLOY
-	# regular file, turns into a socket on bind(), preserving perms and ownership.
-	must touch /run/$DEPLOY/http.sock
-	must chmod 660 /run/$DEPLOY/http.sock
-	must chown $DEPLOY:www-data /run/$DEPLOY/http.sock
+	# setgid on the dir is important because the app itself can't change the
+	# group of the socket file (it sets the mode to 0660, it's all it can do).
+	must chmod 2750 /run/$DEPLOY
 }
 
 deploy_uninstall_user() {
