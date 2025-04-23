@@ -27,6 +27,12 @@ elif [[ $1 == reset ]]; then
 	REL_PATH_OK=1 empty_dir mon/alerts
 	REL_PATH_OK=1 rm_file mon/notified
 	exit
+elif [[ $1 == pause ]]; then
+	touch mon/paused
+	exit
+elif [[ $1 == resume || $1 == unpause ]]; then
+	REL_PATH_OK=1 rm_file mon/paused
+	exit
 fi
 
 # config ---------------------------------------------------------------------
@@ -72,6 +78,7 @@ log() { # K= V= MIN= MAX= N= P= T= T0= DIR= FILE=
 notify() {
 	[[ -f mon/notified && $(find mon/notified -mmin -1440) ]] && return # once a day
 	touch mon/notified
+	must mkdir -p mon/alerts
 	must pushd mon/alerts
 	set +f # enable globbing
 	local f s=
@@ -79,6 +86,7 @@ notify() {
 		s="$s$f: $(cat "$f")"$'\n'
 	done
 	must popd
+	[[ $s ]] || return
 	mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
 }
 
@@ -88,7 +96,8 @@ trap 'stop=1' SIGTERM SIGINT
 N=0
 while [[ ! $stop ]]; do
 
-	((N % $TICK == 0)) && {
+	((N % $TICK == 0)) && [[ ! -f mon/paused ]] && {
+
 		echo
 
 		T=`date +%s`
@@ -120,9 +129,10 @@ while [[ ! $stop ]]; do
 		done
 
 		echo
+
 	}
 
-	((N % $NOTIFY_TICK == 0)) && {
+	((N % $NOTIFY_TICK == 0)) && [[ ! -f mon/paused ]] && {
 		notify
 	}
 
