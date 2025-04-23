@@ -208,3 +208,11 @@ net.ipv4.tcp_keepalive_probes=5
 uninstall_tcp_keepalive_tuning() {
 	kernel_config_remove 50-tcp-keepalive.conf
 }
+
+install_gdu() {
+	curl -s -L https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64-x.tgz | tar xzO gdu_linux_amd64-x > /usr/local/bin/gdu
+	chmod 755 /usr/local/bin/gdu
+}
+uninstall_gdu() {
+	rm_file /usr/local/bin/gdu
+}

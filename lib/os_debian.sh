@@ -230,13 +230,6 @@ uninstall_nftables() {
 	nft flush ruleset
 }
 
-install_gdu() {
-	curl -s -L https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64-x.tgz | tar xzO gdu_linux_amd64-x > /usr/local/bin/gdu
-}
-uninstall_gdu() {
-	rm_file /usr/local/bin/gdu
-}
-
 install_journald() {
 save "\
 [Journal]
