@@ -4,5 +4,5 @@
 
 each_md ssh_script '
 must cd ~/mm
-must it pull
+must git pull
 '
