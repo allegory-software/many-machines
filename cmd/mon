@@ -42,7 +42,7 @@ MIN_RAM_MB=50
 MIN_HDD_MB=2000
 
 # intervals
-PROBE_TICK=60
+PROBE_TICK=3
 NOTIFY_TICK=3600
 
 # ----------------------------------------------------------------------------
@@ -152,27 +152,30 @@ while [[ ! $stop ]]; do
 
 		# probe CPU load
 
-		stats1=()
+		stats2=()
 		while IFS= read -r line; do
-			[[ $line == cpu[0-9]* ]] && stats1+=("$line")
+			[[ $line == cpu[0-9]* ]] && stats2+=("$line")
 		done < /proc/stat
 
-		for i in "${!stats1[@]}"; do # go through all cpu cores
-			read -a f1 <<<"${stats1[i]}"
-			read -a f2 <<<"${stats2[i]}"
+		if declare -p stats1 &>/dev/null; then # we have at least 2 samples
+			for i in "${!stats1[@]}"; do # go through all cpu cores
+				read -a f1 <<<"${stats1[i]}"
+				read -a f2 <<<"${stats2[i]}"
 
-			idle1=${f1[4]}
-			idle2=${f2[4]}
+				idle1=${f1[4]}
+				idle2=${f2[4]}
 
-			total1=0 total2=0
-			for n in "${f1[@]:1}"; do ((total1+=n)); done
-			for n in "${f2[@]:1}"; do ((total2+=n)); done
+				total1=0 total2=0
+				for n in "${f1[@]:1}"; do ((total1+=n)); done
+				for n in "${f2[@]:1}"; do ((total2+=n)); done
 
-			total=$((total2 - total1))
-			idle=$((idle2 - idle1))
-			usage=$((100 * (total - idle) / total))
-			printf "%s usage: %d%%\n" "${f1[0]}" "$usage"
-		done
+				total=$((total2 - total1))
+				idle=$((idle2 - idle1))
+				usage=$((100 * (total - idle) / total))
+				K=CPU V=$usage MAX=10 MIN=0 log
+			done
+		fi
+		stats1=("${stats2[@]}")
 
 		# probe deploy service status
 
@@ -180,6 +183,7 @@ while [[ ! $stop ]]; do
 		for DEPLOY in $DEPLOYS; do
 			machine_of_deploy $DEPLOY; [[ $R1 != $MACHINE ]] && continue
 			md_var DEPLOY_SERVICES; DEPLOY_SERVICES=$R1
+			md_var APP; APP=$R1
 			for SERVICE in $DEPLOY_SERVICES; do
 				md_is_running $SERVICE && V=1 || V=0
 				K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=1 log

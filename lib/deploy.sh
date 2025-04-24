@@ -43,7 +43,10 @@ get_APP_LATEST() {
 }
 
 deploy_is_running_app() {
+	checkvars APP
 	[[ -d /home/$DEPLOY/app ]] || return
+	local pid=`cat /home/$DEPLOY/app/$APP.pid 2>/dev/null`
+	#[[ $pid ]] && kill -0 $pid 2>/dev/null
 	try_app running
 }
 
