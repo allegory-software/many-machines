@@ -179,7 +179,7 @@ probe_deploy_services() {
 		md_var APP; local APP=$R1
 		for SERVICE in $DEPLOY_SERVICES; do
 			local V; md_is_running $SERVICE && V=1 || V=0
-			K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=1 MAXT=${MAXT}_$SERVICE log
+			K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=1 log
 		done
 	done
 }
@@ -188,7 +188,7 @@ probe_services() {
 	md_var SERVICES; local SERVICES=$R1
 	for SERVICE in $SERVICES; do
 		local V; md_is_running $SERVICE && V=1 || V=0
-		K=s-$SERVICE MAX=1 MIN=1 MAXT=${MAXT}_$SERVICE log
+		K=s-$SERVICE MAX=1 MIN=1 log
 	done
 }
 
