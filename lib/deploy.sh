@@ -42,12 +42,19 @@ get_APP_LATEST() {
 		echo ${LIGHTRED}NO!$ENDCOLOR
 }
 
+deploy_is_running_app_fast() {
+	local pid=`cat /home/$DEPLOY/app/$APP.pid 2>/dev/null`
+	[[ $pid ]] && kill -0 $pid 2>/dev/null || return 1
+	local cmdline; IFS=$'\0' mapfile -d '' -t cmdline < /proc/$pid/cmdline
+	[[ "${cmdline[0]}" == *luajit* ]] || return 1
+	[[ "${cmdline[1]}" == *$APP* ]] || return 1
+	return 0
+}
 deploy_is_running_app() {
 	checkvars APP
 	[[ -d /home/$DEPLOY/app ]] || return
-	local pid=`cat /home/$DEPLOY/app/$APP.pid 2>/dev/null`
-	#[[ $pid ]] && kill -0 $pid 2>/dev/null
-	try_app running
+	deploy_is_running_app_fast
+	#try_app running
 }
 
 deploy_start_app() {

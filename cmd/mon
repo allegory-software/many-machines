@@ -2,6 +2,24 @@
 # MONITOR ; [start|stop|restart|status [-q]|reset] ; contiunous monitoring service
 . mmlib
 
+# config ---------------------------------------------------------------------
+
+# thresholds
+MIN_RAM_MB=50
+MIN_HDD_MB=2000
+MAX_CPU=90
+
+# time thresholds (in multiples of PROBE_TICK)
+MAXT_RAM=1
+MAXT_HDD=1
+MAXT_CPU=1
+
+# intervals
+PROBE_TICK=${PROBE_TICK:-60}
+NOTIFY_TICK=3600
+
+# parse cmdline & damonize ---------------------------------------------------
+
 checkvars MACHINE
 
 mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
@@ -35,23 +53,7 @@ elif [[ $1 == resume || $1 == unpause ]]; then
 	exit
 fi
 
-# config ---------------------------------------------------------------------
-
-# thresholds
-MIN_RAM_MB=50
-MIN_HDD_MB=2000
-
-# intervals
-PROBE_TICK=3
-NOTIFY_TICK=3600
-
-# ----------------------------------------------------------------------------
-
-RAM_KB=`get_RAM_KB`
-HDD_KB=`get_HDD_KB`
-
-MIN_RAM_KB=$((MIN_RAM_MB * 1024))
-MIN_HDD_KB=$((MIN_HDD_MB * 1024))
+# sample logging & alerts ----------------------------------------------------
 
 # change the log file when today becomes tomorrow.
 set_file() {
@@ -62,26 +64,26 @@ set_file() {
 set_file
 
 # count consecutive times when value was out of range.
-# we only report values that were out of range more than MAXC times.
+# we only report values that were out of range more than MAXT times.
 declare -A COUNTS # k->n
 
-log() { # K= V= MIN= MAX= [MAXC=] N= P= T= T0= DIR= FILE=
+log() { # K= V= MIN= MAX= [MAXT=] N= P= T= T0= DIR= FILE=
 
 	# log the value in samples file to show in a graph
-	[[ -d $DIR/$K ]] || {
-		must mkdir -p $DIR/$K
-		printf "%d\n" $MIN > $DIR/$K/min
-		printf "%d\n" $MAX > $DIR/$K/max
+	[[ -d mon/samples/$K ]] || {
+		must mkdir -p mon/samples/$K
+		printf "%d\n" $MIN > mon/samples/$K/min
+		printf "%d\n" $MAX > mon/samples/$K/max
 	}
-	printf "%05d %s\n" $((T - T0)) $V >> $DIR/$K/$FILE.sam
+	printf "%05d %s\n" $((T - T0)) $V >> mon/samples/$K/$FILE.sam
 
 	# check alert thresholds
 	local ALERT
 	if ((V < MIN || V > MAX)); then
 		((COUNTS[$K]++))
 		local C=${COUNTS[$K]}
-		local MAXC=${MAXC:-0}
-		if ((C > MAXC)); then
+		local MAXT=${MAXT:-1}
+		if ((C >= MAXT)); then
 			ALERT=!
 		fi
 	else
@@ -115,9 +117,75 @@ notify() {
 	mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
 }
 
-# stop the loop on Ctrl+C
-stop=
-trap 'stop=1' SIGTERM SIGINT
+# probing modules ------------------------------------------------------------
+
+RAM_KB=`get_RAM_KB`
+HDD_KB=`get_HDD_KB`
+MIN_RAM_KB=$((MIN_RAM_MB * 1024))
+MIN_HDD_KB=$((MIN_HDD_MB * 1024))
+probe_free() {
+	K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_RAM_KB MAXT=$MAXT_RAM log
+	K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_HDD_KB MAXT=$MAXT_HDD log
+}
+
+unset CPU_STATS1
+unset CPU_STATS2
+probe_cpu() {
+	CPU_STATS2=()
+	local line
+	while IFS= read -r line; do
+		[[ $line == cpu[0-9]* ]] && CPU_STATS2+=("$line")
+	done < /proc/stat
+
+	if declare -p CPU_STATS1 &>/dev/null; then # we have at least 2 samples
+		local i
+		for i in "${!CPU_STATS1[@]}"; do # go through all cpu cores
+			local -a f1; read -a f1 <<<"${CPU_STATS1[i]}"
+			local -a f2; read -a f2 <<<"${CPU_STATS2[i]}"
+
+			local idle1=${f1[4]}
+			local idle2=${f2[4]}
+
+			local total1=0 total2=0
+			local n; for n in "${f1[@]:1}"; do ((total1+=n)); done
+			local n; for n in "${f2[@]:1}"; do ((total2+=n)); done
+
+			local total=$((total2 - total1))
+			local idle=$((idle2 - idle1))
+			local usage=$((100 * (total - idle) / total))
+			K=CPU$i V=$usage MAX=$MAX_CPU MIN=0 MAXT=$MAXT_CPU log
+		done
+	fi
+	CPU_STATS1=("${CPU_STATS2[@]}")
+}
+
+probe_deploy_services() {
+	active_deploys; local DEPLOYS=$R1
+	local DEPLOY
+	for DEPLOY in $DEPLOYS; do
+		machine_of_deploy $DEPLOY; [[ $R1 != $MACHINE ]] && continue
+		md_var DEPLOY_SERVICES; local DEPLOY_SERVICES=$R1
+		md_var APP; local APP=$R1
+		for SERVICE in $DEPLOY_SERVICES; do
+			local V; md_is_running $SERVICE && V=1 || V=0
+			K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=1 MAXT=${MAXT}_$SERVICE log
+		done
+	done
+}
+
+probe_services() {
+	md_var SERVICES; local SERVICES=$R1
+	for SERVICE in $SERVICES; do
+		local V; md_is_running $SERVICE && V=1 || V=0
+		K=s-$SERVICE MAX=1 MIN=1 MAXT=${MAXT}_$SERVICE log
+	done
+}
+
+# main loop ------------------------------------------------------------------
+
+# trap Ctrl+C to stop the loop cleanly.
+STOP=
+trap 'STOP=1' SIGTERM SIGINT
 
 N=0
 on_tick() { ((N % $1 == 0)); }
@@ -126,7 +194,7 @@ next_tick() {
 	printf .
 	sleep 1
 }
-while [[ ! $stop ]]; do
+while [[ ! $STOP ]]; do
 
 	[[ -f mon/paused ]] && {
 		next_tick
@@ -141,63 +209,12 @@ while [[ ! $stop ]]; do
 		T=`date +%s`
 		((T1 > T)) || set_file
 
-		printf "%15s %s\n" @ "$(date '+%F %T')"
+		printf "%15s %1s %s\n" @ "=" "$(date '+%F %T')"
 
-		DIR=mon/samples
-
-		# proble RAM and HDD free space
-
-		K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_RAM_KB log
-		K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_HDD_KB log
-
-		# probe CPU load
-
-		stats2=()
-		while IFS= read -r line; do
-			[[ $line == cpu[0-9]* ]] && stats2+=("$line")
-		done < /proc/stat
-
-		if declare -p stats1 &>/dev/null; then # we have at least 2 samples
-			for i in "${!stats1[@]}"; do # go through all cpu cores
-				read -a f1 <<<"${stats1[i]}"
-				read -a f2 <<<"${stats2[i]}"
-
-				idle1=${f1[4]}
-				idle2=${f2[4]}
-
-				total1=0 total2=0
-				for n in "${f1[@]:1}"; do ((total1+=n)); done
-				for n in "${f2[@]:1}"; do ((total2+=n)); done
-
-				total=$((total2 - total1))
-				idle=$((idle2 - idle1))
-				usage=$((100 * (total - idle) / total))
-				K=CPU V=$usage MAX=10 MIN=0 log
-			done
-		fi
-		stats1=("${stats2[@]}")
-
-		# probe deploy service status
-
-		active_deploys; DEPLOYS=$R1
-		for DEPLOY in $DEPLOYS; do
-			machine_of_deploy $DEPLOY; [[ $R1 != $MACHINE ]] && continue
-			md_var DEPLOY_SERVICES; DEPLOY_SERVICES=$R1
-			md_var APP; APP=$R1
-			for SERVICE in $DEPLOY_SERVICES; do
-				md_is_running $SERVICE && V=1 || V=0
-				K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=1 log
-			done
-		done
-		DEPLOY=
-
-		# probe machine service status
-
-		md_var SERVICES; SERVICES=$R1
-		for SERVICE in $SERVICES; do
-			md_is_running $SERVICE && V=1 || V=0
-			K=s-$SERVICE MAX=1 MIN=1 log
-		done
+		probe_free
+		probe_cpu
+		probe_deploy_services
+		probe_services
 
 		echo
 
