@@ -1,0 +1,8 @@
+#!/bin/bash
+# MM ;; git-pull mm on machine(s)
+. mmlib
+
+each_md ssh_script '
+must cd ~/mm
+must it pull
+'

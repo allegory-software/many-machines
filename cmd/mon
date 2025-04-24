@@ -1,5 +1,5 @@
 #!/bin/bash
-# MONITOR ; [start|stop|restart|status [-q]|reset] ; contiunous monitoring service
+# MONITOR ; [start|stop|restart|status [-q]|reset|pause|resume|unpause|clear-samples] ; contiunous monitoring service
 . mmlib
 
 # config ---------------------------------------------------------------------
@@ -9,14 +9,16 @@ MIN_RAM_MB=50
 MIN_HDD_MB=2000
 MAX_CPU=90
 
-# time thresholds (in multiples of PROBE_TICK)
+# time thresholds (in multiples of SAMPLE_TICK)
 MAXT_RAM=1
 MAXT_HDD=1
 MAXT_CPU=1
 
-# intervals
+# probing intervals
 PROBE_TICK=${PROBE_TICK:-60}
-NOTIFY_TICK=3600
+# these are multiples of PROBE_TICK
+SAMPLE_TICK=1
+NOTIFY_TICK=60
 
 # parse cmdline & damonize ---------------------------------------------------
 
@@ -24,34 +26,34 @@ checkvars MACHINE
 
 mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
 
+RUN=
 if [[ $1 == start ]]; then
 	pid=`mon_pid` && die "Already running. PID: $pid"
 	nohup "$0" daemon >/dev/null 2> mon.log &
-	exit
 elif [[ $1 == stop ]]; then
 	pid=`mon_pid` || die "Not running."
 	kill $pid
 	while kill -0 $pid 2>/dev/null; do sleep 0.1; done
-	exit
 elif [[ $1 == restart ]]; then
 	"$0" stop
 	"$0" start
-	exit
 elif [[ $1 == status ]]; then
 	pid=`mon_pid`; x=$?
 	[[ $2 == -q ]] || { [[ $x == 0 ]] && say "Running. PID: $pid" || say "Not running."; }
-	exit $x
 elif [[ $1 == reset ]]; then
 	REL_PATH_OK=1 empty_dir mon/alerts
 	REL_PATH_OK=1 rm_file mon/notified
-	exit
 elif [[ $1 == pause ]]; then
 	touch mon/paused
-	exit
 elif [[ $1 == resume || $1 == unpause ]]; then
 	REL_PATH_OK=1 rm_file mon/paused
-	exit
+elif [[ $1 == clear-samples ]]; then
+	[[ $2 == please ]] || die "Say please."
+	REL_PATH_OF=1 rm_dir mon/samples
+else
+	RUN=1
 fi
+[[ $RUN ]] || exit 0
 
 # sample logging & alerts ----------------------------------------------------
 
@@ -191,8 +193,7 @@ N=0
 on_tick() { ((N % $1 == 0)); }
 next_tick() {
 	N=$((N+1))
-	printf .
-	sleep 1
+	sleep $PROBE_TICK
 }
 while [[ ! $STOP ]]; do
 
@@ -201,15 +202,14 @@ while [[ ! $STOP ]]; do
 		continue
 	}
 
-	on_tick $PROBE_TICK && {
+	on_tick $SAMPLE_TICK && {
 
-		echo
 		echo
 
 		T=`date +%s`
 		((T1 > T)) || set_file
 
-		printf "%15s %1s %s\n" @ "=" "$(date '+%F %T')"
+		printf "%15s %1s %s\n" @ "" "$(date '+%F %T')"
 
 		probe_free
 		probe_cpu

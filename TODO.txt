@@ -25,7 +25,6 @@
 		- port is bound by the monitoring app via ssh tunnel
 
 - alert conditions:
-	- TODO: CORE HIGH FOR TOO LONG ON THE SAME PID
 	- TODO: SWAP PATTERNS ?
 		- SWAP USED AT ALL
 		- SWAP > SIZE FOR TOO LONG
