@@ -52,7 +52,7 @@ elif [[ $1 == clear-samples ]]; then
 	[[ $2 == please ]] || die "Say please."
 	REL_PATH_OF=1 rm_dir mon/samples
 elif [[ $1 == daemon ]]; then
-	true # nothing to do
+	RUN=1
 elif [[ $1 ]]; then
 	die "Invalid arg: $1"
 else
