@@ -18,7 +18,7 @@ MAXT_CPU=1
 PROBE_TICK=${PROBE_TICK:-60}
 # these are multiples of PROBE_TICK
 SAMPLE_TICK=1
-NOTIFY_TICK=60
+NOTIFY_TICK=1
 
 # parse cmdline & damonize ---------------------------------------------------
 
@@ -40,6 +40,7 @@ elif [[ $1 == restart ]]; then
 elif [[ $1 == status ]]; then
 	pid=`mon_pid`; x=$?
 	[[ $2 == -q ]] || { [[ $x == 0 ]] && say "Running. PID: $pid" || say "Not running."; }
+	exit $x
 elif [[ $1 == reset ]]; then
 	REL_PATH_OK=1 empty_dir mon/alerts
 	REL_PATH_OK=1 rm_file mon/notified
@@ -50,6 +51,10 @@ elif [[ $1 == resume || $1 == unpause ]]; then
 elif [[ $1 == clear-samples ]]; then
 	[[ $2 == please ]] || die "Say please."
 	REL_PATH_OF=1 rm_dir mon/samples
+elif [[ $1 == daemon ]]; then
+	true # nothing to do
+elif [[ $1 ]]; then
+	die "Invalid arg: $1"
 else
 	RUN=1
 fi
@@ -97,15 +102,16 @@ log() { # K= V= MIN= MAX= [MAXT=] N= P= T= T0= DIR= FILE=
 
 	# record alert
 	[[ $ALERT != "" ]] && {
-		local file=mon/alerts/$K
-		must mkdir -p mon/alerts
-		printf "%s\n" $V > $file
+		[[ -f mon/notified/$K && $(find mon/notified/$K -mmin -1440) ]] || {
+			local file=mon/alerts/$K
+			must mkdir -p mon/alerts
+			printf "%s\n" $V > $file
+		}
 	}
 }
 
 notify() {
-	[[ -f mon/notified && $(find mon/notified -mmin -1440) ]] && return # notify once a day
-	touch mon/notified
+	must mkdir -p mon/notified
 	must mkdir -p mon/alerts
 	must pushd mon/alerts
 	local f s=
@@ -117,6 +123,9 @@ notify() {
 	must popd
 	[[ $s ]] || return
 	mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
+	set +f # enable globbing
+	must dry mv mon/alerts/* mon/notified/
+	set -f # disable globbing
 }
 
 # probing modules ------------------------------------------------------------
@@ -193,7 +202,7 @@ N=0
 on_tick() { ((N % $1 == 0)); }
 next_tick() {
 	N=$((N+1))
-	sleep $PROBE_TICK
+	sleep $PROBE_TICK  # returns immediately on Ctrl+C
 }
 while [[ ! $STOP ]]; do
 

@@ -3,4 +3,4 @@
 . mmlib
 
 cat_varfile var ntfy_url || die "ntfy_url var not set."
-dry curl "$@" $R1
+must dry curl "$@" $R1
