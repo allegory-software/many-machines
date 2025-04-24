@@ -67,6 +67,41 @@ deploy_stop_app() {
 	deploy_is_running_app && must app stop
 }
 
+deploy_is_running_app_service() {
+	checkvars DEPLOY
+	run_as $DEPLOY "systemctl --user is-active app.service"
+}
+
+deploy_install_app_service() {
+	checkvars DEPLOY APP
+	save "
+[Unit]
+Description=$APP
+
+[Service]
+ExecStart=/home/$DEPLOY/app/$APP start
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+" /home/$DEPLOY/.config/systemd/user/app.service $DEPLOY
+
+	run_as $DEPLOY "systemctl --user daemon-reexec"
+	run_as $DEPLOY "systemctl --user enable app.service"
+	run_as $DEPLOY "systemctl --user start app.service"
+
+	run loginctl enable-linger $DEPLOY
+}
+
+deploy_uninstall_app_service() {
+	checkvars DEPLOY APP
+	run loginctl disable-linger $DEPLOY
+	run_as $DEPLOY "systemctl --user stop app.service"
+	run_as $DEPLOY "systemctl --user disable app.service"
+	rm_file /home/$DEPLOY/.config/systemd/user/app.service
+	run_as $DEPLOY "systemctl --user daemon-reexec"  # or daemon-reload
+}
+
 get_APP_STATUS() {
 	try_app running && \
 		echo ${LIGHTGRAY}up$ENDCOLOR || \

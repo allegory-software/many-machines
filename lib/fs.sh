@@ -180,6 +180,7 @@ save() { # S FILE [USER] [MODE]
 	checkvars s- file
 	sayn "Saving ${#s} bytes to file: '$file'${user:+ user=$user}${mode:+ mode=$mode} ... "
 	debugn "MUST: save \"$s\" $file "
+	must dry mkdir -p "$(dirname "$file")"
 	if [[ $DRY ]] || printf "%s" "$s" > "$file"; then
 		debug "[$?]"
 	else

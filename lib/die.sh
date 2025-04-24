@@ -142,6 +142,13 @@ run_as() { # VARS="VAR1 ..." FUNCS="FUNC1 ..." USER "SCRIPT" ARG1 ...
 	quote_args "$@"; local args="${R1[*]}"
 	local vars=$(declare -p DEBUG VERBOSE $VARS 2>/dev/null)
 	[[ $FUNCS ]] && local funcs=$(declare -f $FUNCS)
+	debug "-------------------------------------------------------"
+	debug "run_as $USER:"
+	debug "-------------------------------------------------------"
+	debug "$vars"
+	debug "$funcs"
+	debug "$script"
+	debug "-------------------------------------------------------"
 	run sudo -u "$user" bash -s <<< "
 $vars
 $funcs
