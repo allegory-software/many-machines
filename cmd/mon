@@ -5,13 +5,13 @@
 # config ---------------------------------------------------------------------
 
 # thresholds
-md_var MIN_RAM_MB   50; MIN_RAM_MB=$R1
-md_var MIN_HDD_MB 2000; MIN_HDD_MB=$R1
-md_var MAX_CPU      90; MAX_CPU=$R1
+md_var MIN_FREE_RAM_MB   50; MIN_FREE_RAM_MB=$R1
+md_var MIN_FREE_HDD_MB 2000; MIN_FREE_HDD_MB=$R1
+md_var MAX_CPU           90; MAX_CPU=$R1
 
 # time thresholds (in multiples of SAMPLE_TICK)
-md_var MAXT_RAM 1; MAXT_RAM=$R1
-md_var MAXT_HDD 1; MAXT_HDD=$R1
+md_var MAXT_FREE_RAM 1; MAXT_FREE_RAM=$R1
+md_var MAXT_FREE_HDD 1; MAXT_FREE_HDD=$R1
 md_var MAXT_CPU 1; MAXT_CPU=$R1
 
 # probing intervals
@@ -132,11 +132,11 @@ notify() {
 
 RAM_KB=`get_RAM_KB`
 HDD_KB=`get_HDD_KB`
-MIN_RAM_KB=$((MIN_RAM_MB * 1024))
-MIN_HDD_KB=$((MIN_HDD_MB * 1024))
+MIN_FREE_RAM_KB=$((MIN_FREE_RAM_MB * 1024))
+MIN_FREE_HDD_KB=$((MIN_FREE_HDD_MB * 1024))
 probe_free() {
-	K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_RAM_KB MAXT=$MAXT_RAM log
-	K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_HDD_KB MAXT=$MAXT_HDD log
+	K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_FREE_RAM_KB MAXT=$MAXT_FREE_RAM log
+	K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_FREE_HDD_KB MAXT=$MAXT_FREE_HDD log
 }
 
 unset CPU_STATS1
