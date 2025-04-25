@@ -2,4 +2,8 @@
 # FILES BACKUP ; BACKUP_DIR DST_MACHINE DST_DEPLOY ; restore deploy files from backup
 . mmlib
 
-deploy_files_restore "$@"
+BACKUP_DIR=$1; shift
+checkvars BACKUP_DIR
+rel_path "$BACKUP_DIR" "$PWD0"; BACKUP_DIR=$R1
+
+deploy_files_restore "$BACKUP_DIR" "$@"

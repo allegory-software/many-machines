@@ -39,6 +39,6 @@ mysql_restore_db() { # DB FILE
 	mysql_drop_db   $db
 	mysql_create_db $db
 	sayn "Restoring MySQL database '$MACHINE:$db' from file '$file' ... "
-	must qpress -do $file | mysqldump_fix_user $db | must mysql $db
+	must dry qpress -do $file | mysqldump_fix_user $db | must dry mysql $db
 	say OK
 }

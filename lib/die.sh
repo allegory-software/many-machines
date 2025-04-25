@@ -82,13 +82,17 @@ checknosp() { # VAL [ERROR...]
 	[[ "${val}" ]] || die "${FUNCNAME[1]}: $@"
 }
 
-checkvars() { # VARNAME1[-] ...
+checkvars() { # VARNAME1[-|?] ...
 	local var
 	for var in $@; do
-		if [[ ${var::-1}- == $var ]]; then # spaces allowed
+		if [[ ${var::-1}? == $var ]]; then # optional and spaces not allowed
+			var=${var::-1}
+			[[ ${!var} ]] || continue
+			[[ ${!var} =~ ( |\') ]] && die "${FUNCNAME[1]}: $var contains spaces"
+		elif [[ ${var::-1}- == $var ]]; then # required but spaces allowed
 			var=${var::-1}
 			[[ ${!var} ]] || die "${FUNCNAME[1]}: $var required"
-		else
+		else # required and spaces not allowed
 			[[ ${!var} ]] || die "${FUNCNAME[1]}: $var required"
 			[[ ${!var} =~ ( |\') ]] && die "${FUNCNAME[1]}: $var contains spaces"
 		fi

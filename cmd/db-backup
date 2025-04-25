@@ -1,6 +1,13 @@
 #!/bin/bash
-# DB BACKUP ; [BACKUP_FILE] ; backup a database and bring it here
+# DB BACKUP ; BACKUP_FILE|- ; backup a database and bring it here
 . mmlib
 
-BACKUP_FILE=; [[ $1 ]] && { rel_path "$1" "$PWD0"; BACKUP_FILE=$R1; }
+if [[ $1 == - ]]; then # stdout
+	BACKUP_FILE=
+else
+	BACKUP_FILE=$1
+	checkvars BACKUP_FILE
+	rel_path "$BACKUP_FILE" "$PWD0"; BACKUP_FILE=$R1
+fi
+
 NOALL=1 each_deploy deploy_mysql_backup "$BACKUP_FILE"

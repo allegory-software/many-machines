@@ -2,6 +2,8 @@
 # FILES BACKUP ; BACKUP_DIR [PREV_BACKUP_DIR] ; backup deploy files here
 . mmlib
 
-BACKUP_DIR=$1; checkvars BACKUP_DIR
-rel_path $BACKUP_DIR $PWD0; BACKUP_DIR=$R1
-NOALL=1 each_deploy deploy_files_backup "$BACKUP_DIR"
+BACKUP_DIR=$1 PREV_BACKUP_DIR=$2
+checkvars BACKUP_DIR PREV_BACKUP_DIR?
+rel_path      "$BACKUP_DIR" "$PWD0";      BACKUP_DIR=$R1
+rel_path "$PREV_BACKUP_DIR" "$PWD0"; PREV_BACKUP_DIR=$R1
+NOALL=1 each_deploy deploy_files_backup "$BACKUP_DIR" "$PREV_BACKUP_DIR"

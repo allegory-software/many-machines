@@ -9,8 +9,8 @@ check_abs_filepath() {
 	[[ ${1: -1} == / ]] && die "path ends in slash: $1"
 }
 
-rel_path() { # PATH BASE_PATH
-	R1=$1; [[ $1 != /* ]] && R1=$2/$1
+rel_path() { # [PATH] BASE_PATH
+	R1=$1; [[ $1 && $1 != /* ]] && R1=$2/$1
 }
 
 checkfile() {
