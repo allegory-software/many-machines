@@ -1,5 +1,6 @@
 #!/bin/bash
-# DB BACKUP ; BACKUP_FILE DST_MACHINE DST_DB ; restore database from backup
+# DB BACKUP ; BACKUP_FILE DST_MACHINE|DEPLOY [DST_DB] ; restore database from backup
 . mmlib
 
-deploy_db_restore "$@"
+BACKUP_FILE=; [[ $1 ]] && { rel_path "$1" "$PWD0"; BACKUP_FILE=$R1; }; shift
+deploy_mysql_restore "$BACKUP_FILE" "$@"

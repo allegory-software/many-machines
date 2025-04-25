@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSH ; [REMOTE_PORT] [LOCAL_PORT] ; ssh tunnel remote port to local port
+# SSH ; [REMOTE_PORT] [LOCAL_PORT] [LOCAL_IP] ; ssh tunnel remote port to local port
 . mmlib
 
 [[ $1 ]] || {
@@ -8,8 +8,8 @@
 		[[ $line != *autossh* ]] && continue
 		read -ra fields <<< "$line"
 		for field in "${fields[@]}"; do
-			if [[ $field =~ ^[0-9]+:[^:]+:[0-9]+$ ]]; then
-				IFS=':' read -r LPORT LIP RPORT <<< "$field"
+			if [[ $field =~ ^[0-9.]+:[0-9]+:[^:]+:[0-9]+$ ]]; then
+				IFS=':' read -r LIP LPORT _ RPORT <<< "$field"
 			fi
 			if [[ $field == root@* ]]; then
 				RIP=${field#root@}
@@ -21,8 +21,7 @@
 	exit
 }
 
-REMOTE_PORT=$1
-LOCAL_PORT=$2
+REMOTE_PORT=$1 LOCAL_PORT=$2 LOCAL_IP=$3
 checkvars REMOTE_PORT
-shift 2
+shift 3
 AS_DEPLOY=1 each_md ssh_to "$@"

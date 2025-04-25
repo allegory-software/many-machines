@@ -103,9 +103,9 @@ machine_of_deploy() { # DEPLOY
 machine_of() { # MACHINE|DEPLOY -> MACHINE, [DEPLOY]
 	checknosp "$1" "MACHINE or DEPLOY required"
 	if [[ -d var/deploys/$1 ]]; then
-		machine_of_deploy $1; R3=$1
+		machine_of_deploy $1; R2=$1
 	elif [[ -d var/machines/$1 ]]; then
-		R1=$1
+		R1=$1; R2=
 	else
 		die "No MACHINE or DEPLOY named: '$1'"
 	fi

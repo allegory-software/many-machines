@@ -42,11 +42,14 @@ deploy_mysql_backup() { # MACHINE= DEPLOY= [BACKUP_FILE]
 	ssh_script "mysql_backup_db $DEPLOY" > $BACKUP_FILE
 }
 
-deploy_mysql_restore() { # BACKUP_FILE DST_MACHINE DST_DB
+deploy_mysql_restore() { # BACKUP_FILE DST_MACHINE|DST_DEPLOY [DST_DB]
 	local BACKUP_FILE=$1 DST_MACHINE=$2 DST_DB=$3
-	checkvars BACKUP_FILE DST_MACHINE DST_DB
+	checkvars BACKUP_FILE DST_MACHINE
 	checkfile $BACKUP_FILE
-	machine_of "$DST_MACHINE"; local DST_MACHINE=$R1
+	machine_of "$DST_MACHINE"
+	local DST_MACHINE=$R1 DST_DEPLOY=$R2
+	DST_DB=${DST_DB:-$DST_DEPLOY}
+	checkvars DST_DB
 
 	SRC_MACHINE= DST_MACHINE=$DST_MACHINE \
 		SRC_DIR="$(dirname $BACKUP_FILE)/./$(basename $BACKUP_FILE)" \

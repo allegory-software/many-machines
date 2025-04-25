@@ -8,6 +8,8 @@
 # - install only what's needed, and have a library of installers ready.
 # - split code into package-specific and distro-specific libraries so we
 #   can support multiple distros in the future if needed.
+# - modules can also have their own backup and restore functions for
+#   integration with the backup system.
 #
 # The module logic is reused for machine-level and deploy-level services
 # too, which is why we use $NAMES instead of $MODULES when we're abstracting.

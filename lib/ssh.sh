@@ -23,7 +23,7 @@ ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
 	)
 }
 
-ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REMOTE_DIR=] [SSH_TTY=1] [COMMAND ARGS...]
+ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [LOCAL_IP=] [REMOTE_DIR=] [SSH_TTY=1] [COMMAND ARGS...]
 	local LOCAL_PORT=${LOCAL_PORT:-$REMOTE_PORT}
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
@@ -31,7 +31,7 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [REM
 	local cmd
 	if [[ $REMOTE_PORT ]]; then # tunnel
 		lsof -i :$LOCAL_PORT >/dev/null && die "Port already bound: $LOCAL_PORT"
-		ssh_cmd_opt; cmd=(autossh "${R1[@]}" -fN -M 0 -L ${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT)
+		ssh_cmd_opt; cmd=(autossh "${R1[@]}" -f -N -M 0 -T -L ${LOCAL_IP:-127.0.0.1}:${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT root@$HOST)
 	elif [[ $REMOTE_DIR ]]; then # mount
 		mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
 		ssh_cmd_opt; cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
