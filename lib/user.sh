@@ -21,6 +21,7 @@ user_lock_pass() { # USER
 	checkvars user
 	sayn "Locking password for user '$user' ... "
 	must passwd -l $user >/dev/null
+	must gpasswd -d $user sudo # disable sudo for user
 	say OK
 }
 
