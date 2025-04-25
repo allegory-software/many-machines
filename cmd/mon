@@ -5,14 +5,14 @@
 # config ---------------------------------------------------------------------
 
 # thresholds
-MIN_RAM_MB=50
-MIN_HDD_MB=2000
-MAX_CPU=90
+md_var MIN_RAM_MB   50; MIN_RAM_MB=$R1
+md_var MIN_HDD_MB 2000; MIN_HDD_MB=$R1
+md_var MAX_CPU      90; MAX_CPU=$R1
 
 # time thresholds (in multiples of SAMPLE_TICK)
-MAXT_RAM=1
-MAXT_HDD=1
-MAXT_CPU=1
+md_var MAXT_RAM 1; MAXT_RAM=$R1
+md_var MAXT_HDD 1; MAXT_HDD=$R1
+md_var MAXT_CPU 1; MAXT_CPU=$R1
 
 # probing intervals
 PROBE_TICK=${PROBE_TICK:-60}
