@@ -1,6 +1,6 @@
 #!/bin/bash
-# DEPLOY ; [all|MODULE1 ...] ; backup a deploy or machine here
+# DEPLOY ; [all|MODULE1 ...] ; make a backup of a deploy or machine to this machine
 . mmlib
 
+[[ $1 ]] || QUIET=1
 NOALL=1 each_md md_backup "$@"
-

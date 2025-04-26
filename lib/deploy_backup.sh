@@ -36,74 +36,51 @@ list_deploy_backups() {
 	done
 }
 
-deploy_mysql_backup() { # MACHINE= DEPLOY= [BACKUP_FILE]
-	local BACKUP_FILE=${1:-/dev/stdout}
-	checkvars MACHINE DEPLOY
-	ssh_script "mysql_backup_db $DEPLOY" > $BACKUP_FILE
+# mysql backup from a deploy to here.
+deploy_backup_mysql() { # MACHINE= DEPLOY= BACKUP_DIR=
+	checkvars MACHINE DEPLOY BACKUP_DIR
+	ssh_script mysql_backup_db $DEPLOY > $BACKUP_DIR/db.qp
 }
 
-deploy_mysql_restore() { # BACKUP_FILE DST_MACHINE|DST_DEPLOY [DST_DB]
-	local BACKUP_FILE=$1 DST_MACHINE=$2 DST_DB=$3
-	checkvars BACKUP_FILE DST_MACHINE
+deploy_restore_mysql() { # BACKUP_DIR= DST_MACHINE= DST_DEPLOY=
+	checkvars BACKUP_DIR DST_MACHINE DST_DEPLOY
+	local BACKUP_FILE=$BSCKUP_DIR/db.qp
 	checkfile $BACKUP_FILE
-	machine_of "$DST_MACHINE"
-	local DST_MACHINE=$R1 DST_DEPLOY=$R2
-	DST_DB=${DST_DB:-$DST_DEPLOY}
-	checkvars DST_DB
 
-	SRC_MACHINE= DST_MACHINE=$DST_MACHINE \
+	SRC_MACHINE= \
 		SRC_DIR="$(dirname $BACKUP_FILE)/./$(basename $BACKUP_FILE)" \
-		DST_DIR=/root/.mm/$DST_DB.$$.qp \
+		DST_DIR=/root/.mm/$DST_DEPLOY.$$.qp \
 		PROGRESS=1 rsync_dir
 
 	MACHINE=$DST_MACHINE ssh_script "
-		on_exit run rm -f $DST_DB.$$.qp
-		mysql_restore_db $DST_DB $DST_DB.$$.qp
+		on_exit run rm -f $DST_DEPLOY.$$.qp
+		mysql_restore_db $DST_DEPLOY $DST_DEPLOY.$$.qp
 	"
 }
 
-deploy_files_backup() { # MACHINE= DEPLOY= BACKUP_DIR [PREV_BACKUP_DIR]
-	local BACKUP_DIR=$1 PREV_BACKUP_DIR=$2
-	checkvars MACHINE DEPLOY BACKUP_DIR
+# incremental files backup from a deploy to here.
+deploy_backup_app() { # MACHINE= DEPLOY= BACKUP_DIR= [PREV_BACKUP_DIR=]
+	checkvars MACHINE DEPLOY BACKUP_DIR PREV_BACKUP_DIR?
 	md_varfile backup_files; local backup_files_file=$R1
-	local PDIR=$PREV_BACKUP_DIR
-	[[ -d PDIR ]] && PDIR=`realpath $PDIR`
 	must mkdir -p $BACKUP_DIR
 	FILE_LIST_FILE=$backup_files_file \
 		SRC_MACHINE=$MACHINE \
 		DST_MACHINE= \
 		SRC_DIR=/home/$DEPLOY \
 		DST_DIR=$BACKUP_DIR \
-		LINK_DIR=$PDIR \
+		LINK_DIR=$PREV_BACKUP_DIR \
 		PROGRESS=1 rsync_dir
 }
 
-deploy_files_restore() { # BACKUP_DIR DST_MACHINE DST_DB
-	local BACKUP_DIR=$1 DST_MACHINE=$2 DST_DB=$3
+# restore a deploy from a backup from this machine.
+deploy_restore_app() { # BACKUP_DIR= DST_MACHINE= DST_DEPLOY=
 	checkvars BACKUP_DIR DST_MACHINE DST_DEPLOY
 	checkdir $BACKUP_DIR
-	machine_of "$DST_MACHINE"; local DST_MACHINE=$R1
 	SRC_MACHINE= \
 		SRC_DIR=$BACKUP_DIR/./. \
 		DST_DIR=/home/$DST_DEPLOY \
 		DST_USER=$DST_DEPLOY \
 		PROGRESS=1 rsync_dir
-}
-
-deploy_backup_mysql() {
-	deploy_mysql_backup $BACKUP_DIR/db.qp
-}
-
-deploy_restore_mysql() {
-	deploy_mysql_restore $BSCKUP_DIR/db.qp $DST_MACHINE $DST_DEPLOY
-}
-
-deploy_backup_app() {
-	deploy_files_backup $BACKUP_DIR/files $PREV_BACKUP_DIR
-}
-
-deploy_restore_app() {
-	deploy_files_restore $BACKUP_DIR/files $DST_MACHINE $DST_DEPLOY
 }
 
 md_backup() { # MACHINE=|DEPLOY= [all|MODULE1 ...]
@@ -112,25 +89,24 @@ md_backup() { # MACHINE=|DEPLOY= [all|MODULE1 ...]
 	backup_date; local DATE=$R1
 	local BACKUP_DIR=backups/$MD/$DATE
 	local PREV_BACKUP_DIR=backups/$MD/latest
+	[[ -d $PREV_BACKUP_DIR ]] || PREV_BACKUP_DIR=
+	[[ "$*" ]] && must mkdir -p $BACKUP_DIR
 	_md_backup "$@"; [[ $? == 2 ]] && { R1=; return 2; }
 	ln_file $DATE backups/$MD/latest
 	R1=$DATE
 }
 
-md_restore() { # MACHINE=|DEPLOY= DATE= [DST_MACHINE=|DST_DEPLOY=]
-	local MD=${DEPLOY:-$MACHINE}
-	local DST_MD=${DST_DEPLOY:-$DST_MACHINE}
-	DST_MD=${DST_MD:-$MD}
-	local DATE=$DATE
+md_restore() { # MD= DATE= [DST_MD=] [all|MODULE1 ...]
+	checkvars MD DATE DST_MD?
 	if [[ $DATE == latest ]]; then
 		DATE=`readlink backups/$MD/latest` \
 			|| die "No latest backup for '$MD'"
 	fi
-	checkvars MD DST_MD DATE
-	[[ $DST_DEPLOY ]] && machine_of "$DST_DEPLOY"; local DST_MACHINE=$R1
+	[[ $DST_MD ]] || DST_MD=$MD
+	machine_of "$DST_MD"; local DST_MACHINE=$R1 DST_DEPLOY=$R2
 	local BACKUP_DIR=backups/$MD/$DATE
 	MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_stop all
-	_md_restore
+	_md_restore "$@"
 	MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_start all
 }
 
@@ -202,4 +178,31 @@ md_move() {
 	else
 		machine_move "$@"
 	fi
+}
+
+install_backup_user() {
+	local user=backup
+	say "Creating rsync backup user '$user' ... "
+
+	user_exists $user || must adduser --disabled-password --shell /usr/sbin/nologin $backup
+
+	must mkdir -p /home/$user/.ssh
+	must chown $user:$user /home/$user/.ssh
+	chmod 700 /home/$user/.ssh
+
+	save '
+#!/bin/bash
+case "$SSH_ORIGINAL_COMMAND" in
+	rsync\ --server*\ --sender*) echo "Pull not allowed"; exit 1 ;;
+	rsync\ --server*) exec $SSH_ORIGINAL_COMMAND ;;
+	*) echo "Access denied"; exit 1 ;;
+esac
+' /home/$user/backup $user +x
+
+	local pubkey=""
+
+	save "command=/home/$user/backup,no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty $pubkey
+" /home/$user/.ssh/authorized_keys $user 660
+
+	say OK
 }

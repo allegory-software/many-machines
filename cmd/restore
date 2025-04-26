@@ -1,5 +1,5 @@
 #!/bin/bash
-# DEPLOY ; [DEPLOY DATE|latest [DST_DEPLOY]] ; restore deploy from backup
+# DEPLOY ; [MACHINE|DEPLOY DATE|latest DST_MACHINE|DST_DEPLOY] ; restore deploy from a backup from this machine
 . mmlib
 
 [[ $1 ]] || {
@@ -10,4 +10,4 @@
 	say
 	exit
 }
-DEPLOY=$1 DATE=$2 DST_DEPLOY=$3 deploy_restore
+MD=$1 DATE=$2 DST_MD=$3 md_restore

@@ -59,7 +59,7 @@ var_unlock() { # KEY
 	package_version git-crypt >/dev/null || package_install git-crypt
 	(
 	must cd /root/mm/var
-	#on_exit run rm -f ../var_git_crypt_key
+	on_exit run rm -f ../var_git_crypt_key
 	printf "%s" "$KEY" | must base64 -d - > ../var_git_crypt_key
 	must git-crypt unlock ../var_git_crypt_key
 	)
@@ -145,7 +145,6 @@ deploy_is_active() { # DEPLOY=
 
 active_machines() { # [NOTHIS=1]
 	local S
-	local THIS_MACHINE=$MACHINE
 	local MACHINE
 	for MACHINE in `ls -1 machines 2>/dev/null || ls -1 var/machines 2>/dev/null`; do
 		if [[ $INACTIVE ]] || machine_is_active; then
@@ -188,7 +187,6 @@ each_machine() { # [NOTHIS=1] [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES= DEPLOYS=
 	fi
 	[[ ! $QUIET && ${#mm[@]} == 1 ]] && QUIET=1
 	local CMD="$1"; shift
-	local THIS_MACHINE=$MACHINE
 	local MACHINE
 	for MACHINE in $MACHINES; do
 		[[ $QUIET ]] || say "On machine $MACHINE:"

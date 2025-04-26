@@ -1,10 +1,22 @@
 #!/bin/bash
-# DB BACKUP ; BACKUP_FILE DST_MACHINE|DEPLOY [DST_DB] ; restore database from backup
+# DB BACKUP ; BACKUP_FILE|- DST_MACHINE|DST_DEPLOY [DST_DB] ; restore database from local backup file
 . mmlib
 
-BACKUP_FILE=$1
-checkvars BACKUP_FILE
+BACKUP_FILE=$1 DST_MD=$2 DST_DB=$3
+[[ $1 == - ]] && BACKUP_FILE=/dev/stdin
+checkvars BACKUP_FILE DST_MD DST_DB?
 rel_path "$BACKUP_FILE" "$PWD0"; BACKUP_FILE=$R1
-shift
+checkfile "$BACKUP_FILE"
+machine_of $DST_MD; DST_MACHINE=$R1 DST_DEPLOY=$R2
+DST_DB=${DST_DB:-$DST_DEPLOY}
+checkvars DST_DB
 
-deploy_mysql_restore "$BACKUP_FILE" "$@"
+SRC_MACHINE= \
+	SRC_DIR="$(dirname "$BACKUP_FILE")/./$(basename "$BACKUP_FILE")" \
+	DST_DIR=/root/.mm/$DST_DB.$$.qp \
+	PROGRESS=1 rsync_dir
+
+MACHINE=$DST_MACHINE ssh_script "
+	on_exit run rm -f $DST_DB.$$.qp
+	mysql_restore_db $DST_DB $DST_DB.$$.qp
+"

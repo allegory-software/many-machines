@@ -1,9 +1,15 @@
 #!/bin/bash
-# FILES BACKUP ; BACKUP_DIR DST_MACHINE DST_DEPLOY ; restore deploy files from backup
+# FILES BACKUP ; BACKUP_DIR DST_MACHINE|DST_DEPLOY DST_DIR [DST_USER] ; restore files from local backup
 . mmlib
 
-BACKUP_DIR=$1; shift
-checkvars BACKUP_DIR
+BACKUP_DIR=$1 DST_MD=$2 DST_DIR=$3 DST_USER=$4
+checkvars BACKUP_DIR DST_MD DST_DIR DST_USER?
 rel_path "$BACKUP_DIR" "$PWD0"; BACKUP_DIR=$R1
+checkdir "$BACKUP_DIR"
+machine_of $DST_MD; DST_MACHINE=$R1 DST_DEPLOY=$R2
 
-deploy_files_restore "$BACKUP_DIR" "$@"
+SRC_MACHINE= \
+	SRC_DIR=$BACKUP_DIR/./. \
+	DST_DIR=$DST_DIR \
+	DST_USER=${DST_USER:-$DST_DEPLOY} \
+	PROGRESS=1 rsync_dir

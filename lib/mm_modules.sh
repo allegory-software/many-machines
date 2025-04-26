@@ -47,11 +47,12 @@ default_version() {
 }
 
 _md_with_action_fn() { # ACTION= [DEPLOY=] NAME1 ...
-	R1=
+	local names=
 	local name
 	for name in "$@"; do
-		md_fn $name && R1+="$name "
+		md_fn $name && names+="$name "
 	done
+	R1="$names"
 	return 0
 }
 
@@ -83,7 +84,7 @@ _md_names() { # [REVERSE=1] LIST= [all | NAME1 ...]
 }
 _md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] [all | NAME1 ...]
 	checkvars ACTION
-	_md_names "$@"; [[ $? == 2 ]] && return
+	_md_names "$@"; [[ $? == 2 ]] && return 2
 	local names=$R1
 	if [[ $REMOTE ]]; then
 		VARS="ACTION $VARS" md_ssh_script _each $names
@@ -122,7 +123,7 @@ _deploy_services() { R1=$DEPLOY_SERVICES; }
 deploy_start()  { ACTION=start LIST=_deploy_services _md_action "$@"; }
 deploy_stop()   { ACTION=stop  LIST=_deploy_services _md_action "$@"; }
 
-# executed locally on the mm machine.
+# executed locally on the mm machine (the backup actions are remote).
 _md_backup_modules() { md_modules; _md_with_action_fn $R1; }
 _md_backup()  { ACTION=backup  LIST=_md_backup_modules _md_action "$@"; }
 _md_restore() { ACTION=restore LIST=_md_backup_modules _md_action "$@"; }

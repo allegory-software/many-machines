@@ -1,13 +1,11 @@
 #!/bin/bash
-# DB BACKUP ; BACKUP_FILE|- ; backup a database and bring it here
+# DB BACKUP ; BACKUP_FILE|- [DB] ; backup a database to a local file
 . mmlib
 
-if [[ $1 == - ]]; then # stdout
-	BACKUP_FILE=
-else
-	BACKUP_FILE=$1
-	checkvars BACKUP_FILE
-	rel_path "$BACKUP_FILE" "$PWD0"; BACKUP_FILE=$R1
-fi
+BACKUP_FILE=$1 DB=$2
+[[ $1 == - ]] && BACKUP_FILE=/dev/stdout
+checkvars BACKUP_FILE DB?
+rel_path "$BACKUP_FILE" "$PWD0"; BACKUP_FILE=$R1
 
-NOALL=1 each_deploy deploy_mysql_backup "$BACKUP_FILE"
+_f() { ssh_script "mysql_backup_db" ${DB:-$DEPLOY} > "$BACKUP_FILE"; }
+NOALL=1 each_md _f

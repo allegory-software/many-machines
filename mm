@@ -40,8 +40,15 @@ cmd_metadata() { # CMD= -> SECTION= ARGS= DESCR=
 main() {
 declare -A mm # mm[MACHINE]=1
 declare -A dm # dm[DEPLOY]=1
+[[ $THIS_MACHINE ]] || THIS_MACHINE=`basename "$(readlink machine)"`
+export THIS_MACHINE
 while [[ $# > 0 ]]; do
-	if [[ $1 == "-" || -f cmd/$1 ]]; then
+	if [[ $1 == . ]]; then
+		local m=$THIS_MACHINE
+		[[ $m ]] || die "'/root/mm/machine' symlink broken or missing"
+		[[ ! ${mm[$m]} ]] && { MACHINES+=" $m"; mm[$m]=1; }
+		shift
+	elif [[ $1 == "-" || -f cmd/$1 ]]; then
 		local CMD=$1; shift
 		[[ $CMD == "-" ]] && CMD=ssh # we could just symlink `ssh` to `-` in cmd/ but then you can't eg. `wc -l cmd/*`
 		if [[ $# == 0 ]]; then # check if cmd has non-optional args
@@ -54,7 +61,6 @@ while [[ $# > 0 ]]; do
 			say "Usage: ${WHITE}mm $CMD $ARGS$ENDCOLOR $GREEN# $DESCR$ENDCOLOR"
 			exit
 		fi
-		[[ $MACHINE ]] || MACHINE=`basename "$(readlink machine)"`
 		run cmd/$CMD "$@"
 		exit
 	elif [[ -d var/deploys/$1 ]]; then

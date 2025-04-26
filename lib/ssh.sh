@@ -5,7 +5,7 @@ ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
 	R1=(
 		-o ConnectTimeout=3
 		-o PreferredAuthentications=publickey
-		-o UserKnownHostsFile=/root/mm/var/machines/$MACHINE/.ssh_hostkey
+		-o UserKnownHostsFile=var/machines/$MACHINE/.ssh_hostkey
 	)
 	# try current key but also any old keys, in case the pubkey was not updated
 	# on the remote host when the privkey was renewed.
@@ -35,7 +35,9 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [LOC
 	elif [[ $REMOTE_DIR ]]; then # mount
 		mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
 		ssh_cmd_opt; cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
-	else # shell
+	elif [[ $MACHINE == $THIS_MACHINE ]]; then # local command or shell
+		cmd=()
+	else # remote command or shell
 		ssh_cmd_opt
 		[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 		cmd=(ssh "${R1[@]}" $HOST)
@@ -62,7 +64,7 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 	debug "$VARS"
 	debug "$SCRIPT"
 	debug "-------------------------------------------------------"
-	if [ "$MM_DEBUG_LIB" ]; then
+	if [[ $MM_DEBUG_LIB ]]; then
 		# rsync lib to machine and load from there:
 		# slower (takes ~1s) but reports line numbers correctly on errors.
 		local DST_DIR=/root/.mm
@@ -261,8 +263,7 @@ rsync_dir() {
 	local SRC=$SRC_DIR
 	local DST=${DST_DIR:-$SRC_DIR}
 	local PROGRESS=$PROGRESS; [[ $TERM ]] || PROGRESS=
-	checkvars SRC DST
-	[[ $LINK_DIR ]] && checkvars LINK_DIR
+	checkvars SRC DST LINK_DIR?
 
 	[[ $SRC_MACHINE ]] && { ip_of "$SRC_MACHINE"; SRC="root@$R1:$SRC"; }
 	[[ $DST_MACHINE ]] && { ip_of "$DST_MACHINE"; DST="root@$R1:$DST"; }
@@ -274,6 +275,11 @@ rsync_dir() {
 	[[ $PROGRESS ]] && say
 
 	local ssh_cmd; [[ $MACHINE ]] && { ssh_cmd_opt; ssh_cmd=(ssh "${R1[@]}"); }
+
+	[[ $LINK_DIR ]] && {
+		LINK_DIR=`realpath $LINK_DIR`
+		[[ -d $LINK_DIR ]] || die "rsync: LINK_DIR '$LINK_DIR' does not exist"
+	}
 
 	# NOTE: use `foo/bar/./baz/qux` dot syntax to end up with `$DST_DIR/baz/qux` !
 	R1=(rsync

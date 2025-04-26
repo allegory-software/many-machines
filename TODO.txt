@@ -1,4 +1,31 @@
 
+- cmd/mon refactoring to work on machines where mm is not installed.
+
+- hd-dev2 app deploy without domain
+	- no nginx setup, use port, bind to all interfaces
+
+- M/D refactoring:
+	- instead of mm and mmd, have mm @deploy mean machine-of deploy
+		- lookup each name in both machines/ and deploys/
+		- error if machine and deploy with same name (when not using @)
+		- error if list contains both machines and deploys
+
+- device refactoring:
+	- remove devices concept; make them machines.
+
+- app_service module: ??
+
+- app: use mysql unix socket to connect to mysql
+
+- monitoring:
+	- TODO: max_ram_mb per deploy-service with auto-restart to mitigate slow leaks
+	- TODO: find pid that keeps the CPU over threshold and auto-restart on CPU alert to mitigae infinite loop bugs
+	- TODO: monitor app stat URL with auto-restart on timeout (in secondary sub-process loop)
+	- TODO: monitor swap: when to alert?
+	- TODO: consume samples in a combined graph with day navigation
+	- TODO: logrotate log file on max size
+	- TODO: `m mon gc` to remove samples for non-existing keys (old deploys etc)
+
 - secure backups:
 	- make backup user with rsync wrapper
 		- removes old backups to make space
@@ -8,23 +35,14 @@
 		- updating root's key updates its pubkey it to all remote backup users
 	- backup to machine command that pushes to backup user
 
-
 - d-backups: copy
 - m-backups: list, backup, restore, copy
-
 
 - m-rename
 - d-rename
 
-
-- monitoring:
-	- TODO: consume samples in a combined graph with day navigation
-	- NICE: logrotate log file on N lines
-	- NICE: rsync in to get log files to show graphs
-	- NICE: log more frequently to a local tcp port
-		- port is bound by the monitoring app via ssh tunnel
-
-- alert conditions:
-	- TODO: SWAP PATTERNS ?
-		- SWAP USED AT ALL
-		- SWAP > SIZE FOR TOO LONG
+- HA:
+	- setup mysql sync replication to multiple clones
+	- switch clone:
+		- change ddns
+		- change mysql master

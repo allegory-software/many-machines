@@ -69,41 +69,51 @@ deploy_stop_app() {
 
 deploy_is_running_app_service() {
 	checkvars DEPLOY
-	run_as $DEPLOY "systemctl --user is-active app.service"
+	service_is_running $DEPLOY.service
 }
 
 deploy_install_app_service() {
 	checkvars DEPLOY APP
 	save "
 [Unit]
-Description=$APP
+Description=$DEPLOY
+After=multi-user.target
+After=network-online.target
+After=mysql.service
+Requires=mysql.service
+Requires=network-online.target
 
 [Service]
-ExecStart=/home/$DEPLOY/app/$APP start
-Restart=on-failure
+User=$DEPLOY
+Group=$DEPLOY
+ExecStart=/home/$DEPLOY/app/$APP run
+WorkingDirectory=/home/$DEPLOY/app
+StandardOutput=null
+StandardError=null
+
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+Restart=on-failure # restart only if exit code != 0
+RestartSec=1       # wait 1s before restarting
+StartLimitIntervalSec=60  # try restarting for 60s
+StartLimitBurst=3         # try restarting 3 times
 
 [Install]
-WantedBy=default.target
-" /home/$DEPLOY/.config/systemd/user/app.service $DEPLOY
+WantedBy=multi-user.target
+" /etc/systemd/system/$DEPLOY.service
 
-	run_as $DEPLOY "systemctl --user daemon-reexec"
-	run_as $DEPLOY "systemctl --user enable app.service"
-	run_as $DEPLOY "systemctl --user start app.service"
-
-	run loginctl enable-linger $DEPLOY
+	systemctl daemon-reload
+	service_enable $DEPLOY.service
 }
 
 deploy_uninstall_app_service() {
 	checkvars DEPLOY APP
-	run loginctl disable-linger $DEPLOY
-	run_as $DEPLOY "systemctl --user stop app.service"
-	run_as $DEPLOY "systemctl --user disable app.service"
-	rm_file /home/$DEPLOY/.config/systemd/user/app.service
-	run_as $DEPLOY "systemctl --user daemon-reexec"  # or daemon-reload
+	service_disable $DEPLOY.service
 }
 
 get_APP_STATUS() {
-	try_app running && \
+	deploy_is_running_app && \
 		echo ${LIGHTGRAY}up$ENDCOLOR || \
 		echo ${LIGHTRED}DOWN!$ENDCOLOR
 }

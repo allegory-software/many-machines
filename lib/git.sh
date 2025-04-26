@@ -79,21 +79,6 @@ install_mgit() {
 	must ln -sf /opt/mgit/mgit /usr/local/bin/mgit
 }
 
-git_vars() { # MACHINE
-	local VARS=()
-	cat_varfiles var/machines/$1 git_hosts; VARS+=("${R1[@]}")
-	cat_varfile var/machines/$1 git_hosts; local GIT_HOSTS="$R1"
-	local gh
-	for gh in $GIT_HOSTS; do
-		cat_varfiles var/machines/$1 \
-			git_${gh}_host \
-			git_${gh}_ssh_hostkey \
-			git_${gh}_ssh_key
-		VARS+=("${R1[@]}")
-	done
-	R1=("${VARS[@]}")
-}
-
 _git_keys_update_for_user() { # USER
 	local USER="$1"
 	checkvars USER GIT_HOSTS-
