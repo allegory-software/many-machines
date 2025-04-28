@@ -9,8 +9,8 @@ checkvars DEVICE
 [[ -d var/devices/$DEVICE ]] || {
 	say "Creating new device: $DEVICE ... "
 	must mkdir -p var/devices/$DEVICE
-	[[ -f /root/.ssh/id_rsa ]] && {
-		ssh_pubkey; PUBKEY=$R1
+	ssh_pubkey && {
+		PUBKEY=$R1
 		printf "\n%s\n\n" "$R1"
 		save "$PUBKEY"$'\n' var/devices/$DEVICE/ssh_pubkey
 	}

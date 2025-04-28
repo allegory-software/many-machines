@@ -7,10 +7,10 @@
 DEVICE=`basename "$(readlink device)"`
 checkvars DEVICE
 
-KEYFILE=$HOME/.ssh/id_rsa
+KEYFILE=$HOME/.ssh/id_ed25519
 rm_file $KEYFILE.new
 rm_file $KEYFILE.new.pub
-must ssh-keygen -f $KEYFILE.new -t rsa -b 2048 -C $DEVICE -N ""
+must ssh-keygen -f $KEYFILE.new -t ed25519 -C $DEVICE -N ""
 mv_file_with_backup $KEYFILE.new $KEYFILE
 rm_file $KEYFILE.new.pub
 

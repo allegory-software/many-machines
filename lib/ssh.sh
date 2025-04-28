@@ -1,5 +1,14 @@
 # ssh lib: ssh config and operation wrappers.
 
+first_file() { # FILE1 ...
+	local f
+	R1=
+	for f in "$@"; do
+		[[ -e "$f" ]] && { R1=$f; return 0; }
+	done
+	return 1
+}
+
 # common ssh options for ssh, autossh, sshfs and rsync
 ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
 	R1=(
@@ -10,7 +19,7 @@ ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
 	# try current key but also any old keys, in case the pubkey was not updated
 	# on the remote host when the privkey was renewed.
 	set +f # enable globbing
-	local a=($HOME/.ssh/id_rsa.~* $HOME/.ssh/id_rsa)
+	local a=($HOME/.ssh/id_rsa.~* $HOME/.ssh/id_rsa $HOME/.ssh/id_ed25519.~* $HOME/.ssh/id_ed25519)
 	set -f
 	local i n=${#a[@]}
 	for ((i=n-1; i>=0; i--)); do
@@ -145,7 +154,7 @@ ssh_hostkey() {
 ssh_hostkey_update() {
 	ip_of "$MACHINE"; local IP=$R1; local MACHINE=$R2
 	say "Updating SSH host fingerprint for machine: $MACHINE ..."
-	must ssh-keyscan -4 -T 2 -t rsa $IP > var/machines/$MACHINE/.ssh_hostkey
+	must ssh-keyscan -4 -T 2 -t ed25519 $IP > var/machines/$MACHINE/.ssh_hostkey
 }
 
 ssh_mk_config_dir() {
@@ -162,7 +171,7 @@ ssh_host_config_update_for_user() { # USER HOST KEYNAME KEY HOSTKEY [unstable_ip
 
 	ssh_mk_config_dir
 
-	local KEYFILE=$HOME/.ssh/${KEYNAME}.id_rsa
+	local KEYFILE=$HOME/.ssh/${KEYNAME}.id_ed25519
 	save "$KEY"$'\n' $KEYFILE $USER 600 # \n is important!
 
 	local HOSTKEYFILE=$HOME/.ssh/${KEYNAME}.hostkey
@@ -185,7 +194,11 @@ ssh_pubkey() { # [USER=]
 	local USER=${1:-$USER}
 	checkvars USER
 	local HOME; [[ $USER == root ]] && HOME=/root || HOME=/home/$USER
-	R1=`must ssh-keygen -y -f $HOME/.ssh/id_rsa` || exit
+	first_file \
+		$HOME/.ssh/id_ed25519 \
+		$HOME/.ssh/id_rsa \
+		|| return 1
+	R1=`must ssh-keygen -y -f $R1` || exit 1
 }
 
 ssh_device_pubkey() { # DEVICE
@@ -212,7 +225,7 @@ _ssh_pubkeys() { # [USERS]
 }
 ssh_pubkeys() { # [USERS]
 	local USERS=$1
-	local FMT="%-10s %-10s %-10s %-22s %-10s %-10s\n"
+	local FMT="%-10s %-10s %-12s %-22s %-10s %-10s\n"
 	printf "$WHITE$FMT$ENDCOLOR" MACHINE USER TYPE KEY KEYNAME DEVICE
 	declare -A map
 	local device; for device in `ls var/devices`; do
