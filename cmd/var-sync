@@ -2,9 +2,6 @@
 # MM VAR ;; sync relevant vars to machine so it can use mm locally
 . mmlib
 
-checkvars MACHINE
-THIS_MACHINE=$MACHINE
-
 /root/mm/fix-links
 
 # scan a dir for symlinks and print all their targets.
