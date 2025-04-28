@@ -12,7 +12,17 @@ user_create() { # USER
 	sayn "Creating user '$user' ... "
 	user_exists $user || must useradd -m $user
 	must chsh -s /bin/bash $user
+	must chown $user:$user /home/$user
 	must chmod 750 /home/$user
+	say OK
+}
+
+user_remove_sudo() {
+	local user=$1
+	checkvars user
+	sayn "Removing user '$user' from sudo group ... "
+	id $user | grep -q sudo || { say "wasn't in it"; return 0; }
+	must gpasswd -d $user sudo
 	say OK
 }
 
@@ -21,7 +31,6 @@ user_lock_pass() { # USER
 	checkvars user
 	sayn "Locking password for user '$user' ... "
 	must passwd -l $user >/dev/null
-	must gpasswd -d $user sudo # disable sudo for user
 	say OK
 }
 

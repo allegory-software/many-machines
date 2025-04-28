@@ -35,9 +35,9 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [LOC
 	elif [[ $REMOTE_DIR ]]; then # mount
 		mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
 		ssh_cmd_opt; cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
-	elif [[ $MACHINE == $THIS_MACHINE ]]; then # local command or shell
+	elif [[ $1 && $MACHINE == $THIS_MACHINE ]]; then # local command, skip ssh
 		cmd=()
-	else # remote command or shell
+	else # remote command or shell, or local shell
 		ssh_cmd_opt
 		[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 		cmd=(ssh "${R1[@]}" $HOST)

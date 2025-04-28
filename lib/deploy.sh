@@ -194,8 +194,9 @@ get_DEPLOYS() {
 # deploy user module ---------------------------------------------------------
 
 deploy_install_user() {
-	user_create    $DEPLOY
-	user_lock_pass $DEPLOY
+	user_create      $DEPLOY
+	user_lock_pass   $DEPLOY
+	user_remove_sudo $DEPLOY
 	# make dir for app unix socket that www-data group (nginx process) can see.
 	# this avoids giving nginx full access to the app dir (you might still want
 	# to do that if you want nginx to also serve static public files).

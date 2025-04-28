@@ -44,8 +44,9 @@ deploy_backup_mysql() { # MACHINE= DEPLOY= BACKUP_DIR=
 
 deploy_restore_mysql() { # BACKUP_DIR= DST_MACHINE= DST_DEPLOY=
 	checkvars BACKUP_DIR DST_MACHINE DST_DEPLOY
-	local BACKUP_FILE=$BSCKUP_DIR/db.qp
+	local BACKUP_FILE=$BACKUP_DIR/db.qp
 	checkfile $BACKUP_FILE
+	say "Restoring mysql files from '$BACKUP_FILE' to '$DST_MACHINE:$DST_DEPLOY' ... "
 
 	SRC_MACHINE= \
 		SRC_DIR="$(dirname $BACKUP_FILE)/./$(basename $BACKUP_FILE)" \
@@ -76,6 +77,7 @@ deploy_backup_app() { # MACHINE= DEPLOY= BACKUP_DIR= [PREV_BACKUP_DIR=]
 deploy_restore_app() { # BACKUP_DIR= DST_MACHINE= DST_DEPLOY=
 	checkvars BACKUP_DIR DST_MACHINE DST_DEPLOY
 	checkdir $BACKUP_DIR
+	say "Restoring app files from '$BACKUP_DIR' to '$DST_MACHINE:$DST_DEPLOY' ... "
 	SRC_MACHINE= \
 		SRC_DIR=$BACKUP_DIR/./. \
 		DST_DIR=/home/$DST_DEPLOY \
@@ -103,11 +105,12 @@ md_restore() { # MD= DATE= [DST_MD=] [all|MODULE1 ...]
 			|| die "No latest backup for '$MD'"
 	fi
 	[[ $DST_MD ]] || DST_MD=$MD
-	machine_of "$DST_MD"; local DST_MACHINE=$R1 DST_DEPLOY=$R2
+	machine_of     $MD ; local     MACHINE=$R1     DEPLOY=$R2
+	machine_of $DST_MD ; local DST_MACHINE=$R1 DST_DEPLOY=$R2
 	local BACKUP_DIR=backups/$MD/$DATE
-	MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_stop all
+	[[ "$*" ]] && MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_stop all
 	_md_restore "$@"
-	MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_start all
+	[[ "$*" ]] && MACHINE=$DST_MACHINE DEPLOY=$DST_DEPLOY md_start all
 }
 
 # remove old backups according to configured retention policy.
