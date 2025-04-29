@@ -142,13 +142,13 @@ to update them on any new device you happen to work from.
 
 MM assumes key-based auth for SSH. `mm pubkeys` lists the current SSH public
 keys found on each machine/user. The `device` column allows you to associate
-a pubkey with the device that holds the private key of that pubkey so that
-you can keep track of which device has access to which machine/user. To register
-the machine you're on right now as a device, type `mm set-device DEVICE`.
-Type `mm pubkeys` again: you should now see your device showing next to the pubkey.
-If your private key gets compromised, refresh it with `mm ssh-keygen` and then
-add it to all machines with `mm pubkey-add`. Then remove the old one with
-`mm pubkey-remove PUBKEY`.
+a pubkey with the machine that holds the private key of that pubkey so that
+you can keep track of which machines have access to which machine/user.
+To register the machine you're on right now as a device, type
+`mm set-machine MACHINE`. Type `mm pubkeys` again: you should now see your
+machine showing next to the pubkey. If your private key gets compromised,
+refresh it with `mm ssh-keygen` and then add it to all machines with
+`mm pubkey-add`. Then remove the old one with `mm pubkey-remove PUBKEY`.
 
 ## Modules
 
