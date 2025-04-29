@@ -3,6 +3,6 @@
 . mmlib
 
 _f() {
-	MM_SSH_TTY=1 ssh_to_cmd mysql ${DB:-$DEPLOY} "$@"
+	MM_SSH_TTY=1 ssh_to mysql ${DB:-$DEPLOY} "$@"
 }
 AS_DEPLOY=1 each_md _f "$@"

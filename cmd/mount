@@ -25,5 +25,10 @@ shift 2
 checkvars REMOTE_DIR MOUNT_DIR
 check_abs_filepath $REMOTE_DIR
 rel_path $MOUNT_DIR $PWD0; MOUNT_DIR=$R1
+mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
 must mkdir -p $MOUNT_DIR
-NOALL=1 AS_DEPLOY=1 each_md ssh_to
+_f() {
+	ip_of $MACHINE; local HOST=$R1
+	SSH_CLOSE=1 ssh_opt; run sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR
+}
+NOALL=1 each_md _f

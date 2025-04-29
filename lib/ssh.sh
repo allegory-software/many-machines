@@ -1,7 +1,7 @@
 # ssh lib: ssh config and operation wrappers.
 
 # common ssh options for ssh, autossh, sshfs and rsync
-ssh_opt() { # MACHINE= [REMOTE_PORT=]
+ssh_opt() { # MACHINE= [SSH_CLOSE=]
 	R1=(
 		-o ConnectTimeout=3
 		-o PreferredAuthentications=publickey
@@ -16,49 +16,33 @@ ssh_opt() { # MACHINE= [REMOTE_PORT=]
 	for ((i=n-1; i>=0; i--)); do
 		R1+=(-o IdentityFile=${a[$i]})
 	done
-	[[ $REMOTE_PORT ]] || R1+=(
+	[[ $SSH_CLOSE ]] || R1+=(
 		-o ControlMaster=auto
 		-o ControlPath=$HOME/.ssh/control-$MACHINE-$USER
 		-o ControlPersist=600
 	)
 }
 
-ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [LOCAL_IP=] [REMOTE_DIR=] [SSH_TTY=1] ...
+ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [SSH_TTY=1] ["SCRIPT" ARGS...] [< STDIN]
 	local LOCAL_PORT=${LOCAL_PORT:-$REMOTE_PORT}
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
 	ip_of "$MACHINE"; local HOST=$R1
-	local cmd
-	if [[ $REMOTE_PORT ]]; then # tunnel
-		lsof -i :$LOCAL_PORT >/dev/null && die "Port already bound: $LOCAL_PORT"
-		ssh_opt; cmd=(autossh "${R1[@]}" -f -N -M 0 -T -L ${LOCAL_IP:-127.0.0.1}:${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT root@$HOST)
-	elif [[ $REMOTE_DIR ]]; then # mount
-		mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
-		ssh_opt; cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
-	elif [[ $1 && $MACHINE == $THIS_MACHINE ]]; then # local command, skip ssh
-		cmd=()
-	else # remote command or shell, or local shell
-		ssh_opt
-		#[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
-		cmd=(ssh "${R1[@]}" $HOST)
-	fi
 	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -i -u $AS_USER --" || sudo="su - $AS_USER --"; }
+	ssh_opt
+	[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 	# NOTE: ssh relays the remote command's exit code back to the user,
 	# so it's hard to tell when ssh fails from when the command fails,
 	# so all scripts must exit with code 0, anything else will cause an abort.
-	run "${cmd[@]}" -- $sudo "$@" || die "MACHINE=$MACHINE ssh_to: [$?]"
+	run ssh "${R1[@]}" $HOST -- $sudo "$@" || die "MACHINE=$MACHINE ssh_to $sudo: [$?]"
 }
 
 ssh_to_cmd() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [COMMAND ARGS...]
-	if [[ $MACHINE == $THIS_MACHINE ]]; then
-		ssh_to "$@"
-	else
-		quote_args "$@"
-		ssh_to "${R1[@]}"
-	fi
+	quote_args "$@"
+	ssh_to "${R1[@]}"
 }
 
-ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ..."] "SCRIPT" ARGS...
+ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ..."] ["SCRIPT" ARGS...] [< STDIN]
 	local SCRIPT=$1; shift
 	checkvars MACHINE SCRIPT-
 	quote_args "$@"; local ARGS="${R1[*]}"
@@ -83,18 +67,17 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 		}
 		QUIET=1 SRC_DIR=lib    DST_MACHINE=$MACHINE rsync_dir
 		QUIET=1 SRC_DIR=libopt DST_MACHINE=$MACHINE rsync_dir
-		local code="
+		run ssh_to "
 $VARS
 $FUNCS
 . ~/.mm/lib/all
 cd ~/.mm || exit 1
 $SCRIPT $ARGS
 "
-		printf "%s" "$code" | run ssh_to
 	else
 		# include lib contents in the script:
 		# faster but doesn't report line numbers correctly on errors in lib code.
-		printf "%s" "
+		run ssh_to "
 $VARS
 set -f # disable globbing
 shopt -s nullglob
@@ -105,7 +88,7 @@ $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
 $(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)
 $FUNCS
 $SCRIPT $ARGS
-" | run ssh_to
+"
 	fi
 }
 
@@ -123,12 +106,6 @@ ${R1[*]}
 $SCRIPT" "$@"
 }
 
-ssh_tunnel_kill() { # LOCAL_PORT
-	local LOCAL_PORT=$1
-	checkvars LOCAL_PORT
-	lsof -i :$LOCAL_PORT -sTCP:LISTEN -nP | awk '/ssh/ { print $2 }' | xargs kill
-}
-
 # TODO: make this safe with temp file!
 # TODO: USER & MODE
 ssh_save_stdin() { # FILE [USER] [MODE]
@@ -142,7 +119,7 @@ ssh_save_stdin() { # FILE [USER] [MODE]
 ssh_save() { # S FILE [USER] [MODE]
 	local s=$1 file=$2; shift; shift
 	checkvars s- file
-	printf "%s" "$s" | ssh_save_stdin $file "$@"
+	ssh_save_stdin $file "$@" <<< "$s"
 }
 
 # ssh config -----------------------------------------------------------------

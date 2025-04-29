@@ -1,5 +1,5 @@
 #!/bin/bash
-# SSH ; [COMMAND ...] ; run ssh command that needs tty
+# SSH ; ["SCRIPT" ARGS...] ; run ssh command that needs tty
 . mmlib
 
-NOALL=1 MM_SSH_TTY=1 AS_DEPLOY=1 each_md ssh_to_cmd "$@"
+NOALL=1 MM_SSH_TTY=1 AS_DEPLOY=1 each_md ssh_to "$@"

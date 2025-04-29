@@ -22,5 +22,12 @@
 }
 
 REMOTE_PORT=$1 LOCAL_PORT=$2 LOCAL_IP=$3
-checkvars REMOTE_PORT
-AS_DEPLOY=1 each_md ssh_to
+checkvars REMOTE_PORT LOCAL_PORT? LOCAL_IP?
+_f() {
+	ip_of $MACHINE; local HOST=$R1
+	lsof -i :$LOCAL_PORT >/dev/null && die "Port already bound: $LOCAL_PORT"
+	SSH_CLOSE=1 ssh_opt; run autossh "${R1[@]}" -f -N -M 0 -T \
+		-L ${LOCAL_IP:-127.0.0.1}:${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT \
+		root@$HOST
+}
+each_md _f

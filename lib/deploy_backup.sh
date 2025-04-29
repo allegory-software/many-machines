@@ -36,22 +36,12 @@ list_deploy_backups() {
 	done
 }
 
-ssh_to_or() { # MACHINE=|DST_MACHINE= ...
+ssh_to() { # MACHINE=|DST_MACHINE= ...
 	checkvars MACHINE? DST_MACHINE?
 	if [[ $DST_MACHINE ]]; then
-		run ssh_to_cmd "$@"
+		run ssh_to "$@"
 	elif [[ $MACHINE ]]; then
 		run "$@"
-	else
-		die "MACHINE or DST_MACHINE required."
-	fi
-}
-
-ssh_ln_file() { # MACHINE=|DST_MACHINE= TARGET_FILE LINK_FILE
-	if [[ $DST_MACHINE ]]; then
-		must ssh_to
-	elif [[ $MACHINE ]]; then
-		true
 	else
 		die "MACHINE or DST_MACHINE required."
 	fi
