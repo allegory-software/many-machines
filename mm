@@ -17,7 +17,7 @@ on_exit sayn $ENDCOLOR
 
 usage() {
 	say
-	say "Usage: ${WHITE}[MACHINES=\"MACHINE1 ...\"] [DEPLOYS=\"DEPLOY1 ...\"] mm [DEPLOY1|MACHINE1 ...] COMMAND ARGS...$ENDCOLOR"
+	say "Usage: ${WHITE}[MACHINES=\"MACHINE1 ...\"] [DEPLOYS=\"DEPLOY1 ...\"] mm [.|DEPLOY1|MACHINE1 ...] COMMAND ARGS...$ENDCOLOR"
 	say "Usage: ${WHITE}[DEPLOYS=\"DEPLOY1 ...\"] mmd DEPLOY1 ... COMMAND ARGS...$ENDCOLOR"
 	say "Usage: ${WHITE}mm [--]help|?|-h [SECTION]$ENDCOLOR"
 	say "Usage: ${WHITE}mm COMMAND [--]help|?|-h $ENDCOLOR"
@@ -44,9 +44,15 @@ declare -A dm # dm[DEPLOY]=1
 export THIS_MACHINE
 while [[ $# > 0 ]]; do
 	if [[ $1 == . ]]; then
-		local m=$THIS_MACHINE
-		[[ $m ]] || die "'/root/mm/machine' symlink broken or missing"
-		[[ ! ${mm[$m]} ]] && { MACHINES+=" $m"; mm[$m]=1; }
+		if [[ $MM_DEPLOY ]]; then
+			local d=$THIS_DEPLOY
+			[[ $d ]] || die "'/root/mm/deploy symlink broken or missing"
+			[[ ! ${dm[$d]} ]] && { DEPLOYS+=" $d"; dm[$d]=1; }
+		else
+			local m=$THIS_MACHINE
+			[[ $m ]] || die "'/root/mm/machine' symlink broken or missing"
+			[[ ! ${mm[$m]} ]] && { MACHINES+=" $m"; mm[$m]=1; }
+		fi
 		shift
 	elif [[ $1 == "-" || -f cmd/$1 ]]; then
 		local CMD=$1; shift
