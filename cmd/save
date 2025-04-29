@@ -1,0 +1,5 @@
+#!/bin/bash
+# SSH ; FILE ; save stdin to remote file
+. mmlib
+
+NOALL=1 each_md ssh_save_stdin "$@"

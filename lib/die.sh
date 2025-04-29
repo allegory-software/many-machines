@@ -139,6 +139,7 @@ quote_vars() { # VAR1 ...
 #  2. execute a function from the current script, or an entire script.
 #  3. include additional function definitions needed to run said function.
 #  4. pass args to said function.
+#  5. stdin is piped in to the function.
 run_as() { # VARS="VAR1 ..." FUNCS="FUNC1 ..." USER "SCRIPT" ARG1 ...
 	local user=$1 script=$2; shift 2
 	checkvars user script-
@@ -156,7 +157,7 @@ run_as() { # VARS="VAR1 ..." FUNCS="FUNC1 ..." USER "SCRIPT" ARG1 ...
 $vars
 $funcs
 $script $args
-"
+exit"
 }
 
 # reflection

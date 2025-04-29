@@ -30,7 +30,7 @@ _f() {
 	local DST_MACHINE=$MACHINE
 	local DST_DIR=/root/mm/
 	local GIT_DIR=$DST_DIR/var/.git
-	[[ `ssh_lean_script "[[ -d $GIT_DIR ]] && echo y || true"` == y ]] && {
+	[[ `ssh_to "[[ -d $GIT_DIR ]] && echo y || true"` == y ]] && {
 		say "$GIT_DIR found: not sync'ing."
 		continue
 	}

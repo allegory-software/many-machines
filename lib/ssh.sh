@@ -1,7 +1,7 @@
 # ssh lib: ssh config and operation wrappers.
 
 # common ssh options for ssh, autossh, sshfs and rsync
-ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
+ssh_opt() { # MACHINE= [REMOTE_PORT=]
 	R1=(
 		-o ConnectTimeout=3
 		-o PreferredAuthentications=publickey
@@ -23,7 +23,7 @@ ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
 	)
 }
 
-ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [LOCAL_IP=] [REMOTE_DIR=] [SSH_TTY=1] [COMMAND ARGS...]
+ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [LOCAL_IP=] [REMOTE_DIR=] [SSH_TTY=1] ...
 	local LOCAL_PORT=${LOCAL_PORT:-$REMOTE_PORT}
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
@@ -31,23 +31,31 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [REMOTE_PORT=] [LOCAL_PORT=] [LOC
 	local cmd
 	if [[ $REMOTE_PORT ]]; then # tunnel
 		lsof -i :$LOCAL_PORT >/dev/null && die "Port already bound: $LOCAL_PORT"
-		ssh_cmd_opt; cmd=(autossh "${R1[@]}" -f -N -M 0 -T -L ${LOCAL_IP:-127.0.0.1}:${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT root@$HOST)
+		ssh_opt; cmd=(autossh "${R1[@]}" -f -N -M 0 -T -L ${LOCAL_IP:-127.0.0.1}:${LOCAL_PORT:-$REMOTE_PORT}:localhost:$REMOTE_PORT root@$HOST)
 	elif [[ $REMOTE_DIR ]]; then # mount
 		mountpoint -q $MOUNT_DIR && die "Already mounted: $MOUNT_DIR"
-		ssh_cmd_opt; cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
+		ssh_opt; cmd=(sshfs -o reconnect "${R1[@]}" root@$HOST${REMOTE_DIR:+:$REMOTE_DIR} $MOUNT_DIR)
 	elif [[ $1 && $MACHINE == $THIS_MACHINE ]]; then # local command, skip ssh
 		cmd=()
 	else # remote command or shell, or local shell
-		ssh_cmd_opt
-		[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
+		ssh_opt
+		#[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 		cmd=(ssh "${R1[@]}" $HOST)
 	fi
-	quote_args "$@"; local args=("${R1[@]}")
-	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -i -u $AS_USER" || sudo="su - $AS_USER"; }
+	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -i -u $AS_USER --" || sudo="su - $AS_USER --"; }
 	# NOTE: ssh relays the remote command's exit code back to the user,
 	# so it's hard to tell when ssh fails from when the command fails,
 	# so all scripts must exit with code 0, anything else will cause an abort.
-	run "${cmd[@]}" $sudo "${args[@]}" || die "MACHINE=$MACHINE ssh_to: [$?]"
+	run "${cmd[@]}" -- $sudo "$@" || die "MACHINE=$MACHINE ssh_to: [$?]"
+}
+
+ssh_to_cmd() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [COMMAND ARGS...]
+	if [[ $MACHINE == $THIS_MACHINE ]]; then
+		ssh_to "$@"
+	else
+		quote_args "$@"
+		ssh_to "${R1[@]}"
+	fi
 }
 
 ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ..."] "SCRIPT" ARGS...
@@ -82,11 +90,11 @@ $FUNCS
 cd ~/.mm || exit 1
 $SCRIPT $ARGS
 "
-		run ssh_to bash -s <<< "$code"
+		printf "%s" "$code" | run ssh_to
 	else
 		# include lib contents in the script:
 		# faster but doesn't report line numbers correctly on errors in lib code.
-		run ssh_to bash -s <<< "
+		printf "%s" "
 $VARS
 set -f # disable globbing
 shopt -s nullglob
@@ -97,7 +105,7 @@ $(for LIB in ${MM_STD_LIBS[@]}; do cat $LIB; done)
 $(for LIB in $MM_LIBS; do cat libopt/$LIB.sh; done)
 $FUNCS
 $SCRIPT $ARGS
-"
+" | run ssh_to
 	fi
 }
 
@@ -122,17 +130,19 @@ ssh_tunnel_kill() { # LOCAL_PORT
 }
 
 # TODO: make this safe with temp file!
-ssh_save() { # S FILE [USER] [MODE]
-	local s=$1 file=$2
-	checkvars s- file
-	sayn "Saving ${#s} bytes to remote file: '$file' ... " # TODO: ${user:+ user=$user}${mode:+ mode=$mode} ... "
-	# use bash crazy feature of getting stdin after encountering 'exit'.
-	printf "mkdir -p \`dirname $file\` && cat > $file; exit$s" | dry ssh_to bash -s
+# TODO: USER & MODE
+ssh_save_stdin() { # FILE [USER] [MODE]
+	local file=$1
+	checkvars file
+	sayn "Saving stdin to remote file: '$file' ... " # TODO: ${user:+ user=$user}${mode:+ mode=$mode} ... "
+	dry ssh_to "mkdir -p \`dirname $file\` && cat > $file"
 	say OK
 }
 
-ssh_lean_script() { # "SCRIPT"
-	printf "$1" | ssh_to bash -s
+ssh_save() { # S FILE [USER] [MODE]
+	local s=$1 file=$2; shift; shift
+	checkvars s- file
+	printf "%s" "$s" | ssh_save_stdin $file "$@"
 }
 
 # ssh config -----------------------------------------------------------------
@@ -272,7 +282,7 @@ rsync_dir() {
 	[[ $DRY ]] && local VERBOSE=1
 	[[ $PROGRESS ]] && say
 
-	local ssh_cmd; [[ $MACHINE ]] && { ssh_cmd_opt; ssh_cmd=(ssh "${R1[@]}"); }
+	local ssh_cmd; [[ $MACHINE ]] && { ssh_opt; ssh_cmd=(ssh "${R1[@]}"); }
 
 	[[ $LINK_DIR ]] && {
 		LINK_DIR=`realpath $LINK_DIR`

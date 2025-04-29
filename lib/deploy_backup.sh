@@ -36,10 +36,36 @@ list_deploy_backups() {
 	done
 }
 
-# mysql backup from a deploy to here.
-deploy_backup_mysql() { # MACHINE= DEPLOY= BACKUP_DIR=
-	checkvars MACHINE DEPLOY BACKUP_DIR
-	ssh_script mysql_backup_db $DEPLOY > $BACKUP_DIR/db.qp
+ssh_to_or() { # MACHINE=|DST_MACHINE= ...
+	checkvars MACHINE? DST_MACHINE?
+	if [[ $DST_MACHINE ]]; then
+		run ssh_to_cmd "$@"
+	elif [[ $MACHINE ]]; then
+		run "$@"
+	else
+		die "MACHINE or DST_MACHINE required."
+	fi
+}
+
+ssh_ln_file() { # MACHINE=|DST_MACHINE= TARGET_FILE LINK_FILE
+	if [[ $DST_MACHINE ]]; then
+		must ssh_to
+	elif [[ $MACHINE ]]; then
+		true
+	else
+		die "MACHINE or DST_MACHINE required."
+	fi
+}
+
+# mysql backup from a remote deploy (MACHINE=, DEPLOY=) to this machine
+# or from a local deploy (DEPLOY=) to a remote machine (DST_MACHINE=).
+deploy_backup_mysql() { # MACHINE=|DST_MACHINE= DEPLOY= BACKUP_DIR=
+	must ssh_to 'mkdir -p' "$BACKUP_DIR"
+	if [[ $DST_MACHINE ]]; then
+		PROGRES=1 mysql_backup_db $DEPLOY | MACHINE=$DST_MACHINE ssh_save_stdin $BACKUP_DIR/db.qp
+	else
+		ssh_script "PROGRESS=1 mysql_backup_db $DEPLOY" > $BACKUP_DIR/db.qp
+	fi
 }
 
 deploy_restore_mysql() { # BACKUP_DIR= DST_MACHINE= DST_DEPLOY=
@@ -53,20 +79,21 @@ deploy_restore_mysql() { # BACKUP_DIR= DST_MACHINE= DST_DEPLOY=
 		DST_DIR=/root/.mm/$DST_DEPLOY.$$.qp \
 		PROGRESS=1 rsync_dir
 
-	MACHINE=$DST_MACHINE ssh_script "
+	MACHINE=$DST_MACHINE must ssh_script "
 		on_exit run rm -f $DST_DEPLOY.$$.qp
 		mysql_restore_db $DST_DEPLOY $DST_DEPLOY.$$.qp
 	"
 }
 
-# incremental files backup from a deploy to here.
-deploy_backup_app() { # MACHINE= DEPLOY= BACKUP_DIR= [PREV_BACKUP_DIR=]
-	checkvars MACHINE DEPLOY BACKUP_DIR PREV_BACKUP_DIR?
+# incremental files backup from a deploy (MACHINE=, DEPLOY=) to this machine
+# or from a local deply (DEPLOY=) to a remote machine (DST_MACHINE=).
+deploy_backup_app() { # MACHINE=|DST_MACHINE= DEPLOY= BACKUP_DIR= [PREV_BACKUP_DIR=]
+	checkvars DEPLOY BACKUP_DIR PREV_BACKUP_DIR?
 	md_varfile backup_files; local backup_files_file=$R1
-	must mkdir -p $BACKUP_DIR
+	ssh_mkdir "$BACKUP_DIR"
 	FILE_LIST_FILE=$backup_files_file \
 		SRC_MACHINE=$MACHINE \
-		DST_MACHINE= \
+		DST_MACHINE=$DST_MACHINE \
 		SRC_DIR=/home/$DEPLOY \
 		DST_DIR=$BACKUP_DIR \
 		LINK_DIR=$PREV_BACKUP_DIR \
@@ -85,14 +112,15 @@ deploy_restore_app() { # BACKUP_DIR= DST_MACHINE= DST_DEPLOY=
 		PROGRESS=1 rsync_dir
 }
 
-md_backup() { # MACHINE=|DEPLOY= [all|MODULE1 ...]
+md_backup() { # DST_MACHINE=|MACHINE= [DEPLOY=] [all|MODULE1 ...]
 	local MD=${DEPLOY:-$MACHINE}
 	checkvars MD
 	backup_date; local DATE=$R1
 	local BACKUP_DIR=backups/$MD/$DATE
 	local PREV_BACKUP_DIR=backups/$MD/latest
+	ssh_mkdir "$BACKUP_DIR"
 	[[ -d $PREV_BACKUP_DIR ]] || PREV_BACKUP_DIR=
-	[[ "$*" ]] && must mkdir -p $BACKUP_DIR
+	[[ "$*" ]] && ssh_mkdir "$BACKUP_DIR"
 	_md_backup "$@"; [[ $? == 2 ]] && { R1=; return 2; }
 	ln_file $DATE backups/$MD/latest
 	R1=$DATE

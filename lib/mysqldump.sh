@@ -9,6 +9,7 @@ mysql_backup_db() { # DB [FILE]
 	[[ $file ]] && sayn "to file '$file' ... " || sayn "to stdout ... "
 
 	local qp_opt="-i db.sql $file"; [[ ! $file ]] && qp_opt="-io db.sql $file"
+	local pv; [[ $PROGRESS ]] && command -v pv &>/dev/null && pv=pv || pv=cat
 	must dry mysqldump -u root \
 		--no-create-db \
 		--extended-insert \
@@ -18,7 +19,7 @@ mysql_backup_db() { # DB [FILE]
 		--skip_add_locks \
 		--skip-lock-tables \
 		--quick \
-		$db | must qpress $qp_opt
+		$db | $pv | must qpress $qp_opt
 
 	[[ $file ]] && say "OK. $(stat --printf=%s $file | numfmt --to=iec) written." || say "OK."
 }

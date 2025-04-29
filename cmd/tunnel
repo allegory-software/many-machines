@@ -23,5 +23,4 @@
 
 REMOTE_PORT=$1 LOCAL_PORT=$2 LOCAL_IP=$3
 checkvars REMOTE_PORT
-shift 3
-AS_DEPLOY=1 each_md ssh_to "$@"
+AS_DEPLOY=1 each_md ssh_to
