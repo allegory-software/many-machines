@@ -114,11 +114,13 @@ deploy_nginx_ln_ssl_files() {
 }
 
 deploy_preinstall_nginx() {
+	[[ $DOMAIN ]] || return 0
 	acme_cert_restore
 }
 
 deploy_install_nginx() {
 	[[ $HTTP_PORT || $HTTP_UNIX_SOCKET ]] || return 0
+	[[ $DOMAIN ]] || return 0
 
 	deploy_nginx_copy_5xx_html
 	deploy_nginx_ln_ssl_files

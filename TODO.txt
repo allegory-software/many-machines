@@ -1,17 +1,11 @@
 
 - cmd/mon refactoring to work on machines where mm is not installed.
 
-- hd-dev2 app deploy without domain
-	- no nginx setup, use port, bind to all interfaces
-
 - M/D refactoring:
 	- instead of mm and mmd, have mm @deploy mean machine-of deploy
 		- lookup each name in both machines/ and deploys/
 		- error if machine and deploy with same name (when not using @)
 		- error if list contains both machines and deploys
-
-- device refactoring:
-	- remove devices concept; make them machines.
 
 - app_service module: ??
 

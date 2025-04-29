@@ -1,3 +1,0 @@
-#!/bin/bash
-# SSH KEYS ;; show current device
-basename "$(readlink device)"

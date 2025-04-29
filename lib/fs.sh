@@ -179,8 +179,8 @@ save() { # S FILE [USER] [MODE]
 	local s=$1 file=$2 user=$3 mode=$4
 	checkvars s- file
 	sayn "Saving ${#s} bytes to file: '$file'${user:+ user=$user}${mode:+ mode=$mode} ... "
-	debugn "MUST: save \"$s\" $file "
 	must dry mkdir -p "$(dirname "$file")"
+	debugn "MUST: save \"$s\" $file "
 	if [[ $DRY ]] || printf "%s" "$s" > "$file"; then
 		debug "[$?]"
 	else
@@ -219,4 +219,13 @@ innermost_subpath_with_file() { # FILE DIR
 	done
 	R1=$dir
 	R2=${dir0#$dir/}
+}
+
+first_file() { # FILE1 ...
+	local f
+	R1=
+	for f in "$@"; do
+		[[ -e "$f" ]] && { R1=$f; return 0; }
+	done
+	return 1
 }

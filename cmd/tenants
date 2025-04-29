@@ -1,0 +1,5 @@
+#!/bin/bash
+# DB ; [DB=] ; set tenant host
+. mmlib
+
+each_md ssh_query "select * from tenant"

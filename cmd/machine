@@ -1,0 +1,3 @@
+#!/bin/bash
+# SSH KEYS ;; show current machine
+basename "$(readlink machine)"

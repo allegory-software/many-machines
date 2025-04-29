@@ -1,14 +1,5 @@
 # ssh lib: ssh config and operation wrappers.
 
-first_file() { # FILE1 ...
-	local f
-	R1=
-	for f in "$@"; do
-		[[ -e "$f" ]] && { R1=$f; return 0; }
-	done
-	return 1
-}
-
 # common ssh options for ssh, autossh, sshfs and rsync
 ssh_cmd_opt() { # MACHINE= [REMOTE_PORT=]
 	R1=(
@@ -201,12 +192,6 @@ ssh_pubkey() { # [USER=]
 	R1=`must ssh-keygen -y -f $R1` || exit 1
 }
 
-ssh_device_pubkey() { # DEVICE
-	local DEVICE=$1
-	checkvars DEVICE
-	must catfile devices/$DEVICE/ssh_pubkey
-}
-
 _ssh_pubkeys() { # [USERS]
 	local USERS=$1
 	[[ $USERS ]] || USERS=`echo root; ls -1 /home`
@@ -228,8 +213,8 @@ ssh_pubkeys() { # [USERS]
 	local FMT="%-10s %-10s %-12s %-22s %-10s %-10s\n"
 	printf "$WHITE$FMT$ENDCOLOR" MACHINE USER TYPE KEY KEYNAME DEVICE
 	declare -A map
-	local device; for device in `ls var/devices`; do
-		catfile var/devices/$device/ssh_pubkey || continue
+	local device; for device in `ls var/machines`; do
+		catfile var/machines/$device/ssh_pubkey || continue
 		read -r type key name <<< "$R1"
 		map["$type $key"]=$device
 	done
@@ -237,7 +222,7 @@ ssh_pubkeys() { # [USERS]
 	local machine user type key name
 	QUIET=1 each_machine ssh_script "_ssh_pubkeys" "$USERS" \
 		| while read -r machine user type key name; do
-			device=${map["$type $key"]}
+			local device=${map["$type $key"]}
 			printf "$FMT" $machine $user $type ${key: -20} "$name" ${device:-?}
 		done
 }

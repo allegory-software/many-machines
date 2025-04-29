@@ -1,0 +1,19 @@
+#!/bin/bash
+# SSH KEYS ; MACHINE ; set current machine
+. mmlib
+
+MACHINE=$1
+[[ $MACHINE ]] || say "Current machine is: $WHITE$THIS_MACHINE$ENDCOLOR"
+checkvars MACHINE
+
+[[ -d var/machines/$MACHINE ]] || {
+	say "Creating new machine: $MACHINE ... "
+	must mkdir -p var/machines/$MACHINE
+	save 1 var/machines/$MACHINE/active
+	run first_file
+		$HOME/.ssh/id_ed25519 \
+		$HOME/.ssh/id_rsa
+	[[ $R1 ]] && cp_file $R1 var/machines/$MACHINE/.ssh_key
+}
+say "Setting current machine to: $MACHINE ... "
+ln_file var/machines/$MACHINE machine

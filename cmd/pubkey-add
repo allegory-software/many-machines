@@ -1,15 +1,9 @@
 #!/bin/bash
-# SSH KEYS ; [DEVICE] ["USER1 ..."] ; add a ssh public key on machine(s)
+# SSH KEYS ; [MACHINE] ["USER1 ..."] ; add a ssh public key to machine(s)
 . mmlib
 
-DEVICE=$1 USERS=$2
-if [[ $DEVICE ]]; then
-	checkvars DEVICE
-	must catfile var/devices/$DEVICE/ssh_pubkey
-	PUBKEY=$R1
-else
-	ssh_pubkey
-	PUBKEY=$R1
-fi
+MACHINE=${1:-$THIS_MACHINE} USERS=$2
+checkvars MACHINE
+must catfile var/machines/$MACHINE/ssh_pubkey; PUBKEY=$R1
 
 each_machine ssh_script "ssh_pubkey_add" "$PUBKEY" "$USERS"

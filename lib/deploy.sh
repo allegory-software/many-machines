@@ -148,6 +148,7 @@ deploy_rename_app() {
 deploy_gen_conf() {
 	checkvars MACHINE DEPLOY APP MYSQL_PASS SECRET
 	local conf=/home/$DEPLOY/app/${APP}.conf
+	local HOST=${DOMAIN:-$PUBLIC_IP}
 	save "\
 --deploy vars
 deploy = '$DEPLOY'
@@ -167,7 +168,7 @@ ${HTTP_COMPRESS:+http_compress = $HTTP_COMPRESS}
 ${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
 ${SMTP_HOST:+smtp_user = '$SMTP_USER'}
 ${SMTP_HOST:+smtp_pass = '$SMTP_PASS'}
-${DOMAIN:+host = '$DOMAIN'}
+${HOST:+host = '$HOST'}
 ${NOREPLY_EMAIL:+noreply_email = '$NOREPLY_EMAIL'}
 ${DEV_EMAIL:+dev_email = '$DEV_EMAIL'}
 ${DEFAULT_COUNTRY:+default_country = '$DEFAULT_COUNTRY'}

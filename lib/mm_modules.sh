@@ -59,7 +59,7 @@ _md_with_action_fn() { # ACTION= [DEPLOY=] NAME1 ...
 _each() { # ACTION= [DRY=1] [DEPLOY=] NAME1 ...
 	local name
 	for name in "$@"; do
-		md_fn $name && dry $R1 $name
+		md_fn $name && run dry $R1 $name
 	done
 	return 0
 }

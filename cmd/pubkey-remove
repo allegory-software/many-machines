@@ -1,12 +1,14 @@
 #!/bin/bash
-# SSH KEYS ; [DEVICE|"PUBKEY"|?] ["USER1 ..."] ; remove a ssh public key on machine(s)
+# SSH KEYS ; [MACHINE|"PUBKEY"] ["USER1 ..."] ; remove a ssh public key from machine(s)
 . mmlib
 
-PUBKEY=$1 USERS=$2
-checkvars PUBKEY
-if [[ -d "var/devices/$PUBKEY" ]]; then
-	must catfile var/devices/$PUBKEY/ssh_pubkey
+MACHINE=$1 USERS=$2
+checkvars MACHINE
+if [[ -d var/machines/$MACHINE ]]; then
+	must catfile var/machines/$MACHINE/ssh_pubkey
 	PUBKEY=$R1
+else
+	PUBKEY=$MACHINE
 fi
 
 each_machine ssh_script "ssh_pubkey_remove" "$PUBKEY" "$USERS"
