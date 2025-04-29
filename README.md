@@ -16,34 +16,39 @@ don't need to learn programming to be a sysadmin.
 # Functionality
 
 * Configuration Management
+  * software installation and configuration
+  * app deployment
   * SSH key management
   * user management
-  * software installation and configuration
-  * git key management
   * mysql user management
-  * app deployment
   * SSL certificate management
 * Reporting
   * users and password lock status
   * installed software versions
   * app version and version check
   * service running status, app running status
-  * disk, RAM, CPU
-  * open ports
+  * free disk, free RAM, CPU load
+  * speed tests for CPU, I/O and network
+  * open ports, port scan
   * geographical location
   * mysql databases, tables, table structure
   * app users, sessions, tenants
 * Ops
-  * remote shells, commands, tunnels
-  * remote scripts with vars
+  * remote shells, commands, tunnels, sshfs mounts
+  * remote scripts with deploy and machine vars
   * service and app control
   * rsync between machines
   * remote mysql queries
   * mysql database management
-  * mysql database backup and restore
-  * files backup and restore
-* Benchmarking
-  * CPU speed test, disk speed test, network speed test
+* Backups
+  * mysql database incremental backup and restore
+  * files incremental backup and restore
+  * deploy backup, restore, clone, move
+* Monitoring & alerting
+  * probing for disk, RAM, CPU, service status
+  * logging to sample files for graph display
+  * configurable thresholds for alerts
+  * phone notifications
 
 # Design
 
