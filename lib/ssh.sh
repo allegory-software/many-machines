@@ -23,7 +23,7 @@ ssh_opt() { # MACHINE= [SSH_CLOSE=]
 	)
 }
 
-ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [SSH_TTY=1] ["SCRIPT" ARGS...] [< STDIN]
+ssh_to() { # [AS_USER=] [AS_DEPLOY=1 DEPLOY=] MACHINE= [SSH_TTY=1] ["SCRIPT" ARGS...] [< STDIN]
 	local LOCAL_PORT=${LOCAL_PORT:-$REMOTE_PORT}
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
@@ -37,18 +37,16 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [SSH_TTY=1] ["SCRIPT" ARGS...] [<
 	run ssh "${R1[@]}" $HOST -- $sudo "$@" || die "MACHINE=$MACHINE ssh_to $sudo: [$?]"
 }
 
-ssh_to_cmd() { # [AS_USER=] [AS_DEPLOY=1] MACHINE= [COMMAND ARGS...]
-	quote_args "$@"
-	ssh_to "${R1[@]}"
-}
-
-ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ..."] ["SCRIPT" ARGS...] [< STDIN]
+# NOTE: no stdin support with ssh_script because we feed the script that includes
+# all the libs and many vars via stdin because it wouldn't fit in an arg.
+ssh_script() { # [AS_USER=] [AS_DEPLOY=1 DEPLOY=] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="fn1 ..."] [VARS="VAR1 ..."] [MD_VARS=1] ["SCRIPT" ARGS...]
 	local SCRIPT=$1; shift
 	checkvars MACHINE SCRIPT-
 	quote_args "$@"; local ARGS="${R1[*]}"
 	[[ $FUNCS ]] && local FUNCS=$(declare -f $FUNCS)
 	local VARNAMES="DEBUG VERBOSE DRY MACHINE MM_LIBS $VARS"
 	local VARS=$(declare -p $VARNAMES 2>/dev/null)
+	[[ $MD_VARS ]] && { md_vars; VARS+="${R1[*]}"$'\n'; }
 	debug "-------------------------------------------------------"
 	debug "ssh_to ARGS   : $ARGS"
 	debug "ssh_to SCRIPT :"
@@ -67,7 +65,7 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1] [MM_LIBS="lib1 ..."] MACHINE= [FUNCS="
 		}
 		QUIET=1 SRC_DIR=lib    DST_MACHINE=$MACHINE rsync_dir
 		QUIET=1 SRC_DIR=libopt DST_MACHINE=$MACHINE rsync_dir
-		run ssh_to "
+		run ssh_to bash -s <<< "
 $VARS
 $FUNCS
 . ~/.mm/lib/all
@@ -77,7 +75,7 @@ $SCRIPT $ARGS
 	else
 		# include lib contents in the script:
 		# faster but doesn't report line numbers correctly on errors in lib code.
-		run ssh_to "
+		run ssh_to bash -s <<< "
 $VARS
 set -f # disable globbing
 shopt -s nullglob
@@ -92,18 +90,8 @@ $SCRIPT $ARGS
 	fi
 }
 
-md_ssh_script() { # [VARS=] DEPLOY=|MACHINE= "SCRIPT" ARGS...
-	local SCRIPT=$1; shift
-	checkvars SCRIPT-
-	local MACHINE=$MACHINE
-	if [[ $DEPLOY && ! $MACHINE ]]; then
-		machine_of $DEPLOY
-		MACHINE=$R1
-	fi
-	md_vars
-	VARS="DEPLOY $VARS" ssh_script "
-${R1[*]}
-$SCRIPT" "$@"
+md_ssh_script() {
+	MD_VARS=1 ssh_script "$@"
 }
 
 # TODO: make this safe with temp file!
