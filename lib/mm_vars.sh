@@ -30,7 +30,7 @@ _add_varfiles() { # DIR
 cat_all_varfiles() { # [LOCAL="local "] DIR
 	local DIR=$1
 	checkvars DIR
-	declare -A R2
+	local -A R2
 	_add_varfiles $DIR
 	# NOTE: this dives into the `machine` symlink and includes all machine vars!
 	local INC; for INC in `find -L $DIR -maxdepth 10 -name '.?*' | sort`; do

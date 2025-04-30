@@ -40,6 +40,8 @@ by exec'ed programs. However, they are always inherited by functions
 
 [[ str =~ regex   ]]  - string matches regex pattern like ^[0-9]+$ etc.
 [[ str == extglob ]]  - string contains extglob pattern like *(patt), ?(patt), *(patt)*, etc.
+[[ str == patt* ]]    - string starts with
+[[ str == *patt ]]    - string ends with
 
 [[ -f file ]]  - it's a file
 [[ -d dir  ]]  - it's a dir
@@ -91,7 +93,7 @@ ${var/%patt/repl} - replace suffix
 # Arrays
 
 ```
-declare -a A   - create array
+local -a A     - create local array (declare -a for global)
 A=(a b c)      - create array and initialize
 A+=(a b c)     - append to array
 "${A[@]}"      - expand elements without word-splitting
@@ -101,7 +103,7 @@ ${#A[@]}       - array length
 # Hashmaps
 
 ```
-declare -A M   - create hashmap
+local -A M     - create local hashmap (declare -A for global)
 M[key]=val     - assign key
 "${M[@]}"      - expand values (random order)
 "${!M[@]}"     - expand keys (random order)

@@ -38,8 +38,8 @@ cmd_metadata() { # CMD= -> SECTION= ARGS= DESCR=
 }
 
 main() {
-declare -A mm # mm[MACHINE]=1
-declare -A dm # dm[DEPLOY]=1
+local -A mm # mm[MACHINE]=1
+local -A dm # dm[DEPLOY]=1
 [[ $THIS_MACHINE ]] || THIS_MACHINE=`basename "$(readlink machine)"`
 export THIS_MACHINE
 while [[ $# > 0 ]]; do

@@ -76,7 +76,7 @@ user_rename() { # OLD_USER NEW_USER
 # list users with a login shell
 _list_users() {
 	local user pass rest
-	declare -A map
+	local -A map
 	while IFS=: read -r user pass rest; do
 		map[$user]=$pass
 	done < /etc/shadow

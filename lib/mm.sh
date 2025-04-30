@@ -74,21 +74,16 @@ var_lock_key() {
 
 # machines and deploys db ----------------------------------------------------
 
-check_machine() { # MACHINE
-	checknosp "$1" "MACHINE required"
-	[[ -d var/machines/$1 ]] || die "Machine unknown: $1"
-}
+this_machine() { R1=`basename "$(readlink machine)" 2>/dev/null`; }
+this_deploy()  { R1=`basename "$(readlink deploy)" 2>/dev/null`; }
 
 check_deploy() { # DEPLOY
 	checknosp "$1" "DEPLOY required"
 	[[ -d var/deploys/$1 ]] || die "Deployment unknown: $1"
 }
-
-check_md_new_name() { # MACHINE|DEPLOY
-	local NAME=$1
-	checkvars NAME
-	[[ ! -d var/deploys/$NAME  ]] || die "A deploy with this name already exists: '$NAME'."
-	[[ ! -d var/machines/$NAME ]] || die "A machine with this name already exists: '$NAME'."
+check_machine() { # MACHINE
+	checknosp "$1" "MACHINE required"
+	[[ -d var/machines/$1 ]] || die "Machine unknown: $1"
 }
 
 try_machine_of_deploy() {
@@ -98,6 +93,42 @@ try_machine_of_deploy() {
 machine_of_deploy() { # DEPLOY
 	try_machine_of_deploy "$@"
 	[[ $R1 ]] || die "No machine set for deploy: $1."
+}
+
+md_resolve() { # DEPLOY|MACHINE|@DEPLOY|GROUP|. ...
+	local MACHINES= DEPLOYS=
+	local -A m # mm[NAME]=1
+	local arg
+	for arg in "$@"; do
+		checknosp "$arg"
+		[[ $arg == @* ]] && {
+			arg=${arg:1}
+			machine_of_deploy $arg; MACHINES+=" $R1"
+			continue
+		}
+		[[ $arg == . ]] && { this_machine; arg=$R1; }
+		[[ $m[$arg] ]] && continue
+		m[$arg]=1
+		[[ -d var/deploys/$arg  ]] && { DEPLOYS+=" $arg"; continue; }
+		[[ -d var/machines/$arg ]] && { MACHINES+=" $arg"; continue; }
+		[[ -d var/groups/$arg   ]] && {
+			local g
+			for g in `ls -1 var/groups/$arg`; do
+				[[ $m[$arg] ]] && continue
+				m[$arg]=1
+				[[ -d var/deploys/$arg  ]] && { DEPLOYS+=" $arg"; continue; }
+				[[ -d var/machines/$arg ]] && { MACHINES+=" $arg"; continue; }
+			done
+		}
+	done
+	R1=$MACHINES R2=$DEPLOYS
+}
+
+check_md_new_name() { # MACHINE|DEPLOY
+	local NAME=$1
+	checkvars NAME
+	[[ ! -d var/deploys/$NAME  ]] || die "A deploy with this name already exists: '$NAME'."
+	[[ ! -d var/machines/$NAME ]] || die "A machine with this name already exists: '$NAME'."
 }
 
 machine_of() { # MACHINE|DEPLOY -> MACHINE, [DEPLOY]
@@ -126,10 +157,6 @@ machine_by_ip() { # IP
 	done
 	R1=$IP
 	return 1
-}
-
-this_machine() {
-	R1=`basename "$(readlink machine)" 2>/dev/null`
 }
 
 machine_is_active() { # MACHINE=
