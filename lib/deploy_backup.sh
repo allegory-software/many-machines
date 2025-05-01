@@ -36,7 +36,7 @@ list_deploy_backups() {
 	done
 }
 
-ssh_to() { # MACHINE=|DST_MACHINE= ...
+ssh_to_or_run() { # MACHINE=|DST_MACHINE= ...
 	checkvars MACHINE? DST_MACHINE?
 	if [[ $DST_MACHINE ]]; then
 		run ssh_to "$@"
@@ -50,7 +50,6 @@ ssh_to() { # MACHINE=|DST_MACHINE= ...
 # mysql backup from a remote deploy (MACHINE=, DEPLOY=) to this machine
 # or from a local deploy (DEPLOY=) to a remote machine (DST_MACHINE=).
 deploy_backup_mysql() { # MACHINE=|DST_MACHINE= DEPLOY= BACKUP_DIR=
-	must ssh_to 'mkdir -p' "$BACKUP_DIR"
 	if [[ $DST_MACHINE ]]; then
 		PROGRES=1 mysql_backup_db $DEPLOY | MACHINE=$DST_MACHINE ssh_save_stdin $BACKUP_DIR/db.qp
 	else
@@ -108,11 +107,11 @@ md_backup() { # DST_MACHINE=|MACHINE= [DEPLOY=] [all|MODULE1 ...]
 	backup_date; local DATE=$R1
 	local BACKUP_DIR=backups/$MD/$DATE
 	local PREV_BACKUP_DIR=backups/$MD/latest
-	ssh_mkdir "$BACKUP_DIR"
 	[[ -d $PREV_BACKUP_DIR ]] || PREV_BACKUP_DIR=
-	[[ "$*" ]] && ssh_mkdir "$BACKUP_DIR"
-	_md_backup "$@"; [[ $? == 2 ]] && { R1=; return 2; }
-	ln_file $DATE backups/$MD/latest
+	[[ $* ]] || { _md_backup "$@"; return; }
+	must ssh_to_or_run 'mkdir -p' "$BACKUP_DIR"
+	_md_backup "$@"
+	ssh_to_or_run ln_file $DATE backups/$MD/latest
 	R1=$DATE
 }
 
