@@ -2,6 +2,25 @@
 
 deploy_nginx_config() { # DOMAIN= HTTP_UNIX_SOCKET=|HTTP_PORT=
 
+	local CSP_OPTIONS=(
+default-src "${CSP_DEFAULT_SRC:-'self'};"
+script-src  "${CSP_SCRIPT_SRC:-'self' 'unsafe-inline' 'unsafe-eval'};"
+style-src   "${CSP_STYLE_SRC:-'self' 'unsafe-inline'};"
+img-src     "${CSP_IMG_SRC:-'self' data:};"
+font-src    "${CSP_FONT_SRC:-'self'};"
+connect-src "${CSP_CONNECT_SRC:-'self'};"
+base-uri    "${CSP_BASE_URI:-'self'};"
+object-src  "${CSP_OBJECT_SRC:-'none'};"
+media-src   "${CSP_MEDIA_SRC:-*};"
+frame-src   "${CSP_FRAME_SRC:-'self'};"
+child-src   "${CSP_CHILD_SRC:-'self'};"
+frame-ancestors "${CSP_FRAME_ANCESTORS:-'self'};"
+form-action "${CSP_FORM_ACTION:-'self'};"
+worker-src  "${CSP_WORKER_SRC:-'self'};"
+upgrade-insecure-requests";"
+block-all-mixed-content";"
+)
+
 	[[ "$HTTP_PORT$HTTP_UNIX_SOCKET" ]] || die "HTTP_PORT or HTTP_UNIX_SOCKET required"
 	[[ $HTTP_PORT        ]] && checkvars HTTP_PORT
 	[[ $HTTP_UNIX_SOCKET ]] && checkvars HTTP_UNIX_SOCKET
@@ -78,8 +97,22 @@ server {
 	ssl_certificate_key  /home/$DEPLOY/ssl_certificate_key;
 	ssl_dhparam          /etc/nginx/dhparam.pem;
 
+	# add security-related headers
+
 	# HSTS with preloading to google. Another amazing tech from the web people.
 	add_header Strict-Transport-Security \"max-age=63072000; includeSubDomains; preload\" always;
+
+	# prevent clickjacking by <iframe>
+	add_header X-Frame-Options DENY;
+
+	# limit referer
+	add_header Referrer-Policy strict-origin-when-cross-origin;
+
+	# block heuristic MIME-type sniffing by browsers.
+	add_header X-Content-Type-Options nosniff;
+
+	# prevent XSS if web app is injectable.
+	add_header Content-Security-Policy \"${CSP_OPTIONS[*]}\" always;
 
 	# NOTE: nginx nested locations don't inherit proxy options, so we copy-paste them!
 
