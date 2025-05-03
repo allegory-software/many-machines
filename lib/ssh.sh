@@ -44,9 +44,9 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1 DEPLOY=] [MM_LIBS="lib1 ..."] MACHINE= 
 	checkvars MACHINE SCRIPT-
 	quote_args "$@"; local ARGS="${R1[*]}"
 	[[ $FUNCS ]] && local FUNCS=$(declare -f $FUNCS)
-	local VARNAMES="DEBUG VERBOSE DRY MACHINE MM_LIBS $VARS"
+	local VARNAMES="DEBUG VERBOSE DRY MACHINE DEPLOY MM_LIBS $VARS"
 	local VARS=$(declare -p $VARNAMES 2>/dev/null)
-	[[ $MD_VARS ]] && { md_vars; VARS+="${R1[*]}"$'\n'; }
+	[[ $MD_VARS ]] && { md_vars; VARS+=$'\n'"${R1[*]}"; }
 	debug "-------------------------------------------------------"
 	debug "ssh_to ARGS   : $ARGS"
 	debug "ssh_to SCRIPT :"
@@ -187,7 +187,7 @@ ssh_pubkeys() { # [USERS]
 	local USERS=$1
 	local FMT="%-10s %-10s %-12s %-22s %-10s %-10s\n"
 	printf "$WHITE$FMT$ENDCOLOR" MACHINE USER TYPE KEY KEYNAME DEVICE
-	declare -A map
+	local -A map
 	local device; for device in `ls var/machines`; do
 		catfile var/machines/$device/ssh_pubkey || continue
 		read -r type key name <<< "$R1"
