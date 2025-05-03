@@ -17,8 +17,8 @@ child-src   "${CSP_CHILD_SRC:-'self'};"
 frame-ancestors "${CSP_FRAME_ANCESTORS:-'self'};"
 form-action "${CSP_FORM_ACTION:-'self'};"
 worker-src  "${CSP_WORKER_SRC:-'self'};"
-upgrade-insecure-requests";"
-block-all-mixed-content";"
+"upgrade-insecure-requests;"
+"block-all-mixed-content;"
 )
 
 	[[ "$HTTP_PORT$HTTP_UNIX_SOCKET" ]] || die "HTTP_PORT or HTTP_UNIX_SOCKET required"
