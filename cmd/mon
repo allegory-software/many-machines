@@ -2,6 +2,9 @@
 # MONITOR ; [start|stop|restart|status [-q]|reset|pause|resume|unpause|clear-samples] ; contiunous monitoring service
 . mmlib
 
+checkvars THIS_MACHINE
+MACHINE=$THIS_MACHINE
+
 # config ---------------------------------------------------------------------
 
 # thresholds
@@ -21,8 +24,6 @@ SAMPLE_TICK=1
 NOTIFY_TICK=1
 
 # parse cmdline & damonize ---------------------------------------------------
-
-checkvars MACHINE
 
 mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
 

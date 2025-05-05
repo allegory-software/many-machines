@@ -201,11 +201,11 @@ deploy_install_user() {
 	# make dir for app unix socket that www-data group (nginx process) can see.
 	# this avoids giving nginx full access to the app dir (you might still want
 	# to do that if you want nginx to also serve static public files).
-	must mkdir -p /run/$DEPLOY
-	must chown $DEPLOY:www-data /run/$DEPLOY
+	must dry mkdir -p /run/$DEPLOY
+	must dry chown $DEPLOY:www-data /run/$DEPLOY
 	# setgid on the dir is important because the app itself can't change the
 	# group of the socket file (it sets the mode to 0660, it's all it can do).
-	must chmod 2750 /run/$DEPLOY
+	must dry chmod 2750 /run/$DEPLOY
 }
 
 deploy_uninstall_user() {
