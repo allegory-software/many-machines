@@ -198,6 +198,19 @@ deploy_install_user() {
 	user_create      $DEPLOY
 	user_lock_pass   $DEPLOY
 	user_remove_sudo $DEPLOY
+}
+
+deploy_uninstall_user() {
+	user_remove $DEPLOY
+}
+
+deploy_rename_user() {
+	user_rename $DEPLOY $DEPLOY1
+}
+
+# deploy run dir -------------------------------------------------------------
+
+deploy_install_run_dir() {
 	# make dir for app unix socket that www-data group (nginx process) can see.
 	# this avoids giving nginx full access to the app dir (you might still want
 	# to do that if you want nginx to also serve static public files).
@@ -208,12 +221,8 @@ deploy_install_user() {
 	must dry chmod 2750 /run/$DEPLOY
 }
 
-deploy_uninstall_user() {
-	user_remove $DEPLOY
-}
-
-deploy_rename_user() {
-	user_rename $DEPLOY $DEPLOY1
+deploy_uninstall_run_dir() {
+	rm_dir /run/$DEPLOY
 }
 
 # deploy git module ----------------------------------------------------------
