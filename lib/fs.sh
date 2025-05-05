@@ -201,7 +201,7 @@ replace_lines() { # REGEX S FILE
 	local regex=$1 s=$2 file=$3
 	checkvars regex- s- file
 	say "Replacing line containing $regex to $s in file $file ... "
-	local s="$(cat "$file")" || die "cat $file [$?]"
+	must catfile "$file"; local s=$R1
 	local s1="${s//$regex/$}"
 	[[ $s1 != $s ]] && save "$s1" "$file"
 }

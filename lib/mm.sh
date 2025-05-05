@@ -145,7 +145,7 @@ machine_of() { # MACHINE|DEPLOY -> MACHINE, [DEPLOY]
 ip_of() { # MD -> IP, MACHINE, [DEPLOY]
 	machine_of "$1"; R2=$R1
 	checkfile var/machines/$R2/public_ip
-	R1=$(cat $R1)
+	catfile $R1
 }
 
 machine_by_ip() { # IP

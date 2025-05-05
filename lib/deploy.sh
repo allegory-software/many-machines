@@ -43,7 +43,7 @@ get_APP_LATEST() {
 }
 
 deploy_is_running_app_fast() {
-	local pid=`cat /home/$DEPLOY/app/$APP.pid 2>/dev/null`
+	catfile /home/$DEPLOY/app/$APP.pid; local pid=$R1
 	[[ $pid ]] && kill -0 $pid 2>/dev/null || return 1
 	local cmdline; IFS=$'\0' mapfile -d '' -t cmdline < /proc/$pid/cmdline
 	[[ "${cmdline[0]}" == *luajit* ]] || return 1
