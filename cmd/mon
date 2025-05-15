@@ -116,8 +116,8 @@ notify() {
 	local f s=
 	set +f # enable globbing
 	for f in *; do
-		[[ -f mon/notified/$f && $(find mon/notified/$f -mmin -1440) ]] && continue
-		touch mon/notified/$f
+		[[ -f ../notified/$f && $(find ../notified/$f -mmin -1440) ]] && continue
+		touch ../notified/$f
 		s="$s$f: $(cat "$f")"$'\n'
 	done
 	set -f # disable globbing
