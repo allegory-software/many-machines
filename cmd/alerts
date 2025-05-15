@@ -4,16 +4,13 @@
 
 FMT="%-10s %s\n"
 _f() {
-	must cd /root/mm/mon
-	local s dir alert
-	for dir in alerts notified; do
-		for alert in $(ls -1 $dir); do
-			local f=$dir/$alert
-			[[ "$(find $f -mmin -1440)" == "" ]] && continue
-			timeago `stat -c %Y $f`; local t=$R1
-			catfile $f; local v=$R1
-			s+="$alert=$v ($t) "
-		done
+	ls -1 /root/mm/mon/alerts
+	local s alert
+	for alert in `ls -1 /root/mm/mon/alerts`; do
+		local f=/root/mm/mon/alerts/$alert
+		timeago `stat -c %Y $f`; local t=$R1
+		catfile $f; local v=$R1
+		s+="$alert=$v ($t) "
 	done
 	printf "$FMT" "$MACHINE" "$s"
 }

@@ -103,11 +103,9 @@ log() { # K= V= MIN= MAX= [MAXT=] N= P= T= T0= DIR= FILE=
 
 	# record alert
 	[[ $ALERT != "" ]] && {
-		[[ -f mon/notified/$K && $(find mon/notified/$K -mmin -1440) ]] || {
-			local file=mon/alerts/$K
-			must mkdir -p mon/alerts
-			printf "%s\n" $V > $file
-		}
+		local file=mon/alerts/$K
+		must mkdir -p mon/alerts
+		printf "%s\n" $V > $file
 	}
 }
 
@@ -118,15 +116,14 @@ notify() {
 	local f s=
 	set +f # enable globbing
 	for f in *; do
+		[[ -f mon/notified/$f && $(find mon/notified/$f -mmin -1440) ]] && continue
+		touch mon/notified/$f
 		s="$s$f: $(cat "$f")"$'\n'
 	done
 	set -f # disable globbing
 	must popd
 	[[ $s ]] || return
 	mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
-	set +f # enable globbing
-	must dry mv mon/alerts/* mon/notified/
-	set -f # disable globbing
 }
 
 # probing modules ------------------------------------------------------------
