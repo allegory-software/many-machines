@@ -87,3 +87,10 @@ md_var() { # MACHINE=|DEPLOY= VAR [DEFAULT]
 }
 
 mm_var() { cat_varfile var $1; }
+
+local_md_vars() {
+	LOCAL=local md_vars "$@"
+	for stmt in "${R1[@]}"; do
+		eval "$stmt"  # 'local VAR=123'
+	done
+}
