@@ -23,7 +23,7 @@ checkdir() {
 	R1=$1
 }
 
-# NOTE: trims content!
+# cat without subprocess. NOTE: trims content!
 catfile() { # FILE [DEFAULT]
 	local FILE=$1 DEFAULT=$2; checkvars FILE
 	# NOTE: this is faster than "$(cat $FILE)".
@@ -34,6 +34,18 @@ catfile() { # FILE [DEFAULT]
 	trim R1
 }
 
+# ls without subprocess and with results in lexical order.
+ls_dir() { # DIR
+	must pushd "$1"
+	set +f # enable globbing
+	shopt -s dotglob # include dotfiles
+	R1=(*)
+	popd
+	shopt -u dotglob
+	set -f
+}
+
+# a tad safer `rm -rf dir` with dry mode and logging.
 rm_dir() { # [REL_PATH_OK=1] DIR
 	local dir=$1
 	checkvars dir
@@ -47,6 +59,7 @@ rm_dir() { # [REL_PATH_OK=1] DIR
 	fi
 }
 
+# a tad safer `rm -rf dir/` with dry mode and logging.
 empty_dir() { # [REL_PATH_OK=1] DIR
 	local dir=$1
 	checkvars dir
@@ -60,6 +73,7 @@ empty_dir() { # [REL_PATH_OK=1] DIR
 	fi
 }
 
+# `rm -f` with dry mode and logging.
 rm_file() { # [REL_PATH_OK=1] FILE
 	local file=$1
 	checkvars file
@@ -78,7 +92,10 @@ ln_file() {
 	checkvars target linkfile
 	sayn "Symlinking: $target -> $linkfile ... "
 	local target0=`readlink $linkfile`
-	[[ $target0 == $target ]] && { [[ -e `realpath $linkfile` ]] && say "no change" || say "no change (broken)"; return; }
+	[[ $target0 == $target ]] && {
+		[[ -e `realpath $linkfile` ]] && say "no change" || say "no change (broken)"
+		return
+	}
 	must dry ln -sfT $target $linkfile
 	[[ -e `realpath $linkfile` ]] && say OK || say "OK (broken)"
 }
@@ -131,12 +148,19 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 cp_file() { _cp file "$@"; }
 cp_dir()  { _cp dir  "$@"; }
 
+# SHA of entire dir's contents (only dirs and regular files included)
 dir_sha() { # DIR
 	local DIR="$1"
 	checkvars DIR
-	[ -d $DIR ] || die "Dir not found: $DIR"
-	local sha=$(must cd $DIR; find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha1sum | sha1sum | cut -d' ' -f1); local ret=$?
-	[ $ret != 0 ] && die "sha_dir: [$ret]"
+	[[ -d $DIR ]] || die "Dir not found: $DIR"
+	local sha=$(
+		must cd $DIR
+		(
+			find . -print0 | LC_ALL=C sort -z | sha1sum # SHA the dir structure
+			find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha1sum # SHA file contents
+		) | sha1sum | cut -d' ' -f1
+	); local ret=$?
+	[[ $ret != 0 ]] && die "sha_dir: [$ret]"
 	echo "$sha"
 }
 

@@ -1,0 +1,77 @@
+#!/bin/bash
+# ADMIN ; [start|stop|reset|status] ; use gcloud-cli API on machine
+. mmlib
+
+base64url() {
+	openssl base64 -e | tr -d '=' | tr '/+' '_-' | tr -d '\n'
+}
+
+gcloud_oauth() {
+	[[ ! -f tmp/gcloud_access_token || \
+		`find tmp/gcloud_access_token -mmin +50` ]] || return 0 # tokens last 1h
+
+	md_varfile gcloud_json_key
+	local keyfile=$R1
+	checkvars keyfile
+	local client_email=`jq -r .client_email $keyfile`
+	local private_key=`jq -r .private_key $keyfile | sed 's/\\n/\n/g'`
+
+	# Prepare JWT header and claim set
+	local header='{"alg":"RS256","typ":"JWT"}'
+	local iat=`date +%s`
+	local exp=$((iat + 3600))
+	local scope='https://www.googleapis.com/auth/compute'
+
+	local claim=$(jq -n \
+		--arg iss "$client_email" \
+		--arg scope "$scope" \
+		--arg aud "https://oauth2.googleapis.com/token" \
+		--argjson iat $iat \
+		--argjson exp $exp '{
+			iss: $iss,
+			scope: $scope,
+			aud: $aud,
+			exp: $exp,
+			iat: $iat
+		}')
+
+	local header_b64=`printf "%s" "$header" | base64url`
+	local claim_b64=`printf "%s" "$claim" | base64url`
+
+	local unsigned_token="$header_b64.$claim_b64"
+
+	# Sign the token using RSA SHA256
+	local signature=$(printf "%s" "$unsigned_token" | \
+		openssl dgst -sha256 -sign <(echo -e "$private_key") | base64url)
+
+	local jwt="$unsigned_token.$signature"
+
+	# Request access token
+	local response=$(curl -s -X POST https://oauth2.googleapis.com/token \
+		-H "Content-Type: application/x-www-form-urlencoded" \
+		-d "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=$jwt")
+
+	local access_token=`printf "%s" "$response" | jq -r .access_token`
+	[[ $access_token == null ]] && die "access_token not found in oauth2 response"
+
+	printf "%s\n" "$access_token" > tmp/gcloud_access_token
+}
+
+gcloud_cli() { # CMD
+	local CMD="$1"; shift
+	local XCMD=cat
+	[[ $CMD == status ]] && { CMD=; XCMD='jq -r .status'; }
+	[[ ! $CMD || " start stop reset " =~ " $CMD " ]] || die "Unknown gcloud-cli command: $CMD"
+	local_md_vars GCLOUD_PROJECT_ID GCLOUD_ZONE GCLOUD_INSTANCE_NAME; eval "$R1"
+	gcloud_oauth
+	catfile tmp/gcloud_access_token
+	local GCLOUD_ACCESS_TOKEN=$R1
+	local METHOD=GET; [[ $CMD ]] && METHOD=POST
+	dry curl -sS -X $METHOD \
+		-H "Authorization: Bearer $GCLOUD_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		"https://compute.googleapis.com/compute/v1/projects/$GCLOUD_PROJECT_ID/zones/$GCLOUD_ZONE/instances/$GCLOUD_INSTANCE_NAME/$CMD" \
+	 | $XCMD
+}
+
+NOALL=1 each_machine gcloud_cli "$@"

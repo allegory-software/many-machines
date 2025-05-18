@@ -2,6 +2,6 @@
 # FILES ; DIR ; print dir's lean size
 . mmlib
 
-DIR="$1"
+rel_path "$1" "$PWD0"; DIR=`realpath "$R1"`
 checkvars DIR-
 AS_DEPLOY=1 VARS=DIR md_custom_list "%-10s %s" "DIR_SIZE DIR"

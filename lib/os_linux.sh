@@ -112,6 +112,11 @@ get_DIR_SIZE() {
 	DIR=${DIR/#\~/$HOME}
 	dir_lean_size "$DIR"; echo "$R1" | numfmt --to=iec
 }
+get_DIR_SHA() {
+	checkvars DIR-
+	DIR=${DIR/#\~/$HOME}
+	dir_sha "$DIR"; echo "$R1"
+}
 
 # installers -----------------------------------------------------------------
 

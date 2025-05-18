@@ -1,9 +1,9 @@
 #!/bin/bash
-# SSH KEYS ; MACHINE ; set current machine
+# SSH KEYS ; [MACHINE] ; set/get current machine
 . mmlib
 
 MACHINE=$1
-[[ $MACHINE ]] || say "Current machine is: $WHITE$THIS_MACHINE$ENDCOLOR"
+[[ $MACHINE ]] || { say "Current machine is: $WHITE$THIS_MACHINE$ENDCOLOR"; exit; }
 checkvars MACHINE
 
 [[ -d var/machines/$MACHINE ]] || {

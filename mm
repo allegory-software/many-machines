@@ -121,6 +121,6 @@ for SECTION in $s; do
 	fi
 done
 say
-}
+} # end main()
 
 main "$@"

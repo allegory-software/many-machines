@@ -95,6 +95,7 @@ machine_of_deploy() { # DEPLOY
 	[[ $R1 ]] || die "No machine set for deploy: $1."
 }
 
+# TODO: finish this and use it
 md_resolve() { # DEPLOY|MACHINE|@DEPLOY|GROUP|. ...
 	local MACHINES= DEPLOYS=
 	local -A m # mm[NAME]=1

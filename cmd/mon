@@ -44,7 +44,7 @@ elif [[ $1 == status ]]; then
 	exit $x
 elif [[ $1 == reset ]]; then
 	REL_PATH_OK=1 empty_dir mon/alerts
-	REL_PATH_OK=1 rm_file mon/notified
+	REL_PATH_OK=1 empty_dir mon/notified
 elif [[ $1 == pause ]]; then
 	touch mon/paused
 elif [[ $1 == resume || $1 == unpause ]]; then

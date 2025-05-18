@@ -2,4 +2,6 @@
 # FILES ; DIR ; compute file or dir SHA
 . mmlib
 
-dir_sha "$1"
+rel_path "$1" "$PWD0"; DIR=`realpath "$1"`
+checkvars DIR-
+AS_DEPLOY=1 VARS=DIR md_custom_list "%-42s %s" "DIR_SHA DIR"

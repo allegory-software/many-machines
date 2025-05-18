@@ -1,0 +1,11 @@
+#!/bin/bash
+# ADMIN ;; reset machine using cloud provider's API
+. mmlib
+
+_f() {
+	md_var PROVIDER; local PROVIDER=$R1
+	checkvars PROVIDER
+	local cli=${PROVIDER}-cli
+	mm $cli reset
+}
+NOALL=1 each_machine _f
