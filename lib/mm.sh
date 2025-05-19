@@ -51,7 +51,32 @@ start_mon()      { service_start      mm-mon; }
 stop_mon()       { service_stop       mm-mon; }
 version_mon()    { version_mm; }
 
-deploy_install_mon() {
+preinstall_mon() {
+
+	md_vars \
+		MIN_FREE_RAM_MB \
+		MIN_FREE_HDD_MB \
+		MAX_CPU \
+		MAXT_FREE_RAM \
+		MAXT_FREE_HDD \
+		MAXT_CPU
+
+	ssh_save "\
+#!/bin/bash
+
+MACHINE=$MACHINE
+ ${R1[*]}
+
+$(cat lib/die.sh)
+$(cat lib/os_linux.sh)
+$(cat libopt/mon.sh)
+
+" /root/.mm/mon root +x
+
+}
+
+install_mon() {
+
 	save "
 [Unit]
 Description=mm runtime monitor service
@@ -90,7 +115,7 @@ WantedBy=multi-user.target
 	service_enable mm-mon.service
 }
 
-deploy_uninstall_mon() {
+uninstall_mon() {
 	service_disable mm-mon.service
 	rm_file /etc/systemd/system/mm-mon.service
 }

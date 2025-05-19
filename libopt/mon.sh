@@ -1,4 +1,6 @@
-# real-time monitoring
+# ----------------------------------------------------------------------------
+# real-time monitoring -------------------------------------------------------
+# ----------------------------------------------------------------------------
 
 checkvars MACHINE \
 	MIN_FREE_RAM_MB \
@@ -87,6 +89,8 @@ RAM_KB=`get_RAM_KB`
 HDD_KB=`get_HDD_KB`
 MIN_FREE_RAM_KB=$((MIN_FREE_RAM_MB * 1024))
 MIN_FREE_HDD_KB=$((MIN_FREE_HDD_MB * 1024))
+get_FREE_RAM_KB() { cat /proc/meminfo | awk '/MemAvailable/  { print $2 }'; }
+get_FREE_HDD_KB() { df -l / | awk '(NR > 1) { print $4 }'; }
 probe_free() {
 	K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_FREE_RAM_KB MAXT=$MAXT_FREE_RAM log
 	K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_FREE_HDD_KB MAXT=$MAXT_FREE_HDD log
