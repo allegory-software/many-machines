@@ -124,16 +124,6 @@ quote_args() { # ARGS...
 	done
 }
 
-quote_vars() { # VAR1 ...
-	R1=()
-	local var
-	local s
-	for var in "$@"; do
-		printf -v s "%q=%q\n" "$var" "${!var}"
-		R1+=("$s")
-	done
-}
-
 # enhanced sudo that can:
 #  1. inherit a list of vars.
 #  2. execute a function from the current script, or an entire script.

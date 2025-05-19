@@ -4,7 +4,7 @@
 
 install_mm() {
 	checkvars MM_REPO
-	apt_get_install autossh sshfs
+	apt_get_install autossh sshfs jq
 	git_clone_for root $MM_REPO /root/mm master
 	(
 	must cd /root/mm
@@ -46,10 +46,54 @@ version_mm() {
 
 # mm monitor service ---------------------------------------------------------
 
-is_running_mon() { mm mon status -q; }
-version_mon() { version_mm; }
-start_mon() { mm mon start; }
-stop_mon() { mm mon stop; }
+is_running_mon() { service_is_running mm-mon; }
+start_mon()      { service_start      mm-mon; }
+stop_mon()       { service_stop       mm-mon; }
+version_mon()    { version_mm; }
+
+deploy_install_mon() {
+	save "
+[Unit]
+Description=mm runtime monitor service
+After=multi-user.target
+After=network-online.target
+Requires=network-online.target
+
+# try restarting for 60s
+StartLimitIntervalSec=60
+
+# try restarting 3 times
+StartLimitBurst=3
+
+[Service]
+Type=simple
+
+# skip monitoring the first minute to give time for other services to start
+ExecStartPre=/bin/sleep 60
+ExecStart=/root/.mm/mon
+WorkingDirectory=/root/.mm
+StandardOutput=null
+StandardError=null
+
+# restart only if exit code != 0
+Restart=on-failure
+
+# wait 1s before restarting
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+
+" /etc/systemd/system/mm-mon.service
+
+	systemctl daemon-reload
+	service_enable mm-mon.service
+}
+
+deploy_uninstall_mon() {
+	service_disable mm-mon.service
+	rm_file /etc/systemd/system/mm-mon.service
+}
 
 # var dir ops ----------------------------------------------------------------
 

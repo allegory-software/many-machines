@@ -5,14 +5,14 @@ varfile() { # DIR VAR
 	local FILE="${2,,}" # VAR in lowercase
 	R1=
 	[[ -f $DIR/$FILE ]] && { R1=$DIR/$FILE; return 0; }
-	[[ $THIS_MACHINE && -f $DIR/.$FILE ]] && { R1=$DIR/.$FILE; return 0; }
+	[[ ! $NO_PRIVATE_VARS && -f $DIR/.$FILE ]] && { R1=$DIR/.$FILE; return 0; }
 	local INC found
 	# gor through all include dirs recursively with a single file command.
 	for INC in `find -L $DIR -maxdepth 10 -type d -name '.?*' | sort`; do
 		# not stopping when a file is found to allow overriding,
 		# if you prefix the include dirs to force an include order.
 		[[ -f $INC/$FILE ]] && { R1=$INC/$FILE; found=1; }
-		[[ $THIS_MACHINE && -f $INC/.$FILE ]] && { R1=$INC/.$FILE; found=1; }
+		[[ ! $NO_PRIVATE_VARS && -f $INC/.$FILE ]] && { R1=$INC/.$FILE; found=1; }
 	done
 	[[ $found ]]
 }
@@ -31,7 +31,7 @@ _add_varfiles() { # DIR
 	for FILE in "${files[@]}"; do
 		[[ -f $1/$FILE ]] || continue # skip dirs
 		local VAR=${FILE#.} # remove dot if private var
-		[[ $VAR != $FILE && ! $THIS_MACHINE ]] && continue # don't leak it
+		[[ $VAR != $FILE && $NO_PRIVATE_VARS ]] && continue # don't leak it
 		VAR=${VAR^^}
 		if [[ ! -v R2[$VAR] ]]; then
 			must catfile $1/$FILE
@@ -51,7 +51,9 @@ cat_all_varfiles() { # [PREFIX="local "] DIR
 	R1=()
 	local VAR
 	for VAR in "${!R2[@]}"; do
-		R1+=("$PREFIX$VAR=\"${R2[$VAR]}\""$'\n')
+		local VAL=${R2[$VAR]}
+		local LINE; printf -v LINE "%s%q=%q\n" "$PREFIX" "${VAR^^}" "$VAL"
+		R1+=("$LINE")
 	done
 }
 
@@ -62,7 +64,9 @@ cat_varfiles() { # [PREFIX="local "] DIR [VAR1 ...]
 		local VAR
 		for VAR in $@; do
 			if cat_varfile "$DIR" "$VAR"; then
-				LINES+=("$PREFIX${VAR^^}=\"$R1\""$'\n')
+				local VAL=$R1
+				local LINE; printf -v LINE "%s%q=%q\n" "$PREFIX" "${VAR^^}" "$VAL"
+				LINES+=("$LINE")
 			fi
 		done
 		R1=("${LINES[@]}")

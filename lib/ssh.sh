@@ -46,7 +46,7 @@ ssh_script() { # [AS_USER=] [AS_DEPLOY=1 DEPLOY=] [MM_LIBS="lib1 ..."] MACHINE= 
 	[[ $FUNCS ]] && local FUNCS=$(declare -f $FUNCS)
 	local VARNAMES="DEBUG VERBOSE DRY MACHINE DEPLOY MM_LIBS $VARS"
 	local VARS=$(declare -p $VARNAMES 2>/dev/null)
-	[[ $MD_VARS ]] && { md_vars; VARS+=$'\n'"${R1[*]}"; }
+	[[ $MD_VARS ]] && { NO_PRIVATE_VARS=1 md_vars; VARS+=$'\n'"${R1[*]}"; }
 	debug "-------------------------------------------------------"
 	debug "ssh_to ARGS   : $ARGS"
 	debug "ssh_to SCRIPT :"

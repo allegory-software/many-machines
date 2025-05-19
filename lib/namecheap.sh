@@ -1,6 +1,6 @@
 
 ddns_update_ip() {
-	must md_var public_ip; local IP=$R1
+	DEPLOY= must md_var public_ip; local IP=$R1
 	must md_var .ddns_password; local DDNS_PASS=$R1
 	sayn "Updating IP for domain '$DOMAIN' to '$IP' at namecheap.com ... "
 	local s

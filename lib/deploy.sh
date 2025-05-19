@@ -8,9 +8,7 @@ deploy_secret_gen() {
 
 try_app() {
 	checkvars DEPLOY APP
-	must pushd /home/$DEPLOY/app
-	VARS="DEBUG VERBOSE" run_as $DEPLOY ./$APP "$@"; local ret=$?
-	popd
+	VARS="DEBUG VERBOSE" run_as $DEPLOY /home/$DEPLOY/app/$APP "$@"; local ret=$?
 	return $ret
 }
 
@@ -42,7 +40,10 @@ get_APP_LATEST() {
 		echo ${LIGHTRED}NO!$ENDCOLOR
 }
 
-deploy_is_running_app_fast() {
+# app service as daemon ------------------------------------------------------
+# not used since it doesn't start automatically on reboot this way.
+
+deploy_is_running_app_daemon_fast() {
 	catfile /home/$DEPLOY/app/$APP.pid; local pid=$R1
 	[[ $pid ]] && kill -0 $pid 2>/dev/null || return 1
 	local cmdline; IFS=$'\0' mapfile -d '' -t cmdline < /proc/$pid/cmdline
@@ -50,27 +51,29 @@ deploy_is_running_app_fast() {
 	[[ "${cmdline[1]}" == *$APP* ]] || return 1
 	return 0
 }
-deploy_is_running_app() {
+deploy_is_running_app_daemon() {
 	checkvars APP
 	[[ -d /home/$DEPLOY/app ]] || return
-	deploy_is_running_app_fast
+	deploy_is_running_app_daemon_fast
 	#try_app running
 }
 
-deploy_start_app() {
+deploy_start_app_daemon() {
 	say "Starting the app..."
 	must app start
 	must app status
 }
 
-deploy_stop_app() {
-	deploy_is_running_app && must app stop
+deploy_stop_app_daemon() {
+	deploy_is_running_app_daemon && must app stop
 }
 
-deploy_is_running_app_service() {
-	checkvars DEPLOY
-	service_is_running $DEPLOY.service
-}
+# app service as systemd service ---------------------------------------------
+
+deploy_is_running_app_service() { service_is_running $DEPLOY.service; }
+deploy_start_app_service()      { service_start      $DEPLOY.service; }
+deploy_stop_app_service()       { service_stop       $DEPLOY.service; }
+deploy_restart_app_service()    { service_restart    $DEPLOY.service; }
 
 deploy_install_app_service() {
 	checkvars DEPLOY APP
@@ -83,9 +86,17 @@ After=mysql.service
 Requires=mysql.service
 Requires=network-online.target
 
+# try restarting for 60s
+StartLimitIntervalSec=60
+
+# try restarting 3 times
+StartLimitBurst=3
+
 [Service]
+Type=simple
 User=$DEPLOY
 Group=$DEPLOY
+
 ExecStart=/home/$DEPLOY/app/$APP run
 WorkingDirectory=/home/$DEPLOY/app
 StandardOutput=null
@@ -94,13 +105,15 @@ StandardError=null
 PrivateTmp=yes
 NoNewPrivileges=yes
 
-Restart=on-failure # restart only if exit code != 0
-RestartSec=1       # wait 1s before restarting
-StartLimitIntervalSec=60  # try restarting for 60s
-StartLimitBurst=3         # try restarting 3 times
+# restart only if exit code != 0
+Restart=on-failure
+
+# wait 1s before restarting
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target
+
 " /etc/systemd/system/$DEPLOY.service
 
 	systemctl daemon-reload
@@ -110,7 +123,15 @@ WantedBy=multi-user.target
 deploy_uninstall_app_service() {
 	checkvars DEPLOY APP
 	service_disable $DEPLOY.service
+	rm_file /etc/systemd/system/$DEPLOY.service
 }
+
+# app service and module -----------------------------------------------------
+
+deploy_is_running_app() { deploy_is_running_app_service; }
+deploy_start_app() { deploy_start_app_service; }
+deploy_stop_app() { deploy_stop_app_service; }
+deploy_restart_app() { deploy_restart_app_service; }
 
 get_APP_STATUS() {
 	deploy_is_running_app && \
@@ -121,7 +142,7 @@ get_APP_STATUS() {
 deploy_install_app() {
 	checkvars DEPLOY REPO APP APP_VERSION
 	(deploy_stop_app)
-	[[ $FAST ]] && SUBMODULES=sdk
+	[[ $FAST ]] && local SUBMODULES=sdk
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/app "$APP_VERSION"
 	deploy_gen_conf
 	[[ ! $FAST ]] && {
@@ -208,17 +229,16 @@ deploy_rename_user() {
 	user_rename $DEPLOY $DEPLOY1
 }
 
-# deploy run dir -------------------------------------------------------------
+# deploy run dir module ------------------------------------------------------
 
 deploy_install_run_dir() {
 	# make dir for app unix socket that www-data group (nginx process) can see.
 	# this avoids giving nginx full access to the app dir (you might still want
 	# to do that if you want nginx to also serve static public files).
-	must dry mkdir -p /run/$DEPLOY
-	must dry chown $DEPLOY:www-data /run/$DEPLOY
 	# setgid on the dir is important because the app itself can't change the
 	# group of the socket file (it sets the mode to 0660, it's all it can do).
-	must dry chmod 2750 /run/$DEPLOY
+	save "d /run/$DEPLOY 02750 $DEPLOY www-data -" /etc/tmpfiles.d/$DEPLOY.conf
+	systemd-tmpfiles --create /etc/tmpfiles.d/$DEPLOY.conf
 }
 
 deploy_uninstall_run_dir() {
