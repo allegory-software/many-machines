@@ -51,30 +51,6 @@ start_mon()      { service_start      mm-mon; }
 stop_mon()       { service_stop       mm-mon; }
 version_mon()    { version_mm; }
 
-preinstall_mon() {
-
-	md_vars \
-		MIN_FREE_RAM_MB \
-		MIN_FREE_HDD_MB \
-		MAX_CPU \
-		MAXT_FREE_RAM \
-		MAXT_FREE_HDD \
-		MAXT_CPU
-
-	ssh_save "\
-#!/bin/bash
-
-MACHINE=$MACHINE
- ${R1[*]}
-
-$(cat lib/die.sh)
-$(cat lib/os_linux.sh)
-$(cat libopt/mon.sh)
-
-" /root/.mm/mon root +x
-
-}
-
 install_mon() {
 
 	save "
@@ -87,16 +63,16 @@ Requires=network-online.target
 # try restarting for 60s
 StartLimitIntervalSec=60
 
-# try restarting 3 times
-StartLimitBurst=3
+# try restarting 1 times
+StartLimitBurst=1
 
 [Service]
 Type=simple
 
 # skip monitoring the first minute to give time for other services to start
-ExecStartPre=/bin/sleep 60
-ExecStart=/root/.mm/mon
-WorkingDirectory=/root/.mm
+ExecStartPre=/bin/sleep 10
+ExecStart=/root/mm/mm mon
+WorkingDirectory=/root/mm
 StandardOutput=null
 StandardError=null
 

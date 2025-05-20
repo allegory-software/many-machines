@@ -4,7 +4,6 @@
 
 FMT="%-10s %s\n"
 _f() {
-	ls -1 /root/mm/mon/alerts
 	local s alert
 	for alert in `ls -1 /root/mm/mon/alerts`; do
 		local f=/root/mm/mon/alerts/$alert
@@ -12,7 +11,7 @@ _f() {
 		catfile $f; local v=$R1
 		s+="$alert=$v ($t) "
 	done
-	printf "$FMT" "$MACHINE" "$s"
+	printf "$FMT" "$MACHINE" "${s:-${GRAY}none$ENDCOLOR}"
 }
 printf "$WHITE$FMT$ENDCOLOR" MACHINE ALERTS
 QUIET=1 VARS=FMT FUNCS=_f each_machine md_ssh_script _f

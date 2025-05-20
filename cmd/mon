@@ -25,6 +25,10 @@ NOTIFY_TICK=1
 
 # parse cmdline & damonize ---------------------------------------------------
 
+must mkdir -p mon/alerts
+must mkdir -p mon/notified
+must mkdir -p mon/samples
+
 mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
 
 RUN=
@@ -104,14 +108,11 @@ log() { # K= V= MIN= MAX= [MAXT=] N= P= T= T0= DIR= FILE=
 	# record alert
 	[[ $ALERT != "" ]] && {
 		local file=mon/alerts/$K
-		must mkdir -p mon/alerts
 		printf "%s\n" $V > $file
 	}
 }
 
 notify() {
-	must mkdir -p mon/notified
-	must mkdir -p mon/alerts
 	must pushd mon/alerts
 	local f s=
 	set +f # enable globbing
