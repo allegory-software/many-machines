@@ -7,8 +7,6 @@
 		- error if machine and deploy with same name (when not using @)
 		- error if list contains both machines and deploys
 
-- app_service module: ??
-
 - app: use mysql unix socket to connect to mysql
 
 - monitoring:
@@ -40,3 +38,6 @@
 	- switch clone:
 		- change ddns
 		- change mysql master
+
+- BENCHMARKING:
+	- see https://github.com/n-st/nench
