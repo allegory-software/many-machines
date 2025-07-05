@@ -1,0 +1,7 @@
+
+- prevent RAM/DISK/CPU amplification with resource limits
+	- max concurrent threads
+		- more complex: per-ip wait lists for max-concurrent, max-per-minute etc.
+	- max input lengths: strings, lists, upload size, image w/h
+	- limit number of kernel objects: files, sockets
+
