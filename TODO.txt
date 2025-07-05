@@ -16,9 +16,11 @@
 	- TODO: monitor the mon service on other machines
 	- TODO: monitor SSL cert. expiration
 	- TODO: monitor temps (CPU, SSD, RAM)
-	- TODO: monitor backups age
+	- TODO: monitor backups age and validate last backup (checksum check, dry-restore)
 	- TODO: monitor deployment age
 	- TODO: alert on systemd failure events
+	- TODO: monitor SMART errors
+	- TODO: monitor (kernel/system libs/service/tools/etc.) versions against vulnerability lists
 	- TODO: max_ram_mb per deploy-service with auto-restart to mitigate slow leaks
 	- TODO: find pid that keeps the CPU over threshold and auto-restart on CPU alert to mitigae infinite loop bugs
 	- TODO: monitor app stat URL with auto-restart on timeout (in secondary sub-process loop)
