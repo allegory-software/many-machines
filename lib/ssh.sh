@@ -137,7 +137,7 @@ ssh_host_config_update_for_user() { # USER HOST KEYNAME KEY HOSTKEY [unstable_ip
 
 	ssh_mk_config_dir
 
-	local KEYFILE=$HOME/.ssh/${KEYNAME}.id_ed25519
+	local KEYFILE=$HOME/.ssh/${KEYNAME}.key
 	save "$KEY"$'\n' $KEYFILE $USER 600 # \n is important!
 
 	local HOSTKEYFILE=$HOME/.ssh/${KEYNAME}.hostkey
