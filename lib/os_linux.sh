@@ -95,7 +95,9 @@ get_UPTIME()   {
 }
 
 get_CPUTEST()  {
-	(time cat </dev/urandom | head -c 50M | gzip >/dev/null) 2>&1 | grep real | awk '{print $2}'
+	sysbench cpu --time=2 --threads=$(nproc) run | awk '/events per second/ {print $4}'
+	#(time head -c 50M /dev/zero | gzip >/dev/null) 2>&1 | grep real | awk '{print $2}'
+	#(time cat </dev/urandom | head -c 50M | gzip >/dev/null) 2>&1 | grep real | awk '{print $2}'
 }
 
 get_ISP()     { wget -q -T10 -O- ipinfo.io/org; }
