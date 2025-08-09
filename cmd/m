@@ -2,11 +2,13 @@
 # STATUS ;; list machines
 . mmlib
 
-FMT="%-10s %-7s %-15s\n"
+FMT="%-10s %-7s %-15s %-15s %s\n"
 _f() {
 	local ACTIVE=YES; machine_is_active || ACTIVE=no
-	cat_varfile var/machines/$MACHINE public_ip ; local PUBLIC_IP=$R1
-	printf "$FMT" $MACHINE "$ACTIVE" "$PUBLIC_IP"
+	md_var public_ip; local PUBLIC_IP=$R1
+	md_var local_ip; local LOCAL_IP=$R1
+	md_var local_subnet; local LOCAL_SUBNET=$R1
+	printf "$FMT" $MACHINE "$ACTIVE" "$PUBLIC_IP" "$LOCAL_IP" "$LOCAL_SUBNET"
 }
-printf "$WHITE$FMT$ENDCOLOR" MACHINE ACTIVE PUBLIC_IP
+printf "$WHITE$FMT$ENDCOLOR" MACHINE ACTIVE PUBLIC_IP LOCAL_IP LOCAL_SUBNET
 QUIET=1 INACTIVE=1 each_machine _f
