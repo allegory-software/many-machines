@@ -188,10 +188,21 @@ machine_of() { # MACHINE|DEPLOY -> MACHINE, [DEPLOY]
 	fi
 }
 
-ip_of() { # MD -> IP, MACHINE, [DEPLOY]
-	machine_of "$1"; R2=$R1
-	checkfile var/machines/$R2/public_ip
-	catfile $R1
+ip_of() { # MD -> IP, MACHINE
+	machine_of "$1"; local m1=$R1
+	this_machine; local m0=$R1
+	local ip_var=public_ip
+	if [[ $m1 == $m0 ]]; then
+		ip_var=local_ip
+	else
+		MACHINE=$m0 md_var local_subnet; local m0_subnet=$R1
+		MACHINE=$m1 md_var local_subnet; local m1_subnet=$R1
+		if [[ $m0_subnet == $m1_subnet ]]; then
+			ip_var=local_ip
+		fi
+	fi
+	MACHINE=$m1 md_var $ip_var
+	R2=$m1
 }
 
 machine_by_ip() { # IP
