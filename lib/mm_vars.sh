@@ -7,7 +7,7 @@ varfile() { # DIR VAR
 	[[ -f $DIR/$FILE ]] && { R1=$DIR/$FILE; return 0; }
 	[[ ! $NO_PRIVATE_VARS && -f $DIR/.$FILE ]] && { R1=$DIR/.$FILE; return 0; }
 	local INC found
-	# gor through all include dirs recursively with a single file command.
+	# gor through all include dirs recursively with a single find command.
 	for INC in `find -L $DIR -maxdepth 10 -type d -name '.?*' | sort`; do
 		# not stopping when a file is found to allow overriding,
 		# if you prefix the include dirs to force an include order.
@@ -33,10 +33,8 @@ _add_varfiles() { # DIR
 		local VAR=${FILE#.} # remove dot if private var
 		[[ $VAR != $FILE && $NO_PRIVATE_VARS ]] && continue # don't leak it
 		VAR=${VAR^^}
-		if [[ ! -v R2[$VAR] ]]; then
-			must catfile $1/$FILE
-			R2[$VAR]="$R1"
-		fi
+		must catfile $1/$FILE
+		R2[$VAR]="$R1"
 	done
 }
 cat_all_varfiles() { # [PREFIX="local "] DIR
