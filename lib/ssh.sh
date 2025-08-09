@@ -14,7 +14,7 @@ ssh_opt() { # MACHINE= [SSH_CLOSE=]
 	set -f
 	local i n=${#a[@]}
 	for ((i=n-1; i>=0; i--)); do
-		R1+=(-o IdentityFile=${a[$i]})
+		[[ -f ${a[$i]} ]] && R1+=(-i ${a[$i]})
 	done
 	[[ $SSH_CLOSE ]] || R1+=(
 		-o ControlMaster=auto
