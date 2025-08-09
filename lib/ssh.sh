@@ -27,14 +27,14 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1 DEPLOY=] MACHINE= [SSH_TTY=1] ["SCRIPT" ARG
 	local LOCAL_PORT=${LOCAL_PORT:-$REMOTE_PORT}
 	[[ $AS_DEPLOY && $DEPLOY ]] && local AS_USER=$DEPLOY
 	[[ $1 ]] || local MM_SSH_TTY=1
-	ip_of "$MACHINE"; local HOST=$R1
+	ip_port_of "$MACHINE"; local HOST=$R1; local PORT=$R2
 	local sudo; [[ $AS_USER ]] && { [[ $1 ]] && sudo="sudo -i -u $AS_USER --" || sudo="su - $AS_USER --"; }
 	ssh_opt
 	[[ $MM_SSH_TTY ]] && R1+=(-t) || R1+=(-o BatchMode=yes)
 	# NOTE: ssh relays the remote command's exit code back to the user,
 	# so it's hard to tell when ssh fails from when the command fails,
 	# so all scripts must exit with code 0, anything else will cause an abort.
-	run ssh "${R1[@]}" $HOST -- $sudo "$@" || die "MACHINE=$MACHINE ssh_to $sudo: [$?]"
+	run ssh "${R1[@]}" $HOST${PORT:+:$PORT} -- $sudo "$@" || die "MACHINE=$MACHINE ssh_to $sudo: [$?]"
 }
 
 # NOTE: no stdin support with ssh_script because we feed the script that includes

@@ -188,21 +188,29 @@ machine_of() { # MACHINE|DEPLOY -> MACHINE, [DEPLOY]
 	fi
 }
 
-ip_of() { # MD -> IP, MACHINE
+ip_of() { # MD -> IP, MACHINE, 'LOCAL|PUBLIC'
 	machine_of "$1"; local m1=$R1
 	this_machine; local m0=$R1
-	local ip_var=public_ip
+	local kind=public
 	if [[ $m1 == $m0 ]]; then
-		ip_var=local_ip
+		kind=local
 	else
 		MACHINE=$m0 md_var local_subnet; local m0_subnet=$R1
 		MACHINE=$m1 md_var local_subnet; local m1_subnet=$R1
 		if [[ $m0_subnet == $m1_subnet ]]; then
-			ip_var=local_ip
+			kind=local
 		fi
 	fi
-	MACHINE=$m1 md_var $ip_var
+	MACHINE=$m1 md_var ${kind}_ip
 	R2=$m1
+	R3=$kind
+}
+
+ip_port_of() { # MD SERVICE -> IP, PORT, MACHINE
+	local md=$1 service=$2
+	ip_of "$md"; local ip=$R1 m=$R2 kind=$R3
+	MACHINE=$m md_var ${kind}_port_${service}; local port=$R1
+	R1=$ip R2=$port R3=$machine
 }
 
 machine_by_ip() { # IP
