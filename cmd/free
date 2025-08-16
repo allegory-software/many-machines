@@ -3,5 +3,5 @@
 . mmlib
 
 md_custom_list \
-	"%10s %-10s %10s %-10s %10s %-10s" \
-	"RAM_RATIO RAM_BAR HDD_RATIO HDD_BAR SWAP_RATIO SWAP_BAR"
+	"%12s %-12s %10s %-10s %10s %-10s %12s %-12s" \
+	"RAM_RATIO RAM_BAR D00_RATIO D00_BAR D01_RATIO D01_BAR SWAP_RATIO SWAP_BAR"
