@@ -71,12 +71,28 @@ get_FREE_SWAP_KB(){ cat /proc/meminfo | awk '/SwapFree/      { printf $2 }'; }
 get_SWAP_RATIO()  { printf "%s/%s G\n" "$(get_FREE_SWAP_GB)" "$(get_SWAP_GB)"; }
 get_SWAP_BAR()    { progress_bar "$(get_SWAP_KB)" "$(get_FREE_SWAP_KB)"; }
 
-get_HDD_GB()      { df -l / | awk '(NR > 1) { printf "%.0f\n", $2/(1024*1024) }'; }
-get_HDD_KB()      { df -l / | awk '(NR > 1) { print $2 }'; }
-get_FREE_HDD_GB() { df -l / | awk '(NR > 1) { printf "%.0f\n", $4/(1024*1024) }'; }
-get_FREE_HDD_KB() { df -l / | awk '(NR > 1) { print $4 }'; }
-get_HDD_RATIO()   { printf "%s/%s G\n" "$(get_FREE_HDD_GB)" "$(get_HDD_GB)"; }
-get_HDD_BAR()     { progress_bar "$(get_HDD_KB)" "$(get_FREE_HDD_KB)"; }
+_df() { [[ -d $MOUNT ]] && df -l $MOUNT || { echo; echo 0.0; }; }
+get_DISK_GB()      { _df | awk '(NR > 1) {printf "%.0f\n", $2/(1024*1024)}'; }
+get_DISK_KB()      { _df | awk '(NR > 1) {print $2}'; }
+get_FREE_DISK_GB() { _df | awk '(NR > 1) {printf "%.0f\n", $4/(1024*1024)}'; }
+get_FREE_DISK_KB() { _df | awk '(NR > 1) {print $4}'; }
+get_DISK_RATIO()   { printf "%s/%s G\n" "$(get_FREE_DISK_GB)" "$(get_DISK_GB)"; }
+get_DISK_BAR()     { progress_bar "$(get_DISK_KB)" "$(get_FREE_DISK_KB)"; }
+
+get_D00_GB()      { MOUNT=/ get_DISK_GB; }
+get_D00_KB()      { MOUNT=/ get_DISK_KB; }
+get_FREE_D00_GB() { MOUNT=/ get_FREE_DISK_GB; }
+get_FREE_D00_KB() { MOUNT=/ get_DISK_KB; }
+get_D00_RATIO()   { MOUNT=/ get_DISK_RATIO; }
+get_D00_BAR()     { MOUNT=/ get_DISK_BAR; }
+
+DISK_DATA=/mnt/data1
+get_D01_GB()      { MOUNT=$DISK_DATA get_DISK_GB; }
+get_D01_KB()      { MOUNT=$DISK_DATA get_DISK_KB; }
+get_FREE_D01_GB() { MOUNT=$DISK_DATA get_FREE_DISK_GB; }
+get_FREE_D01_KB() { MOUNT=$DISK_DATA get_DISK_KB; }
+get_D01_RATIO()   { MOUNT=$DISK_DATA get_DISK_RATIO; }
+get_D01_BAR()     { MOUNT=$DISK_DATA get_DISK_BAR; }
 
 get_CPU()         { lscpu | sed -n 's/^Model name:\s*\(.*\)/\1/p'; }
 get_CPUS()        { lscpu | sed -n 's/^Socket(s):\s*\(.*\)/\1/p'; }
