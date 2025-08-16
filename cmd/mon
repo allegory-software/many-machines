@@ -9,19 +9,18 @@ MACHINE=$THIS_MACHINE
 
 # thresholds
 md_var MIN_FREE_RAM_MB   50; MIN_FREE_RAM_MB=$R1
-md_var MIN_FREE_HDD_MB 2000; MIN_FREE_HDD_MB=$R1
+md_var MIN_FREE_D00_MB 2000; MIN_FREE_D00_MB=$R1
+md_var MIN_FREE_D01_MB 2000; MIN_FREE_D01_MB=$R1
 md_var MAX_CPU           90; MAX_CPU=$R1
 
-# time thresholds (in multiples of SAMPLE_TICK)
+# time thresholds (in multiples of PROBE_TICK)
 md_var MAXT_FREE_RAM 1; MAXT_FREE_RAM=$R1
-md_var MAXT_FREE_HDD 1; MAXT_FREE_HDD=$R1
+md_var MAXT_FREE_D00 1; MAXT_FREE_D00=$R1
+md_var MAXT_FREE_D01 1; MAXT_FREE_D01=$R1
 md_var MAXT_CPU 1; MAXT_CPU=$R1
 
 # probing intervals
 PROBE_TICK=${PROBE_TICK:-60}
-# these are multiples of PROBE_TICK
-SAMPLE_TICK=1
-NOTIFY_TICK=1
 
 # parse cmdline & damonize ---------------------------------------------------
 
@@ -130,12 +129,15 @@ notify() {
 # probing modules ------------------------------------------------------------
 
 RAM_KB=`get_RAM_KB`
-HDD_KB=`get_HDD_KB`
+D00_KB=`get_D00_KB`
+D01_KB=`get_D01_KB`
 MIN_FREE_RAM_KB=$((MIN_FREE_RAM_MB * 1024))
-MIN_FREE_HDD_KB=$((MIN_FREE_HDD_MB * 1024))
+MIN_FREE_D00_KB=$((MIN_FREE_D00_MB * 1024))
+MIN_FREE_D01_KB=$((MIN_FREE_D01_MB * 1024))
 probe_free() {
 	K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_FREE_RAM_KB MAXT=$MAXT_FREE_RAM log
-	K=HDD V=`get_FREE_HDD_KB` MAX=$HDD_KB MIN=$MIN_FREE_HDD_KB MAXT=$MAXT_FREE_HDD log
+	K=D00 V=`get_FREE_D00_KB` MAX=$D00_KB MIN=$MIN_FREE_D00_KB MAXT=$MAXT_FREE_D00 log
+	K=D01 V=`get_FREE_D01_KB` MAX=$D01_KB MIN=$MIN_FREE_D01_KB MAXT=$MAXT_FREE_D01 log
 }
 
 unset CPU_STATS1
@@ -197,10 +199,7 @@ probe_services() {
 STOP=
 trap 'STOP=1' SIGTERM SIGINT
 
-N=0
-on_tick() { ((N % $1 == 0)); }
 next_tick() {
-	N=$((N+1))
 	sleep $PROBE_TICK  # returns immediately on Ctrl+C
 }
 while [[ ! $STOP ]]; do
@@ -210,25 +209,21 @@ while [[ ! $STOP ]]; do
 		continue
 	}
 
-	on_tick $SAMPLE_TICK && {
+	echo
 
-		echo
+	T=`date +%s`
+	((T1 > T)) || set_file
 
-		T=`date +%s`
-		((T1 > T)) || set_file
+	printf "%15s %1s %s\n" @ "" "$(date '+%F %T')"
 
-		printf "%15s %1s %s\n" @ "" "$(date '+%F %T')"
+	probe_free
+	probe_cpu
+	probe_deploy_services
+	probe_services
 
-		probe_free
-		probe_cpu
-		probe_deploy_services
-		probe_services
+	echo
 
-		echo
-
-	}
-
-	on_tick $NOTIFY_TICK && notify
+	notify
 
 	next_tick
 done
