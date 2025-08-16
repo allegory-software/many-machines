@@ -35,9 +35,9 @@ _custom_list_get_values() { # "FIELD1 ..."
 			VAL=${!FIELD}
 		fi
 		VAL=${VAL:- } # can't echo an empty line, it will get skipped when line-splitting.
-		local MIN_FIELD=MIN_$FIELD
-		local MIN=${!MIN_FIELD}
-		local VALN=${VAL//[^0-9.]/}
+		#local MIN_FIELD=MIN_$FIELD
+		#local MIN=${!MIN_FIELD}
+		#local VALN=${VAL//[^0-9.]/}
 		#[[ $MIN ]] && awk "{if ($VALN < $MIN) exit 0; else exit 1}" && VAL=${RED}$VAL$ENDCOLOR || VAL=${LIGHTGRAY}$VAL$ENDCOLOR
 		printf "%s\n" "$VAL"
 	done
