@@ -237,3 +237,13 @@ SystemMaxUse=20M
 " /etc/systemd/journald.conf
 	service_restart systemd-journald
 }
+
+install_irqbalance() {
+	apt_get_install irqbalance
+	service_enable irqbalance
+}
+
+uninstall_irqbalance() {
+	service_disable irqbalance
+	apt_get_purge irqbalance
+}

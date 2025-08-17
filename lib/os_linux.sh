@@ -221,6 +221,7 @@ uninstall_low_ports() {
 }
 
 install_tcp_tuning() {
+	# detect and close sockets on dead peers sooner (~85s).
 	say; say "Tuning TCP keep-alive parameters ..."
 	kernel_config_add 50-tcp-keepalive.conf "
 net.ipv4.tcp_keepalive_time=60
