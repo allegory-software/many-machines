@@ -1,3 +1,12 @@
+- tuning:
+	- disable nagle
+	- small drbd block size (4-8k)
+		resource lmdb {
+			on master { ...; }
+			on slave { ...; }
+			disk { block-size 4096; flushes on; c-plan-ahead off; }
+			net { protcol C; max-buffers 4000; max-epoch-size 8k; sndbuf-size 131072; rcvbuf-size 131072; allow-two-primaries no; }
+		}
 
 - cmd/mon refactoring to work on machines where mm is not installed.
 	- current solution: mm on each machine with partial sync of mm-var to isolate secrets.
@@ -45,7 +54,7 @@
 - d-rename
 
 - HA:
-	- setup mysql sync replication to multiple clones
+	- setup drbd
 	- switch clone:
 		- change ddns
 		- change mysql master

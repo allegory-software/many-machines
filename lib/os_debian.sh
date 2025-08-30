@@ -127,23 +127,18 @@ install_libssl1() {
 
 install_mysql() {
 
-	checkvars MYSQL_ROOT_PASS
-
-	say; say "Installing MySQL (Percona latest)..."
+	say; say "Installing MySQL..."
 	service_is_installed mysql && service_stop mysql
 
-	package_install gnupg2 lsb-release
-
-	must wget -nv https://repo.percona.com/apt/percona-release_latest.$(lsb_release -sc)_all.deb -O percona.deb
-	dpkg_i percona.deb
-	apt_get install --fix-broken
-
-	must rm percona.deb
-	must percona-release setup -y pxc80
-	package_install percona-xtradb-cluster percona-xtrabackup-84 qpress
+	local file=mysql-apt-config_0.8.34-1_all.deb
+	wget https://repo.mysql.com//$file
+	dpkg_i $file
+	rm $file
+	apt update
+	package_install mysql-server mysql-client
+	#sudo systemctl enable --now mysql
 
 	mysql_config default "
-
 # amazing that this is not the default...
 bind-address = 127.0.0.1
 mysqlx-bind-address = 127.0.0.1
@@ -151,14 +146,14 @@ mysqlx-bind-address = 127.0.0.1
 # our binlog is row-based, but we still get an error when creating procs.
 log_bin_trust_function_creators = 1
 
+# we only support old auth in the SDK
+mysql_native_password=ON
 "
 
 	service_start mysql
 
-	mysql_update_pass localhost root $MYSQL_ROOT_PASS
-	mysql_gen_my_cnf  localhost root $MYSQL_ROOT_PASS
-
 	say "MySQL install done."
+	mysql -e "SELECT VERSION();"
 
 }
 
@@ -239,11 +234,11 @@ SystemMaxUse=20M
 }
 
 install_irqbalance() {
-	apt_get_install irqbalance
+	package_install irqbalance
 	service_enable irqbalance
 }
 
 uninstall_irqbalance() {
 	service_disable irqbalance
-	apt_get_purge irqbalance
+	package_uninstall irqbalance
 }
