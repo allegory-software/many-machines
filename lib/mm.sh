@@ -69,7 +69,7 @@ StartLimitBurst=1
 [Service]
 Type=simple
 
-# skip monitoring the first minute to give time for other services to start
+# skip monitoring the first 10s to give time for other services to start
 ExecStartPre=/bin/sleep 10
 ExecStart=/root/mm/mm mon
 WorkingDirectory=/root/mm

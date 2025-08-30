@@ -86,7 +86,7 @@ get_FREE_D00_KB() { MOUNT=/ get_DISK_KB; }
 get_D00_RATIO()   { MOUNT=/ get_DISK_RATIO; }
 get_D00_BAR()     { MOUNT=/ get_DISK_BAR; }
 
-DISK_DATA=/mnt/data1
+DISK_DATA=/home
 get_D01_GB()      { MOUNT=$DISK_DATA get_DISK_GB; }
 get_D01_KB()      { MOUNT=$DISK_DATA get_DISK_KB; }
 get_FREE_D01_GB() { MOUNT=$DISK_DATA get_FREE_DISK_GB; }
