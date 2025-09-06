@@ -16,7 +16,9 @@
 #
 
 md_modules() {
-	must md_var ${DEPLOY:+DEPLOY_}MODULES$1
+	must md_var ${DEPLOY:+DEPLOY_}MODULES$1; local m1=$R1
+	md_var ${DEPLOY:+DEPLOY_}EXTRA_MODULES$1; local m2=$R1
+	R1="$m1 $m2"
 }
 md_modules_uninstall() {
 	md_modules _UNINSTALL

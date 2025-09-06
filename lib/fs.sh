@@ -68,7 +68,7 @@ empty_dir() { # [REL_PATH_OK=1] DIR
 	if [[ ! -d $dir ]]; then
 		say "not found"
 	else
-		must dry rm -rf "$dir/"
+		must dry find $dir -mindepth 1 -delete
 		say OK
 	fi
 }
@@ -132,7 +132,7 @@ _cp() { # WHAT SRC DST [USER] [MOD]
 		dst=$dst`basename $src`
 	fi
 	sayn "Copying $what: '$src' -> '$dst' ... "
-	[[ -e $src ]] || die: "Missing: $src"
+	[[ -e $src ]] || die "Missing: $src"
 	[[ $what == dir  ]] && { [[ -d $src ]] || die "src is not a dir."; }
 	[[ $what == file ]] && { [[ -f $src ]] || die "src is not a file."; }
 	must dry mkdir -p `dirname $dst` # because cp doesn't do it for us

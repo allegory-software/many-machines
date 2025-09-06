@@ -193,6 +193,11 @@ probe_services() {
 	done
 }
 
+probe_ups() {
+	md_modules; echo "$R1" | grep -qw ups || return
+	K=ups V=`upsc ups@localhost battery.charge 2>/dev/null` MAX=100 MIN=20 log
+}
+
 # main loop ------------------------------------------------------------------
 
 # trap Ctrl+C to stop the loop cleanly.
@@ -220,6 +225,7 @@ while [[ ! $STOP ]]; do
 	probe_cpu
 	probe_deploy_services
 	probe_services
+	probe_ups
 
 	echo
 

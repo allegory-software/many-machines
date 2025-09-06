@@ -242,3 +242,15 @@ uninstall_irqbalance() {
 	service_disable irqbalance
 	package_uninstall irqbalance
 }
+
+install_interfaces() { true; }
+preinstall_interfaces() {
+	NODELETE=1 \
+		SRC_DIR=var/machines/$MACHINE/interfaces.d/./. \
+		DST_DIR=/etc/network/interfaces.d \
+		DST_MACHINE=$MACHINE rsync_dir
+}
+
+uninstall_interfaces() {
+	empty_dir /etc/network/interfaces.d
+}
