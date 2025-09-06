@@ -243,13 +243,13 @@ uninstall_irqbalance() {
 }
 
 install_networkd() {
-	service_disable networking
 	service_enable systemd-networkd
+	service_disable networking
 }
 
 uninstall_networkd() {
-	service_disable systemd-networkd
 	service_enable networking
+	service_disable systemd-networkd
 }
 
 install_interfaces() {
