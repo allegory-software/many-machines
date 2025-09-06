@@ -4,7 +4,7 @@
 
 install_mm() {
 	checkvars MM_REPO
-	apt_get_install autossh sshfs jq sysbench
+	package_install autossh sshfs jq sysbench
 	git_clone_for root $MM_REPO /root/mm master
 	(
 	must cd /root/mm

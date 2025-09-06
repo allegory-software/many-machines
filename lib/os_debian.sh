@@ -188,7 +188,6 @@ uninstall_avahi_daemon() {
 
 install_iptables() {
 	service_enable netfilter-persistent
-	service_start netfilter-persistent
 }
 uninstall_iptables() {
 	service_disable netfilter-persistent
@@ -243,14 +242,26 @@ uninstall_irqbalance() {
 	package_uninstall irqbalance
 }
 
-install_interfaces() { true; }
-preinstall_interfaces() {
-	NODELETE=1 \
-		SRC_DIR=var/machines/$MACHINE/interfaces.d/./. \
-		DST_DIR=/etc/network/interfaces.d \
-		DST_MACHINE=$MACHINE rsync_dir
+install_networkd() {
+	service_disable networking
+	service_enable systemd-networkd
+}
+
+uninstall_networkd() {
+	service_disable systemd-networkd
+	service_enable networking
+}
+
+install_interfaces() {
+	empty_dir /etc/systemd/network
+	local NAME; for NAME in $INTERFACES; do
+		local -n CONFIG=INTERFACE_${NAME^^}
+		save "$CONFIG" /etc/systemd/network/${NAME}.network
+	done
+	networkctl reload
 }
 
 uninstall_interfaces() {
-	empty_dir /etc/network/interfaces.d
+	empty_dir /etc/systemd/network
+	networkctl reload
 }
