@@ -86,8 +86,6 @@ service_restart() {
 
 service_disable() {
 	local SERVICE=$1; checkvars SERVICE
-	service_is_running $SERVICE && \
-		service_stop $SERVICE
 	if service_is_installed $SERVICE; then
 		say; say "Disabling $SERVICE ..."
 		must systemctl disable --now $SERVICE

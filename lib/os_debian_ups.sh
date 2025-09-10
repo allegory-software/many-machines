@@ -2,12 +2,15 @@
 
 # Eaton 3S NUT setup for Debian - root-only, standalone, USB permissions fixed
 
+# Check out this Debian utter garbage...
+
 install_ups() {
 
 package_install nut
 
 service_stop nut-server nut-monitor
-service_disable nut-monitor
+service_disable nut-monitor # we monitor with mm mon
+service_enable nut-driver-enumerator # enable hot-plugging the USB
 pkill usbhid-ups
 
 set +f
@@ -28,12 +31,13 @@ save '
     desc = "Eaton 3S UPS"
 ' /etc/nut/ups.conf
 
-save '
+# upsd can't listen to unix socket so we need to set a password.
+save "
 [root]
-    password = ""
+    password = \"$UPSD_PASSWORD\"
     actions = SET
     instcmds = ALL
-' /etc/nut/upsd.users
+" /etc/nut/upsd.users
 
 save '
 LISTEN 127.0.0.1 3493
@@ -44,11 +48,9 @@ MODE=standalone
 ' /etc/nut/nut.conf
 
 service_enable nut-server
-service_start nut-server
 
 }
 
 uninstall_ups() {
-	service_stop nut-server
-	service_disable nut-server
+	service_disable nut-server nut-driver-enumerator
 }
