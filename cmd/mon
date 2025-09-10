@@ -200,6 +200,14 @@ probe_ups() {
 	K=UPS V=`upsc ups@localhost battery.charge 2>/dev/null` MAX=100 MIN=20 log
 }
 
+probe_temps() {
+	# get CPU temp
+	catfile /sys/class/thermal/thermal_zone1/temp
+	K=TEMP_CPU V=$(($R1 / 1000)) MAX=70 MIN=20 log
+	# get temp of hottest NVME
+	K=TEMP_NVME V=`sensors -j 2>/dev/null | jq '[. as $root | keys[] | select(test("nvme")) | $root[.].Composite.temp1_input?] | max | round'` MAX=70 MIN=20 log
+}
+
 # main loop ------------------------------------------------------------------
 
 # trap Ctrl+C to stop the loop cleanly.
@@ -228,6 +236,7 @@ while [[ ! $STOP ]]; do
 	probe_deploy_services
 	probe_services
 	probe_ups
+	probe_temps
 
 	echo
 
