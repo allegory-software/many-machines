@@ -2,8 +2,6 @@
 
 # Eaton 3S NUT setup for Debian - root-only, standalone, USB permissions fixed
 
-# Check out this Debian utter garbage...
-
 install_ups() {
 
 package_install nut
@@ -31,17 +29,12 @@ save '
     desc = "Eaton 3S UPS"
 ' /etc/nut/ups.conf
 
-# upsd can't listen to unix socket so we need to set a password.
 save "
-[root]
-    password = \"$UPSD_PASSWORD\"
-    actions = SET
-    instcmds = ALL
 " /etc/nut/upsd.users
 
-save '
+save "
 LISTEN 127.0.0.1 3493
-' /etc/nut/upsd.conf
+" /etc/nut/upsd.conf
 
 save '
 MODE=standalone

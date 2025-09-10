@@ -53,6 +53,8 @@ version_mon()    { version_mm; }
 
 install_mon() {
 
+	package_install sensors
+
 	save "
 [Unit]
 Description=mm runtime monitor service
