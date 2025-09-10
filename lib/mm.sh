@@ -70,8 +70,8 @@ StartLimitBurst=1
 Type=simple
 
 # skip monitoring the first 10s to give time for other services to start
-ExecStartPre=/bin/sleep 10
-ExecStart=/root/mm/mm mon
+ExecStartPre=/bin/sh -c '[ \"$SYSTEMD_INVOCATION_ID\" != \"\" ] && sleep 10 || true'
+ExecStart=/root/mm/cmd/mon systemd
 WorkingDirectory=/root/mm
 StandardOutput=null
 StandardError=null

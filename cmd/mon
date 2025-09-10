@@ -2,6 +2,8 @@
 # MONITOR ; [start|stop|restart|status [-q]|reset|pause|resume|unpause|clear-samples] ; contiunous monitoring service
 . mmlib
 
+# make mon start without mm (systemd service runs it directly).
+[[ $THIS_MACHINE ]] || THIS_MACHINE=`basename "$(readlink machine)"`
 checkvars THIS_MACHINE
 MACHINE=$THIS_MACHINE
 
@@ -55,7 +57,7 @@ elif [[ $1 == resume || $1 == unpause ]]; then
 elif [[ $1 == clear-samples ]]; then
 	[[ $2 == please ]] || die "Say please."
 	REL_PATH_OF=1 rm_dir mon/samples
-elif [[ $1 == daemon ]]; then
+elif [[ $1 == daemon || $1 == systemd ]]; then
 	RUN=1
 elif [[ $1 ]]; then
 	die "Invalid arg: $1"
@@ -195,7 +197,7 @@ probe_services() {
 
 probe_ups() {
 	md_modules; echo "$R1" | grep -qw ups || return
-	K=ups V=`upsc ups@localhost battery.charge 2>/dev/null` MAX=100 MIN=20 log
+	K=UPS V=`upsc ups@localhost battery.charge 2>/dev/null` MAX=100 MIN=20 log
 }
 
 # main loop ------------------------------------------------------------------
