@@ -202,3 +202,16 @@ timeago() { # TIME
 kbytes() { # BYTES
 	R1=`numfmt --to=iec <<<"$1"`
 }
+
+# profiling
+
+P() {
+	[[ $PROFILE ]] || { "$@"; return; }
+	local b=$EPOCHREALTIME
+	"$@"
+	local a=$EPOCHREALTIME
+	local ai=$(( ${a/./} ))
+	local bi=$(( ${b/./} ))
+	local d=$(( (ai - bi) / 1000 )) # milliseconds
+	printf "@ %'d %s\n" $d "$1"
+}

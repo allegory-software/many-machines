@@ -92,8 +92,8 @@ _git_keys_update_for_user() { # USER
 	done
 }
 git_keys_update() { # [USERS]
-	local USERS="$1"
-	[ "$USERS" ] || USERS="$(echo root; machine_deploys)"
+	local USERS=$1
+	[[ $USERS ]] || { machine_deploys; USERS="root $R1"; }
 	for USER in $USERS; do
 		_git_keys_update_for_user $USER
 	done

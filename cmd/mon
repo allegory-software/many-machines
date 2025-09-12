@@ -47,6 +47,7 @@ elif [[ $1 == clear-samples ]]; then
 	REL_PATH_OF=1 rm_dir mon/samples
 elif [[ $1 == daemon || $1 == systemd ]]; then
 	RUN=1
+	DAEMON=1
 elif [[ $1 ]]; then
 	die "Invalid arg: $1"
 else
@@ -71,12 +72,14 @@ declare -A COUNTS # k->n
 log() { # K= V= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
 
 	# log the value in samples file to show in a graph
-	[[ -d mon/samples/$K ]] || {
-		must mkdir -p mon/samples/$K
-		printf "%d\n" $MIN > mon/samples/$K/min
-		printf "%d\n" $MAX > mon/samples/$K/max
+	[[ $DAEMON ]] && {
+		[[ -d mon/samples/$K ]] || {
+			must mkdir -p mon/samples/$K
+			printf "%d\n" $MIN > mon/samples/$K/min
+			printf "%d\n" $MAX > mon/samples/$K/max
+		}
+		printf "%05d %s\n" $((T - T0)) $V >> mon/samples/$K/$FILE.sam
 	}
-	printf "%05d %s\n" $((T - T0)) $V >> mon/samples/$K/$FILE.sam
 
 	# check alert thresholds
 	local ALERT
@@ -95,25 +98,28 @@ log() { # K= V= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
 	printf "%25s %1s %s\n" $K "$ALERT" $V
 
 	# record alert
-	[[ $ALERT != "" ]] && {
+	[[ $DAEMON && $ALERT ]] && {
 		local file=mon/alerts/$K
 		printf "%s\n" $V > $file
 	}
 }
 
 notify() {
+	[[ $DAEMON ]] || return
 	must pushd mon/alerts
-	local f s=
-	set +f # enable globbing
-	for f in *; do
+	local f s
+	# list alerts of < 24h ago and notify at most once every 24h for each.
+	for f in `find -maxdepth 1 -type f -mmin -1440 -printf '%f\n'`; do
 		[[ -f ../notified/$f && $(find ../notified/$f -mmin -1440) ]] && continue
 		touch ../notified/$f
-		s="$s$f: $(cat "$f")"$'\n'
+		local t=`stat -c %Y $f` # mtime in seconds
+		timeago $t; t=$R1
+		catfile $f; local v=$R1
+		s="$s$f: $v ($t)"$'\n'
 	done
-	set -f # disable globbing
 	must popd
 	[[ $s ]] || return
-	mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
+	dry mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
 }
 
 # probing modules ------------------------------------------------------------
@@ -174,10 +180,9 @@ probe_cpu() {
 }
 
 probe_deploy_services() {
-	active_deploys; local DEPLOYS=$R1
+	machine_deploys
 	local DEPLOY
-	for DEPLOY in $DEPLOYS; do
-		machine_of_deploy $DEPLOY; [[ $R1 != $MACHINE ]] && continue
+	for DEPLOY in $R1; do
 		md_var DEPLOY_SERVICES; local DEPLOY_SERVICES=$R1
 		md_var APP; local APP=$R1
 		for SERVICE in $DEPLOY_SERVICES; do
@@ -211,10 +216,16 @@ probe_temps() {
 
 probe_nvmes() {
 	local NVME; for NVME in `ls /sys/class/nvme`; do
-		K=${NVME}-warn   V=`nvme smart-log /dev/$NVME -o json | jq '.critical_warning'` MAX=0 MIN=0 log # bitmask of serious health issues
-		K=${NVME}-spare  V=`nvme smart-log /dev/$NVME -o json | jq '.avail_spare'` MAX=100 MIN=10 log # drive is near EOL if < 10
-		K=${NVME}-wear   V=`nvme smart-log /dev/$NVME -o json | jq '.percent_used'` MAX=80 MIN=0 log # lifespan indicator
-		K=${NVME}-errors V=`nvme smart-log /dev/$NVME -o json | jq '.media_errors | tonumber'` MAX=0 MIN=0 log # data loss events
+		local warn spare used errs
+		read -r warn spare used errs < <(
+			# querying nvme is slow so we get all vars with one query.
+			nvme smart-log /dev/$NVME -o json | \
+				jq -r '[.critical_warning, .avail_spare, .percent_used, .media_errors] | @tsv'
+		)
+		K=${NVME}-warn   V=$warn  MAX=0   MIN=0  log # bitmask of serious health issues
+		K=${NVME}-spare  V=$spare MAX=100 MIN=10 log # drive is near EOL if < 10
+		K=${NVME}-wear   V=$used  MAX=80  MIN=0  log # lifespan indicator
+		K=${NVME}-errors V=$errs  MAX=0   MIN=0  log # data loss events
 	done
 }
 
@@ -241,18 +252,18 @@ while [[ ! $STOP ]]; do
 
 	printf "%15s %1s %s\n" @ "" "$(date '+%F %T')"
 
-	probe_disks
-	probe_cpu
-	probe_ram
-	probe_deploy_services
-	probe_services
-	probe_ups
-	probe_temps
-	probe_nvmes
+	P probe_disks
+	P probe_cpu
+	P probe_ram
+	P probe_deploy_services
+	P probe_services
+	P probe_ups
+	P probe_temps
+	P probe_nvmes
 
 	echo
 
-	notify
+	P notify
 
 	next_tick
 done

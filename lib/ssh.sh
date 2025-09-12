@@ -217,7 +217,7 @@ _ssh_pubkey_remove() {
 _ssh_pubkey_do() { # fn "PUBKEY" [USERS]
 	local fn=$1 PUBKEY=$2 USERS=$3
 	checkvars PUBKEY-
-	[[ $USERS ]] || USERS="$(echo root; machine_deploys)"
+	[[ $USERS ]] || { machine_deploys; USERS="root $R1"; }
 	for USER in $USERS; do
 		local HOME=/home/$USER; [[ $USER == root ]] && HOME=/root
 		local AK_FILE=$HOME/.ssh/authorized_keys

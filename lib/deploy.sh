@@ -203,14 +203,16 @@ https_addr = false
 
 machine_deploys() {
 	local USER
+	R1=()
 	for USER in `ls -1 /home`; do
-		[[ -d /home/$USER/app ]] && printf "%s\n" $USER
+		[[ -d /home/$USER/app ]] && R1+=($USER)
 	done
+	R1="${R1[*]}"
 }
 
 get_DEPLOYS() {
-	local s=`machine_deploys`
-	printf "%s\n" "${s//$'\n'/ }"
+	machine_deploys
+	printf "%s\n" "$R1"
 }
 
 # deploy user module ---------------------------------------------------------
