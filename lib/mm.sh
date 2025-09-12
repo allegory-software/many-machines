@@ -53,7 +53,7 @@ version_mon()    { version_mm; }
 
 install_mon() {
 
-	package_install sensors
+	package_install sensors nvme-cli
 
 	save "
 [Unit]

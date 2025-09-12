@@ -9,18 +9,6 @@ MACHINE=$THIS_MACHINE
 
 # config ---------------------------------------------------------------------
 
-# thresholds
-md_var MIN_FREE_RAM_MB   50; MIN_FREE_RAM_MB=$R1
-md_var MIN_FREE_D00_MB 2000; MIN_FREE_D00_MB=$R1
-md_var MIN_FREE_D01_MB 2000; MIN_FREE_D01_MB=$R1
-md_var MAX_CPU           90; MAX_CPU=$R1
-
-# time thresholds (in multiples of PROBE_TICK)
-md_var MAXT_FREE_RAM 1; MAXT_FREE_RAM=$R1
-md_var MAXT_FREE_D00 1; MAXT_FREE_D00=$R1
-md_var MAXT_FREE_D01 1; MAXT_FREE_D01=$R1
-md_var MAXT_CPU 1; MAXT_CPU=$R1
-
 # probing intervals
 PROBE_TICK=${PROBE_TICK:-60}
 
@@ -80,7 +68,7 @@ set_file
 # we only report values that were out of range more than MAXT times.
 declare -A COUNTS # k->n
 
-log() { # K= V= MIN= MAX= [MAXT=] N= P= T= T0= DIR= FILE=
+log() { # K= V= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
 
 	# log the value in samples file to show in a graph
 	[[ -d mon/samples/$K ]] || {
@@ -104,7 +92,7 @@ log() { # K= V= MIN= MAX= [MAXT=] N= P= T= T0= DIR= FILE=
 	fi
 
 	# show the value when running mon in foreground.
-	printf "%15s %1s %s\n" $K "$ALERT" $V
+	printf "%25s %1s %s\n" $K "$ALERT" $V
 
 	# record alert
 	[[ $ALERT != "" ]] && {
@@ -130,18 +118,30 @@ notify() {
 
 # probing modules ------------------------------------------------------------
 
-RAM_KB=`get_RAM_KB`
-D00_KB=`get_D00_KB`
-D01_KB=`get_D01_KB`
-MIN_FREE_RAM_KB=$((MIN_FREE_RAM_MB * 1024))
-MIN_FREE_D00_KB=$((MIN_FREE_D00_MB * 1024))
-MIN_FREE_D01_KB=$((MIN_FREE_D01_MB * 1024))
-probe_free() {
-	K=RAM V=`get_FREE_RAM_KB` MAX=$RAM_KB MIN=$MIN_FREE_RAM_KB MAXT=$MAXT_FREE_RAM log
-	K=D00 V=`get_FREE_D00_KB` MAX=$D00_KB MIN=$MIN_FREE_D00_KB MAXT=$MAXT_FREE_D00 log
-	K=D01 V=`get_FREE_D01_KB` MAX=$D01_KB MIN=$MIN_FREE_D01_KB MAXT=$MAXT_FREE_D01 log
+md_var MIN_FREE_RAM_MB 50; MIN_FREE_RAM_MB=$R1
+md_var MAXT_FREE_RAM 1; MAXT_FREE_RAM=$R1
+RAM_MB=`cat /proc/meminfo | awk '/MemTotal/ {print int($2/1024)}'`
+probe_ram() {
+	local FREE_RAM_MB=`cat /proc/meminfo | awk '/MemAvailable/ {print int($2/1024)}'`
+	K=RAM V=$FREE_RAM_MB MAX=$RAM_MB MIN=$MIN_FREE_RAM_MB MAXT=$MAXT_FREE_RAM log
 }
 
+probe_disks() {
+	local name fstype mount label size avail
+	while read name fstype mount label; do
+		[[ $mount ]] || continue
+		[[ $mount == /boot/efi ]] && continue
+		[[ $fstype == ext4 ]] || continue
+		[[ $mount == / ]] && label=root
+		[[ $label ]] || label=`basename $mount`
+		read size avail < <(df -m --output=size,avail $mount | tail -n1)
+		md_var MIN_FREE_${LABEL}_MB 2048; local MIN=$R1
+		K=FREE-$label V=$avail MAX=$size log
+	done < <(lsblk -ln -o NAME,FSTYPE,MOUNTPOINT,LABEL)
+}
+
+md_var MAX_CPU 90; MAX_CPU=$R1
+md_var MAXT_CPU 1; MAXT_CPU=$R1
 unset CPU_STATS1
 unset CPU_STATS2
 probe_cpu() {
@@ -182,7 +182,7 @@ probe_deploy_services() {
 		md_var APP; local APP=$R1
 		for SERVICE in $DEPLOY_SERVICES; do
 			local V; md_is_running $SERVICE && V=1 || V=0
-			K=d-${DEPLOY}-${SERVICE} MAX=1 MIN=1 log
+			K=service-${SERVICE}-${DEPLOY} MAX=1 MIN=1 log
 		done
 	done
 }
@@ -190,14 +190,15 @@ probe_deploy_services() {
 probe_services() {
 	md_var SERVICES; local SERVICES=$R1
 	for SERVICE in $SERVICES; do
+		[[ $SERVICE == mon ]] && continue
 		local V; md_is_running $SERVICE && V=1 || V=0
-		K=s-$SERVICE MAX=1 MIN=1 log
+		K=service-$SERVICE MAX=1 MIN=1 log
 	done
 }
 
 probe_ups() {
 	md_modules; echo "$R1" | grep -qw ups || return
-	K=UPS V=`upsc ups@localhost battery.charge 2>/dev/null` MAX=100 MIN=20 log
+	K=BATTERY-CHARGE V=`upsc ups@localhost battery.charge 2>/dev/null` MAX=100 MIN=20 log
 }
 
 probe_temps() {
@@ -206,6 +207,15 @@ probe_temps() {
 	K=TEMP_CPU V=$(($R1 / 1000)) MAX=70 MIN=20 log
 	# get temp of hottest NVME
 	K=TEMP_NVME V=`sensors -j 2>/dev/null | jq '[. as $root | keys[] | select(test("nvme")) | $root[.].Composite.temp1_input?] | max | round'` MAX=70 MIN=20 log
+}
+
+probe_nvmes() {
+	local NVME; for NVME in `ls /sys/class/nvme`; do
+		K=${NVME}-warn   V=`nvme smart-log /dev/$NVME -o json | jq '.critical_warning'` MAX=0 MIN=0 log # bitmask of serious health issues
+		K=${NVME}-spare  V=`nvme smart-log /dev/$NVME -o json | jq '.avail_spare'` MAX=100 MIN=10 log # drive is near EOL if < 10
+		K=${NVME}-wear   V=`nvme smart-log /dev/$NVME -o json | jq '.percent_used'` MAX=80 MIN=0 log # lifespan indicator
+		K=${NVME}-errors V=`nvme smart-log /dev/$NVME -o json | jq '.media_errors | tonumber'` MAX=0 MIN=0 log # data loss events
+	done
 }
 
 # main loop ------------------------------------------------------------------
@@ -231,12 +241,14 @@ while [[ ! $STOP ]]; do
 
 	printf "%15s %1s %s\n" @ "" "$(date '+%F %T')"
 
-	probe_free
+	probe_disks
 	probe_cpu
+	probe_ram
 	probe_deploy_services
 	probe_services
 	probe_ups
 	probe_temps
+	probe_nvmes
 
 	echo
 
