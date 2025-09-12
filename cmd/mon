@@ -1,5 +1,5 @@
 #!/bin/bash
-# MONITOR ; [start|stop|restart|status [-q]|reset|pause|resume|unpause|clear-samples] ; contiunous monitoring service
+# MONITOR ; [start|stop|restart|status [-q]|reset|pause|resume|unpause|clear-samples] ; continuous monitoring service
 . mmlib
 
 # make mon start without mm (systemd service runs it directly).
@@ -203,7 +203,22 @@ probe_services() {
 
 probe_ups() {
 	md_modules; echo "$R1" | grep -qw ups || return
-	K=BATTERY-CHARGE V=`upsc ups@localhost battery.charge 2>/dev/null` MAX=100 MIN=20 log
+	local CHARGE=`upsc ups@localhost battery.charge 2>/dev/null`
+	K=BATTERY-CHARGE V=CHARGE MAX=100 MIN=50 log
+
+	# poweroff this machine and others tied to the same ups if battery charge < 20%.
+	[[ $DAEMON && $CHARGE ]] && (( CHARGE <= 20 )) && {
+		md_var UPS_MACHINES; local UPS_MACHINES=$R1
+		local s
+		local M; for M in $UPS_MACHINES; do
+			[[ $M == $MACHINE ]] && continue
+			dry mm $M - poweroff
+			s="${s}Powered off: $M"$'\n'
+		done
+		s="${s}Powering off: $MACHINE"$'\n'
+		dry mm ntfy -H "Tags: sob" -H "Title: MM @ $MACHINE POWERING OFF" -d "$s"
+		dry poweroff
+	}
 }
 
 probe_temps() {
