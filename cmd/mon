@@ -204,7 +204,7 @@ probe_services() {
 probe_ups() {
 	md_modules; echo "$R1" | grep -qw ups || return
 	local CHARGE=`upsc ups@localhost battery.charge 2>/dev/null`
-	K=BATTERY-CHARGE V=CHARGE MAX=100 MIN=50 log
+	K=BATTERY-CHARGE V=$CHARGE MAX=100 MIN=50 log
 
 	# poweroff this machine and others tied to the same ups if battery charge < 20%.
 	[[ $DAEMON && $CHARGE ]] && (( CHARGE <= 20 )) && {
