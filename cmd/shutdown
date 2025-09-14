@@ -1,0 +1,5 @@
+#!/bin/bash
+# ADMIN ;; shutdown machine(s)
+. mmlib
+
+NOALL=1 each_machine ssh_script 'nohup shutdown -h now 2>&1 >/dev/null &'

@@ -1,0 +1,9 @@
+#!/bin/bash
+# ADMIN ;; Hibernate Windows PC
+. mmlib
+
+must md_var PC_LOCAL_IP  ; PC_LOCAL_IP=$R1
+must md_var PC_USER      ; PC_USER=$R1
+must md_var PC_PASSWORD  ; PC_PASSWORD=$R1
+
+sshpass -p "$PC_PASSWORD" ssh ${PC_USER}@${PC_LOCAL_IP} 'shutdown /h'

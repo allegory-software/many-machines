@@ -269,17 +269,15 @@ install_ups_apc() {
 	package_install apcupsd
 
 	local c=/etc/apcupsd/apcupsd.conf
-	replace_lines '^DEVICE' 'DEVICE' $c # it's a usb device not ttyS0
+	replace_lines '^DEVICE'       'DEVICE'          $c  # it's a usb device not ttyS0
+	replace_lines '^BATTERYLEVEL' 'BATTERYLEVEL 40' $c  # 5% is too low for uncalibrated battery
+	replace_lines '^SLEEP'        'SLEEP 20'        $c  # 20s might be too low
 
-	save "\
-#!/bin/bash
-[[ -x /etc/apcupsd/poweroff-other ]] && /etc/apcupsd/poweroff-other
-NOTHIS=1 mm $UPS_MACHINES - poweroff
-poweroff
-" /etc/apcupsd/loadlimit root 755
-	ln_file loadlimit /etc/apcupsd/runlimit
-	ln_file loadlimit /etc/apcupsd/failing
-	ln_file loadlimit /etc/apcupsd/timeout
+	save '#!/bin/bash
+printf "%s | %s\n" "$(date)" "doshutdown script" >> /var/log/apccontrol.log
+mm . hibernate-pc
+NOTHIS=1 mm '$UPS_MACHINES' shutdown
+' /etc/apcupsd/doshutdown root 755
 
 	service_enable apcupsd
 }

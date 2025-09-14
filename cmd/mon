@@ -201,20 +201,27 @@ probe_services() {
 	done
 }
 
-probe_ups_apc() { # -> BATTERY_CHARGE LINE_VOLTAGE
+probe_ups_apc() { # -> BATTERY_CHARGE LINE_VOLTAGE UPS_LOAD
 	local k v
+	local VA=850
+	local PF=70 # 100x scale
 	while IFS=: read -r k v; do
 		[[ $k == BCHARGE* ]] && BATTERY_CHARGE=${v%%.*}
 		[[ $k == LINEV*   ]] && LINE_VOLTAGE=${v%%.*}
+		[[ $k == LOADPCT* ]] && {
+			UPS_LOAD=${v%%.*}
+			UPS_LOAD=$((VA * PF * UPS_LOAD / 10000)) # in watts
+		}
 	done < <(apcaccess status 2>/dev/null)
 }
 
 probe_ups() {
 	md_modules; echo "$R1" | grep -qw ups_apc || return
-	local BATTERY_CHARGE LINE_VOLTAGE
+	local BATTERY_CHARGE LINE_VOLTAGE UPS_LOAD
 	probe_ups_apc
 	K=BATTERY_CHARGE V=$BATTERY_CHARGE MAX=100 MIN=50 log
 	K=LINE_VOLTAGE   V=$LINE_VOLTAGE   MAX=250 MIN=190 log
+	K=UPS_LOAD       V=$UPS_LOAD       MAX=200 MIN=1 log
 }
 
 probe_temps() {

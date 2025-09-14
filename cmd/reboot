@@ -1,5 +1,5 @@
 #!/bin/bash
-# ADMIN ;; reboot machine
+# ADMIN ;; reboot machine(s)
 . mmlib
 
 NOALL=1 each_machine ssh_to reboot
