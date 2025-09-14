@@ -221,13 +221,29 @@ save() { # S FILE [USER] [MODE]
 	say OK
 }
 
-replace_lines() { # REGEX S FILE
-	local regex=$1 s=$2 file=$3
-	checkvars regex- s- file
-	say "Replacing line containing $regex to $s in file $file ... "
-	must catfile "$file"; local s=$R1
-	local s1="${s//$regex/$}"
-	[[ $s1 != $s ]] && save "$s1" "$file"
+replace_lines() { # REGEX REPL FILE
+	local regex=$1 repl=$2 file=$3
+	checkvars regex- repl- file
+	local lines=()
+	local line
+	local n=0
+	say "Replacing lines containing '$regex' to '$repl' in file $file ... "
+	while IFS= read -r line; do
+		if [[ $line =~ $regex && $line != $repl ]]; then
+			printf '  Replacing line : %s\n' "$line"
+			printf '  With line      : %s\n' "$repl"
+			line=$repl
+			n=$((n+1))
+		fi
+		lines+=("$line")
+	done < "$file"
+	if ((n > 0)); then
+		printf -v lines '%s\n' "${lines[@]}"
+		say "  Replacements: $n"
+		save "$lines" "$file"
+	else
+		say "  No replacements made."
+	fi
 }
 
 innermost_subpath_with_file() { # FILE DIR

@@ -201,24 +201,20 @@ probe_services() {
 	done
 }
 
-probe_ups() {
-	md_modules; echo "$R1" | grep -qw ups || return
-	local CHARGE=`upsc ups@localhost battery.charge 2>/dev/null`
-	K=BATTERY-CHARGE V=$CHARGE MAX=100 MIN=50 log
+probe_ups_apc() { # -> BATTERY_CHARGE LINE_VOLTAGE
+	local k v
+	while IFS=: read -r k v; do
+		[[ $k == BCHARGE* ]] && BATTERY_CHARGE=${v%%.*}
+		[[ $k == LINEV*   ]] && LINE_VOLTAGE=${v%%.*}
+	done < <(apcaccess status 2>/dev/null)
+}
 
-	# poweroff this machine and others tied to the same ups if battery charge < 20%.
-	[[ $DAEMON && $CHARGE ]] && (( CHARGE <= 20 )) && {
-		md_var UPS_MACHINES; local UPS_MACHINES=$R1
-		local s
-		local M; for M in $UPS_MACHINES; do
-			[[ $M == $MACHINE ]] && continue
-			dry mm $M - poweroff
-			s="${s}Powered off: $M"$'\n'
-		done
-		s="${s}Powering off: $MACHINE"$'\n'
-		dry mm ntfy -H "Tags: sob" -H "Title: MM @ $MACHINE POWERING OFF" -d "$s"
-		dry poweroff
-	}
+probe_ups() {
+	md_modules; echo "$R1" | grep -qw ups_apc || return
+	local BATTERY_CHARGE LINE_VOLTAGE
+	probe_ups_apc
+	K=BATTERY_CHARGE V=$BATTERY_CHARGE MAX=100 MIN=50 log
+	K=LINE_VOLTAGE   V=$LINE_VOLTAGE   MAX=250 MIN=190 log
 }
 
 probe_temps() {

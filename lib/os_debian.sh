@@ -193,7 +193,7 @@ uninstall_iptables() {
 }
 
 install_nftables() {
-	save "
+	save "\
 #!/usr/sbin/nft -f
 
 flush ruleset
@@ -223,7 +223,7 @@ uninstall_nftables() {
 }
 
 install_journald() {
-save "\
+	save "\
 [Journal]
 SystemMaxUse=20M
 " /etc/systemd/journald.conf
@@ -262,4 +262,29 @@ install_interfaces() {
 uninstall_interfaces() {
 	empty_dir /etc/systemd/network
 	networkctl reload
+}
+
+install_ups_apc() {
+
+	package_install apcupsd
+
+	local c=/etc/apcupsd/apcupsd.conf
+	replace_lines '^DEVICE' 'DEVICE' $c # it's a usb device not ttyS0
+
+	save "\
+#!/bin/bash
+[[ -x /etc/apcupsd/poweroff-other ]] && /etc/apcupsd/poweroff-other
+NOTHIS=1 mm $UPS_MACHINES - poweroff
+poweroff
+" /etc/apcupsd/loadlimit root 755
+	ln_file loadlimit /etc/apcupsd/runlimit
+	ln_file loadlimit /etc/apcupsd/failing
+	ln_file loadlimit /etc/apcupsd/timeout
+
+	service_enable apcupsd
+}
+
+uninstall_ups_apc() {
+	service_disable apcupsd
+	package_uninstall pcupsd
 }
