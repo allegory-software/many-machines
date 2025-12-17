@@ -162,7 +162,6 @@ install_tarantool() { # tarantool 3.0
 	say "Tarantool install done."
 }
 uninstall_tarantool() {
-	service_disable tarantool
 	package_uninstall tt tarantool
 }
 
@@ -213,6 +212,15 @@ table inet filter {
 		udp dport { ${UDP_PORTS//[[:space:]]/,} } accept
 	}
 }
+
+# NAT for wireguard VPN
+table ip nat {
+	chain POSTROUTING {
+		type nat hook postrouting priority srcnat; policy accept;
+		oif enp1s0 ip saddr 10.2.0.0/16 masquerade
+	}
+}
+
 " /etc/nftables.conf
 	nft -f /etc/nftables.conf
 	service_enable nftables
@@ -236,7 +244,6 @@ install_irqbalance() {
 }
 
 uninstall_irqbalance() {
-	service_disable irqbalance
 	package_uninstall irqbalance
 }
 
@@ -283,6 +290,40 @@ NOTHIS=1 mm '$UPS_MACHINES' shutdown
 }
 
 uninstall_ups_apc() {
-	service_disable apcupsd
-	package_uninstall pcupsd
+	package_uninstall apcupsd
+}
+
+install_wireguard() {
+
+	package_install wireguard
+
+	local PEERS
+	for NAME in $WG_CLIENTS; do
+		local -n ADDRESS=WGC_${NAME^^}_ADDRESS
+		local -n KEY=WGC_${NAME^^}_KEY
+		PEERS="\
+$PEERS
+[Peer]
+AllowedIPs = $ADDRESS
+PublicKey = $KEY
+PersistentKeepalive = 25
+"
+	done
+
+	save "\
+[Interface]
+Address = $WG_ADDRESS
+ListenPort = $WG_PORT
+PrivateKey = $WG_KEY
+SaveConfig = false
+$PEERS
+" /etc/wireguard/wg0.conf
+
+	service_restart wg-quick@wg0
+
+}
+
+uninstall_wireguard() {
+	package_uninstall wireguard
+	rm_file /etc/wireguard/wg0.conf
 }
