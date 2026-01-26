@@ -40,19 +40,11 @@ _speedtest() { # [SERVER_ID|list]
 		speedtest1 "$1"
 		return
 	}
-	speedtest1 ''       'Speedtest.net'
-	#speedtest1 '21541' 'Los Angeles, US'
-	#speedtest1 '43860' 'Dallas, US'
-	#speedtest1 '40879' 'Montreal, CA'
-	#speedtest1 '24215' 'Paris, FR'
-	#speedtest1 '28922' 'Amsterdam, NL'
-	#speedtest1 '24447' 'Shanghai, CN'
-	#speedtest1 '5530'  'Chongqing, CN'
-	#speedtest1 '60572' 'Guangzhou, CN'
-	#speedtest1 '32155' 'Hongkong, CN'
-	#speedtest1 '23647' 'Mumbai, IN'
-	#speedtest1 '13623' 'Singapore, SG'
-	#speedtest1 '21569' 'Tokyo, JP'
+	# server ids at: https://williamyaps.github.io/wlmjavascript/servercli.html
+	speedtest1 '' 'Speedtest.net'
+	speedtest1 '21001' 'Los Angeles'
+	speedtest1 '6027' 'Paris'
+	speedtest1 '1536' 'Hong Kong'
 }
 speedtest() { # [SERVER_ID|list]
 	[[ $1 != list && $MACHINES ]] && printf "$WHITE$ST_FMT$ENDCOLOR" MACHINE NODE UPLOAD DOWNLOAD LATENCY
