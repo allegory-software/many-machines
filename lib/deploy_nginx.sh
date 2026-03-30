@@ -73,17 +73,6 @@ $proxy_nobuffer_options
 
 	local nginx_conf="\
 
-# DISABLED:
-# define shared memory zone for connection limiting per IP
-# used in server scope below.
-# limit_conn_zone \$binary_remote_addr zone=addr:10m;
-
-# DISABLED:
-# define shared memory zone for request flood limiting per IP
-# attacker needs to have more IPs to flood more.
-# used in server scope below.
-# limit_req_zone \$binary_remote_addr zone=req:10m rate=${HTTP_REQ_RATE_PER_IP:-50}r/s;
-
 # max time to receive full request headers.
 # protects against slowloris while headers are read (uploads are another matter).
 # TODO: find out if this covers TLS handshake (otherwise it's useless).
@@ -134,15 +123,6 @@ server {
 
 	# prevent XSS if web app is injectable.
 	add_header Content-Security-Policy \"${CSP_OPTIONS[*]}\" always;
-
-	# DISABLED:
-	# max simultaneous connections per IP using addr zone
-	# limit_conn addr ${HTTP_MAX_CONN_PER_IP:-50};
-
-	# DISABLED:
-	# apply request rate limiting using req zone
-	# allow bursts of 10 requests, drop excess immediately (no delay)
-	# limit_req zone=req burst=10 nodelay;
 
 	# NOTE: nginx nested locations don't inherit proxy options, so we copy-paste them!
 
