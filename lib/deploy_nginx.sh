@@ -73,9 +73,7 @@ $proxy_nobuffer_options
 
 	local nginx_conf="\
 
-# max time to receive full request headers.
-# protects against slowloris while headers are read (uploads are another matter).
-# TODO: find out if this covers TLS handshake (otherwise it's useless).
+# max time to receive full request headers, doesn't do much.
 client_header_timeout 5s;
 
 # max idle time between body recv() calls, doesn't do much.
