@@ -327,3 +327,29 @@ uninstall_wireguard() {
 	package_uninstall wireguard
 	rm_file /etc/wireguard/wg0.conf
 }
+
+
+uu_file=/etc/apt/apt.conf.d/50unattended-upgrades
+au_file=/etc/apt/apt.conf.d/20auto-upgrades
+
+install_unattended_upgrades() {
+	package_install unattended-upgrades
+	[[ -f $uu_file.disabled ]] || mv_file $uu_file $uu_file.disabled
+
+	save "\
+Unattended-Upgrade::Allowed-Origins {
+	\"${distro_id}:${distro_codename}-security\";
+" $uu_file
+
+	save "\
+APT::Periodic::Update-Package-Lists \"1\";
+APT::Periodic::Unattended-Upgrade \"1\";
+" $au_file
+
+}
+
+uninstall_unattended_upgrades() {
+	[[ -f $uu_file.disabled ]] && mv_file $uu_file.disabled $uu_file
+	rm_file $au_file
+	package_uninstall unattended-upgrades
+}
