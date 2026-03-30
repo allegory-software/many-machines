@@ -247,6 +247,10 @@ probe_nvmes() {
 	done
 }
 
+probe_reboot_required() {
+	[[ -f /var/run/reboot-required ]] && K=reboot-required V=1 MIN=1 MAX=1 log # auto-upgrade events
+}
+
 # main loop ------------------------------------------------------------------
 
 # trap Ctrl+C to stop the loop cleanly.
@@ -278,6 +282,7 @@ while [[ ! $STOP ]]; do
 	P probe_ups
 	P probe_temps
 	P probe_nvmes
+	P probe_reboot_required
 
 	echo
 
