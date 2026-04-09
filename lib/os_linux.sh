@@ -269,4 +269,5 @@ uninstall_lazygit() {
 install_sensors() {
 	# kernel module to read RAM temperature sensor
 	modprobe spd5118
+	save spd5118 /etc/modules-load.d/spd5118.conf
 }
