@@ -300,3 +300,83 @@ mysql_rename_db() { # OLD_DB NEW_DB
 
 	mysql_drop_db $db0
 }
+
+# mysql install --------------------------------------------------------------
+
+install_mysql() {
+
+	say; say "Installing MySQL..."
+	service_is_installed mysql && service_stop mysql
+
+	local file=mysql-apt-config_0.8.34-1_all.deb
+	wget https://repo.mysql.com//$file
+	dpkg_i $file
+	rm $file
+	apt update
+	package_install mysql-server mysql-client
+	#sudo systemctl enable --now mysql
+
+	mysql_config default "
+# amazing that this is not the default...
+bind-address = 127.0.0.1
+mysqlx-bind-address = 127.0.0.1
+
+# our binlog is row-based, but we still get an error when creating procs.
+log_bin_trust_function_creators = 1
+
+# we only support old auth in the SDK
+mysql_native_password=ON
+"
+
+	service_start mysql
+
+	say "MySQL install done."
+	mysql -e "SELECT VERSION();"
+
+}
+
+# mysql backup ---------------------------------------------------------------
+
+mysql_backup_db() { # DB [FILE]
+	local db=$1 file=$2
+	checkvars db
+	[[ $file ]] && checkvars file
+	[[ $file ]] && must mkdir -p $(dirname $file)
+	sayn "Dumping MySQL database '$MACHINE:$db' "
+	[[ $file ]] && sayn "to file '$file' ... " || sayn "to stdout ... "
+
+	local qp_opt="-i db.sql $file"; [[ ! $file ]] && qp_opt="-io db.sql $file"
+	local pv; [[ $PROGRESS ]] && command -v pv &>/dev/null && pv=pv || pv=cat
+	must dry mysqldump -u root \
+		--no-create-db \
+		--extended-insert \
+		--order-by-primary \
+		--triggers \
+		--routines \
+		--skip_add_locks \
+		--skip-lock-tables \
+		--quick \
+		$db | $pv | must qpress $qp_opt
+
+	[[ $file ]] && say "OK. $(stat --printf=%s $file | numfmt --to=iec) written." || say "OK."
+}
+
+# rename user in DEFINER clauses in a mysqldump, in order to be able to
+# restore the dump into a different db name.
+# NOTE: All clauses containing **any user** are renamed!
+mysqldump_fix_user() { # USER
+	local user=$1
+	checkvars user
+	sed "s/\`[^\`]*\`@\`localhost\`/\`$user\`@\`localhost\`/g"
+}
+
+mysql_restore_db() { # DB FILE
+	local db=$1 file=$2
+	checkvars db file
+
+	mysql_drop_db   $db
+	mysql_create_db $db
+	sayn "Restoring MySQL database '$MACHINE:$db' from file '$file' ... "
+	must dry qpress -do $file | mysqldump_fix_user $db | must dry mysql $db
+	say OK
+}

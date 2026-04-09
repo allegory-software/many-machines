@@ -123,38 +123,6 @@ install_libssl1() {
 	rm $pkg
 }
 
-install_mysql() {
-
-	say; say "Installing MySQL..."
-	service_is_installed mysql && service_stop mysql
-
-	local file=mysql-apt-config_0.8.34-1_all.deb
-	wget https://repo.mysql.com//$file
-	dpkg_i $file
-	rm $file
-	apt update
-	package_install mysql-server mysql-client
-	#sudo systemctl enable --now mysql
-
-	mysql_config default "
-# amazing that this is not the default...
-bind-address = 127.0.0.1
-mysqlx-bind-address = 127.0.0.1
-
-# our binlog is row-based, but we still get an error when creating procs.
-log_bin_trust_function_creators = 1
-
-# we only support old auth in the SDK
-mysql_native_password=ON
-"
-
-	service_start mysql
-
-	say "MySQL install done."
-	mysql -e "SELECT VERSION();"
-
-}
-
 install_tarantool() { # tarantool 3.0
 	say; say "Installing Tarantool..."
 	curl -L https://tarantool.io/release/3/installer.sh | bash
