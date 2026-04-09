@@ -123,16 +123,6 @@ install_libssl1() {
 	rm $pkg
 }
 
-install_tarantool() { # tarantool 3.0
-	say; say "Installing Tarantool..."
-	curl -L https://tarantool.io/release/3/installer.sh | bash
-	package_install tarantool tt
-	say "Tarantool install done."
-}
-uninstall_tarantool() {
-	package_uninstall tt tarantool
-}
-
 install_rpcbind() {
 	service_enable rpcbind
 	service_enable rpcbind.socket
