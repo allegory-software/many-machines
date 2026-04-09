@@ -187,7 +187,7 @@ _remount_proc() { # HIDEPID
 	append "proc  /proc  proc  defaults,nosuid,nodev,noexec,relatime,hidepid=$1  0  0" /etc/fstab
 }
 install_secure_proc() {
-	_remount_proc 1
+	_remount_proc 2
 }
 uninstall_secure_proc() {
 	_remount_proc 0
