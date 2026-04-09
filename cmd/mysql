@@ -1,8 +1,0 @@
-#!/bin/bash
-# DB ; [DB=] [MYSQL-ARGS...] ; get a mysql remote terminal
-. mmlib
-
-_f() {
-	MM_SSH_TTY=1 ssh_to mysql ${DB:-$DEPLOY} "$@"
-}
-AS_DEPLOY=1 each_md _f "$@"

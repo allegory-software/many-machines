@@ -1,5 +1,5 @@
 #!/bin/bash
-# perform ambiguous mm commands (like eg. mysql) on deployment instead of on machine.
+# perform ambiguous mm commands on deployment instead of on machine.
 
 [[ $THIS_DEPLOY ]] || THIS_DEPLOY=`basename "$(readlink deploy)"`
 export THIS_DEPLOY

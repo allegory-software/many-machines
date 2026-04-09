@@ -82,8 +82,6 @@ deploy_install_app_service() {
 Description=$DEPLOY
 After=multi-user.target
 After=network-online.target
-After=mysql.service
-Requires=mysql.service
 Requires=network-online.target
 
 # try restarting for 60s
@@ -167,7 +165,7 @@ deploy_rename_app() {
 }
 
 deploy_gen_conf() {
-	checkvars MACHINE DEPLOY APP MYSQL_PASS SECRET
+	checkvars MACHINE DEPLOY APP SECRET
 	local conf=/home/$DEPLOY/app/${APP}.conf
 	local HOST=${DOMAIN:-$PUBLIC_IP}
 	save "\
@@ -178,7 +176,6 @@ ${ENV:+env = '$ENV'}
 ${APP_VERSION:+version = '$APP_VERSION'}
 db_name = '$DEPLOY'
 db_user = '$DEPLOY'
-db_pass = '$MYSQL_PASS'
 secret = '$SECRET'
 
 --custom vars
@@ -252,30 +249,4 @@ deploy_uninstall_run_dir() {
 deploy_install_git() {
 	git_keys_update $DEPLOY
 	git_config_user "mm@allegory.ro" "Many Machines"
-}
-
-# deploy mysql module --------------------------------------------------------
-
-deploy_preinstall_mysql() {
-	checkvars DEPLOY
-	mysql_pass_gen_once var/deploys/$DEPLOY/mysql_pass
-}
-
-deploy_install_mysql() {
-	checkvars DEPLOY MYSQL_PASS-
-	mysql_create_db     $DEPLOY
-	mysql_create_user   localhost $DEPLOY "$MYSQL_PASS"
-	mysql_grant_user_db localhost $DEPLOY $DEPLOY
-	mysql_gen_my_cnf    localhost $DEPLOY "$MYSQL_PASS" $DEPLOY
-}
-
-deploy_uninstall_mysql() {
-	mysql_drop_db $DEPLOY
-	mysql_drop_user localhost $DEPLOY
-}
-
-deploy_rename_mysql() {
-	checkvars MYSQL_PASS
-	mysql_rename_db $DEPLOY $DEPLOY1
-	mysql_gen_my_cnf localhost $DEPLOY1 "$MYSQL_PASS" $DEPLOY1
 }

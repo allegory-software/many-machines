@@ -1,8 +1,0 @@
-#!/bin/bash
-# DB BACKUP ; DB please ; drop database
-. mmlib
-
-DB=$1; checkvars DB
-[[ $2 == please ]] || die "Say please"
-
-NOALL=1 each_machine ssh_script mysql_drop_db $DB

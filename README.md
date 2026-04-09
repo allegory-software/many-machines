@@ -20,7 +20,6 @@ don't need to learn programming to be a sysadmin.
   * app deployment
   * SSH key management
   * user management
-  * mysql user management
   * SSL certificate management
 * Reporting
   * users and password lock status
@@ -31,17 +30,13 @@ don't need to learn programming to be a sysadmin.
   * speed tests for CPU, I/O and network
   * open ports, port scan
   * geographical location
-  * mysql databases, tables, table structure
   * app users, sessions, tenants
 * Ops
   * remote shells, commands, tunnels, sshfs mounts
   * remote scripts with deploy and machine vars
   * service and app control
   * rsync between machines
-  * remote mysql queries
-  * mysql database management
 * Backups
-  * mysql database incremental backup and restore
   * files incremental backup and restore
   * deploy backup, restore, clone, move
 * Monitoring & alerting

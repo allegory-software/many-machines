@@ -1,5 +1,0 @@
-#!/bin/bash
-# DB BACKUP ;; remove old backups according to retention policy
-. mmlib
-
-deploy_backups_sweep

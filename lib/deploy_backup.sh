@@ -47,33 +47,6 @@ ssh_to_or_run() { # MACHINE=|DST_MACHINE= ...
 	fi
 }
 
-# mysql backup from a remote deploy (MACHINE=, DEPLOY=) to this machine
-# or from a local deploy (DEPLOY=) to a remote machine (DST_MACHINE=).
-deploy_backup_mysql() { # MACHINE=|DST_MACHINE= DEPLOY= BACKUP_DIR=
-	if [[ $DST_MACHINE ]]; then
-		PROGRES=1 mysql_backup_db $DEPLOY | MACHINE=$DST_MACHINE ssh_save_stdin $BACKUP_DIR/db.qp
-	else
-		ssh_script "PROGRESS=1 mysql_backup_db $DEPLOY" > $BACKUP_DIR/db.qp
-	fi
-}
-
-deploy_restore_mysql() { # BACKUP_DIR= DST_MACHINE= DST_DEPLOY=
-	checkvars BACKUP_DIR DST_MACHINE DST_DEPLOY
-	local BACKUP_FILE=$BACKUP_DIR/db.qp
-	checkfile $BACKUP_FILE
-	say "Restoring mysql files from '$BACKUP_FILE' to '$DST_MACHINE:$DST_DEPLOY' ... "
-
-	SRC_MACHINE= \
-		SRC_DIR="$(dirname $BACKUP_FILE)/./$(basename $BACKUP_FILE)" \
-		DST_DIR=/root/.mm/$DST_DEPLOY.$$.qp \
-		PROGRESS=1 rsync_dir
-
-	MACHINE=$DST_MACHINE must ssh_script "
-		on_exit run rm -f $DST_DEPLOY.$$.qp
-		mysql_restore_db $DST_DEPLOY $DST_DEPLOY.$$.qp
-	"
-}
-
 # incremental files backup from a deploy (MACHINE=, DEPLOY=) to this machine
 # or from a local deply (DEPLOY=) to a remote machine (DST_MACHINE=).
 deploy_backup_app() { # MACHINE=|DST_MACHINE= DEPLOY= BACKUP_DIR= [PREV_BACKUP_DIR=]
