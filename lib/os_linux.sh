@@ -341,4 +341,7 @@ install_sensors() {
 	# kernel module to read RAM temperature sensor
 	modprobe spd5118
 	save spd5118 /etc/modules-load.d/spd5118.conf
+	# kernel module to read CPU temperature sensor
+	modprobe coretemp
+	save coretemp /etc/modules-load.d/coretemp.conf
 }
