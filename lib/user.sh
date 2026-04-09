@@ -103,7 +103,6 @@ list_users() {
 # autologin as $AUTOLOGIN_USER_CONSOLE to hardware console.
 install_autologin_console() {
 	checkvars AUTOLOGIN_USER_CONSOLE
-	must dry mkdir -p /etc/systemd/system/getty@tty1.service.d
 	save "\
 [Service]
 ExecStart=
@@ -121,13 +120,23 @@ uninstall_autologin_console() {
 # autologin as $AUTOLOGIN_USER_LIGHTDM to lightdm.
 install_autologin_lightdm() {
 	checkvars AUTOLOGIN_USER_LIGHTDM
-	must dry mkdir -p /etc/lightdm/lightdm.conf.d
 	save "\
 [Seat:*]
 autologin-user=$AUTOLOGIN_USER_LIGHTDM
 autologin-user-timeout=0
 lock-screen-on-suspend=false
 " /etc/lightdm/lightdm.conf.d/autologin.conf
+	# disable xfce4-screensaver lock-on-dpms-wake (blanking still works)
+	local xfce_conf="$(getent passwd "$AUTOLOGIN_USER_LIGHTDM" | cut -d: -f6)/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-screensaver.xml"
+	save '<?xml version="1.1" encoding="UTF-8"?>
+
+<channel name="xfce4-screensaver" version="1.0">
+  <property name="lock" type="empty">
+    <property name="sleep-activation" type="bool" value="false"/>
+    <property name="enabled" type="bool" value="false"/>
+  </property>
+</channel>
+' "$xfce_conf" $AUTOLOGIN_USER_LIGHTDM
 }
 uninstall_autologin_lightdm() {
 	rm_dir /etc/lightdm/lightdm.conf.d
