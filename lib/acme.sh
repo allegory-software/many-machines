@@ -21,7 +21,7 @@ install_acme() {
 
 	save "\
 #!/bin/sh
-/root/.acme.sh/acme.sh --cron --home /root/.acme.sh --config-home $ACME_DIR 2>&1 >/dev/null
+/root/.acme.sh/acme.sh --cron --home /root/.acme.sh --config-home $ACME_DIR >/dev/null 2>&1
 nginx -s reload
 " /etc/cron.daily/acme root 755
 
