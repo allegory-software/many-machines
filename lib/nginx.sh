@@ -4,8 +4,8 @@ install_nginx() {
 	say "Configuring nginx..."
 	# add dhparam.pem from mm (dhparam is public).
 	save "$DHPARAM"        /etc/nginx/dhparam.pem
-	save "$SELFSIGNED_KEY" /etc/nginx/selfsigned.key
-	save "$SELFSIGNED_CRT" /etc/nginx/selfsigned.crt
+	save "$SELFSIGNED_KEY" /etc/nginx/selfsigned.key root 600
+	save "$SELFSIGNED_CRT" /etc/nginx/selfsigned.crt root 600
 	# remove nginx placeholder vhost.
 	rm_file /etc/nginx/sites-enabled/default
 	service_is_running nginx && nginx -s reload
