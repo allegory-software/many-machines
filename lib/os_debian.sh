@@ -192,11 +192,11 @@ uninstall_iptables() {
 }
 
 install_nftables() {
-	save "\
-#!/usr/sbin/nft -f
-
+	save '#!/usr/sbin/nft -f
 flush ruleset
-
+include "/etc/nftables.d/*.conf"
+' /etc/nftables.conf
+	save "\
 table inet filter {
 	chain input {
 		type filter hook input priority 0; policy drop;
@@ -206,35 +206,36 @@ table inet filter {
 		ct state established,related accept
 
 		ip protocol icmp accept
-		#ip6 icmpv6 accept
+		ip6 nexthdr icmpv6 accept
 
 		tcp dport { ${TCP_PORTS//[[:space:]]/,} } accept
 		udp dport { ${UDP_PORTS//[[:space:]]/,} } accept
 	}
-}
+	chain forward {
+		type filter hook forward priority 0; policy drop;
 
-# NAT for wireguard VPN
-table ip nat {
-	chain POSTROUTING {
-		type nat hook postrouting priority srcnat; policy accept;
-		oif enp1s0 ip saddr 10.2.0.0/16 masquerade
+		ct state established,related accept
 	}
 }
-
-" /etc/nftables.conf
+" /etc/nftables.d/10-filter.conf
 	nft -f /etc/nftables.conf
 	service_enable nftables
 }
 uninstall_nftables() {
-	systemctl disable nftables
+	rm_file /etc/nftables.d/10-filter.conf
+	service_disable nftables
 	nft flush ruleset
 }
 
 install_journald() {
 	save "\
 [Journal]
-SystemMaxUse=20M
-" /etc/systemd/journald.conf
+SystemMaxUse=200M
+" /etc/systemd/journald.conf.d/mm.conf
+	service_restart systemd-journald
+}
+uninstall_journald() {
+	rm_file /etc/systemd/journald.conf.d/mm.conf
 	service_restart systemd-journald
 }
 
@@ -317,17 +318,36 @@ ListenPort = $WG_PORT
 PrivateKey = $WG_KEY
 SaveConfig = false
 $PEERS
-" /etc/wireguard/wg0.conf
+" /etc/wireguard/wg0.conf root 600
+
+	kernel_config_add 50-forward-wg.conf "
+# required for wireguard to route traffic between VPN clients and the internet
+net.ipv4.ip_forward=1
+"
+
+	save "\
+table ip nat {
+	chain POSTROUTING {
+		type nat hook postrouting priority srcnat; policy accept;
+		oif enp1s0 ip saddr 10.2.0.0/16 masquerade
+	}
+}
+# allow VPN clients to be forwarded out; return traffic is covered by established/related
+add rule inet filter forward iif \"wg0\" accept
+" /etc/nftables.d/20-nat-wg.conf
+	service_is_installed nftables && nft -f /etc/nftables.conf
 
 	service_restart wg-quick@wg0
-
 }
 
 uninstall_wireguard() {
+	service_stop wg-quick@wg0
 	package_uninstall wireguard
 	rm_file /etc/wireguard/wg0.conf
+	kernel_config_remove 50-forward-wg.conf
+	rm_file /etc/nftables.d/20-nat-wg.conf
+	service_is_installed nftables && nft -f /etc/nftables.conf
 }
-
 
 uu_file=/etc/apt/apt.conf.d/50unattended-upgrades
 au_file=/etc/apt/apt.conf.d/20auto-upgrades

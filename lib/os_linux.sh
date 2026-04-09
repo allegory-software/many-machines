@@ -229,8 +229,79 @@ net.ipv4.tcp_keepalive_intvl=5
 net.ipv4.tcp_keepalive_probes=5
 "
 }
-uninstall_tcp_keepalive_tuning() {
+uninstall_tcp_tuning() {
 	kernel_config_remove 50-tcp-keepalive.conf
+}
+
+install_secure_ssh() {
+	say; say "Hardening SSH daemon ..."
+	save "\
+# require SSH keys; password auth is off
+PasswordAuthentication no
+# allow key-based root login but block password-based root login
+PermitRootLogin prohibit-password
+# don't forward the X display (attack surface, almost never needed over SSH)
+X11Forwarding no
+# disconnect after this many failed auth attempts per connection
+MaxAuthTries 10
+" /etc/ssh/sshd_config.d/50-hardening.conf
+	service_restart ssh
+}
+uninstall_secure_ssh() {
+	rm_file /etc/ssh/sshd_config.d/50-hardening.conf
+	service_restart ssh
+}
+
+install_secure_kernel() {
+	say; say "Hardening kernel parameters ..."
+	kernel_config_add 50-secure-kernel.conf "
+# hide kernel ring buffer (boot messages, driver info) from unprivileged users
+kernel.dmesg_restrict=1
+# hide kernel symbol addresses from unprivileged users (2=always hidden)
+kernel.kptr_restrict=2
+"
+}
+uninstall_secure_kernel() {
+	kernel_config_remove 50-secure-kernel.conf
+}
+
+install_secure_net() {
+	say; say "Hardening network parameters ..."
+	kernel_config_add 50-secure-net.conf "
+# drop packets whose source address is unreachable via the incoming interface
+# (prevents IP spoofing; set on all interfaces and the default for new ones)
+net.ipv4.conf.all.rp_filter=1
+net.ipv4.conf.default.rp_filter=1
+# ignore ICMP redirects (routers telling us to use a different route)
+# (prevents route-poisoning MITM attacks)
+net.ipv4.conf.all.accept_redirects=0
+net.ipv4.conf.default.accept_redirects=0
+# don't send ICMP redirects (we're not a router)
+net.ipv4.conf.all.send_redirects=0
+# ignore packets that carry their own route (source routing)
+net.ipv4.conf.all.accept_source_route=0
+net.ipv4.conf.default.accept_source_route=0
+# use SYN cookies when the SYN backlog fills up (mitigates SYN flood attacks)
+net.ipv4.tcp_syncookies=1
+"
+}
+uninstall_secure_net() {
+	kernel_config_remove 50-secure-net.conf
+}
+
+install_secure_fs() {
+	say; say "Hardening filesystem parameters ..."
+	kernel_config_add 50-secure-fs.conf "
+# block following symlinks in sticky world-writable dirs unless owner matches
+# (mitigates TOCTOU race attacks in /tmp and similar dirs)
+fs.protected_symlinks=1
+# block hardlinking to files you don't own
+# (mitigates privilege escalation via suid/sgid file hardlinks)
+fs.protected_hardlinks=1
+"
+}
+uninstall_secure_fs() {
+	kernel_config_remove 50-secure-fs.conf
 }
 
 install_gdu() {
