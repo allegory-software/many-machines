@@ -99,3 +99,36 @@ list_users() {
 		"USER LOCKED UID GID SHELL" \
 		"%-10s %-19s %-10s %-10s %-20s"
 }
+
+# autologin as $AUTOLOGIN_USER_CONSOLE to hardware console.
+install_autologin_console() {
+	checkvars AUTOLOGIN_USER_CONSOLE
+	must dry mkdir -p /etc/systemd/system/getty@tty1.service.d
+	save "\
+[Service]
+ExecStart=
+ExecStart=-/sbin/agetty --autologin $AUTOLOGIN_USER_CONSOLE --noclear %I \$TERM
+" /etc/systemd/system/getty@tty1.service.d/override.conf
+	systemctl daemon-reload
+	systemctl restart getty@tty1
+}
+uninstall_autologin_console() {
+	rm_dir /etc/systemd/system/getty@tty1.service.d
+	systemctl daemon-reload
+	systemctl restart getty@tty1
+}
+
+# autologin as $AUTOLOGIN_USER_LIGHTDM to lightdm.
+install_autologin_lightdm() {
+	checkvars AUTOLOGIN_USER_LIGHTDM
+	must dry mkdir -p /etc/lightdm/lightdm.conf.d
+	save "\
+[Seat:*]
+autologin-user=$AUTOLOGIN_USER_LIGHTDM
+autologin-user-timeout=0
+lock-screen-on-suspend=false
+" /etc/lightdm/lightdm.conf.d/autologin.conf
+}
+uninstall_autologin_lightdm() {
+	rm_dir /etc/lightdm/lightdm.conf.d
+}
