@@ -125,6 +125,7 @@ install_autologin_lightdm() {
 autologin-user=$AUTOLOGIN_USER_LIGHTDM
 autologin-user-timeout=0
 lock-screen-on-suspend=false
+greeter-session=lightdm-autologin-greeter
 " /etc/lightdm/lightdm.conf.d/autologin.conf
 	# disable xfce4-screensaver lock-on-dpms-wake (blanking still works)
 	local xfce_conf="$(getent passwd "$AUTOLOGIN_USER_LIGHTDM" | cut -d: -f6)/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-screensaver.xml"
@@ -137,7 +138,20 @@ lock-screen-on-suspend=false
   </property>
 </channel>
 ' "$xfce_conf" $AUTOLOGIN_USER_LIGHTDM
+
+	# PAM's lightdm-autologin service requires the autologin group
+	groupadd -f autologin
+	usermod -aG autologin "$AUTOLOGIN_USER_LIGHTDM"
+
+	# light-locker hooks into LightDM and locks on logout regardless of xfce4-session settings
+	package_uninstall light-locker
+	# lightdm-autologin-greeter re-logins the autologin user after logout (autologin-user alone only works on first boot)
+	package_install lightdm-autologin-greeter
 }
 uninstall_autologin_lightdm() {
+
 	rm_dir /etc/lightdm/lightdm.conf.d
+	gpasswd -d "$AUTOLOGIN_USER_LIGHTDM" autologin 2>/dev/null || true
+	package_install light-locker
+	package_uninstall lightdm-autologin-greeter
 }
