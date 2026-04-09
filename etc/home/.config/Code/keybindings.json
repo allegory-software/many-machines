@@ -1,0 +1,66 @@
+[
+  {
+    "key": "ctrl+tab",
+    "command": "workbench.action.nextEditor"
+  },
+  {
+    "key": "ctrl+shift+tab",
+    "command": "workbench.action.previousEditor"
+  },
+  {
+    "key": "f5",
+    "command": "runCommands",
+    "args": {"commands": [
+      "workbench.action.files.save",
+      "workbench.action.terminal.clear",
+      {"command": "workbench.action.terminal.sendSequence", "args": {"text": "\u0003\r\n~/sdk/bin/luajit -lscite ${relativeFile}\r\n"}}
+    ]},
+    "when": "resourceFilename =~ /^[^.]+$/"
+  },
+  {
+    "key": "f5",
+    "command": "runCommands",
+    "args": {"commands": [
+      "workbench.action.files.save",
+      "workbench.action.terminal.clear",
+      {"command": "workbench.action.terminal.sendSequence", "args": {"text": "\u0003\r\n~/sdk/bin/luajit -lscite ${relativeFile}\r\n"}}
+    ]},
+    "when": "resourceFilename =~ /\\./"
+  },
+    {
+        "key": "ctrl+f2",
+        "command": "-editor.action.changeAll",
+        "when": "editorTextFocus && !editorReadonly"
+    },
+    {
+        "key": "ctrl+f2",
+        "command": "bookmarks.toggle",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "f2",
+        "command": "bookmarks.jumpToNext",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "alt+shift+up",
+        "command": "cursorColumnSelectUp",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "alt+shift+down",
+        "command": "cursorColumnSelectDown",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "alt+shift+right",
+        "command": "cursorColumnSelectRight",
+        "when": "editorTextFocus"
+    },
+    {
+        "key": "alt+shift+left",
+        "command": "cursorColumnSelectLeft",
+        "when": "editorTextFocus"
+    },
+
+]

@@ -1,0 +1,213 @@
+{
+    "update.mode": "none",
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    "explorer.sortOrder": "type",
+    "editor.semanticHighlighting.enabled": false,
+    "editor.bracketPairColorize": false,
+    "editor.matchBrackets": "never",
+    "workbench.startupEditor": "newUntitledFile",
+    "workbench.iconTheme": null,
+    "explorer.confirmDelete": false,
+    "lldb.suppressUpdateNotifications": true,
+    "editor.inlineSuggest.enabled": true,
+    "Lua.diagnostics.disable": [
+        "undefined-global",
+        "deprecated",
+        "lowercase-global",
+        "redefined-local",
+        "unbalanced-assignments"
+    ],
+    "Lua.diagnostics.enable": false,
+    "Lua.format.enable": false,
+    "Lua.hint.arrayIndex": "Disable",
+    "Lua.hint.await": false,
+    "Lua.hint.semicolon": "Disable",
+    "Lua.hover.expandAlias": false,
+    "luahelper.Warn.AllEnable": false,
+    "luahelper.format.use_tab": true,
+    "github.gitProtocol": "ssh",
+    "Lua.telemetry.enable": false,
+    "editor.fontFamily": "Input",
+    "editor.fontWeight": "normal",
+    "diffEditor.renderSideBySide": false,
+    "editor.minimap.autohide": "mouseover",
+    "editor.minimap.renderCharacters": false,
+    "editor.minimap.enabled": false,
+    "editor.scrollbar.vertical": "visible",
+    "editor.rulers": [78],
+    "editor.lightbulb.enabled": "off",
+    "editor.glyphMargin": true,
+    "editor.folding": false,
+    "editor.foldingHighlight": false,
+    "editor.guides.highlightActiveIndentation": false,
+    "editor.guides.indentation": false,
+    "editor.renderWhitespace": "none",
+    "scm.diff.decorations": "none",
+    "git.decorations.enabled": false,
+    "git.enabled": false,
+    "editor.stickyScroll.enabled": false,
+    "breadcrumbs.enabled": false,
+    "editor.renderLineHighlight": "none",
+    "editor.occurrencesHighlight": "off",
+    "editor.fontVariations": false,
+    "editor.tabSize": 3,
+
+    "vsicons.hideFolders": true,
+
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": ["comment", "comment.block", "comment.block.documentation", "comment.line"],
+            "settings": {
+              "foreground": "#56CC66"
+            }
+          },
+          {
+            "scope": ["punctuation.definition.comment.begin.lua", "punctuation.definition.comment.end.lua", "punctuation.definition.comment.lua"],
+            "settings": {
+              "foreground": "#56CC66"
+            }
+          },
+          {
+            "scope": ["keyword", "keyword.control", "keyword.other"],
+            "settings": {
+              "foreground": "#FFFF00"
+            }
+          },
+          {
+            "scope": ["storage", "storage.modifier", "storage.type"],
+            "settings": {
+              "foreground": "#FFAA00"
+            }
+          },
+          {
+            "scope": ["support", "support.class", "support.function", "support.type"],
+            "settings": {
+              "foreground": "#FFAA00"
+            }
+          },
+          {
+            "scope": ["string", "string.quoted", "string.quoted.double", "string.quoted.single"],
+            "settings": {
+              "foreground": "#FF3333"
+            }
+          },
+          {
+            "scope": ["constant.numeric", "constant.numeric.integer", "constant.numeric.float", "constant.numeric.hex"],
+            "settings": {
+              "foreground": "#FF6666"
+            }
+          },
+          {
+            "scope": ["keyword.operator"],
+            "settings": {
+              "foreground": "#FFFFFF"
+            }
+          },
+          {
+            "scope": ["invalid", "invalid.illegal"],
+            "settings": {
+              "foreground": "#FF0000"
+            }
+          },
+          {
+            "scope": ["variable.language.self", "variable.language.self.lua"],
+            "settings": {
+              "foreground": "#FFAA00"
+            }
+          },
+          {
+            "scope": ["keyword.reserved.lua"],
+            "settings": {
+              "foreground": "#FFAA00"
+            }
+          },
+          {
+            "scope": ["variable", "variable.name", "variable.parameter", "variable.other", "entity.name.function"],
+            "settings": {
+              "foreground": "#CCCCCC"
+            }
+          },
+          {
+            "scope": ["punctuation"],
+            "settings": {
+              "foreground": "#CCCCCC"
+            }
+          },
+          {
+            "scope": ["punctuation.definition.string"],
+            "settings": {
+              "foreground": "#FF3333"
+            }
+          },
+          {
+            "scope": ["entity.other.attribute.lua"],
+            "settings": {
+              "foreground": "#CCCCCC"
+            }
+          },
+          {
+            "scope": ["constant.language", "constant.language.boolean", "constant.language.boolean.lua", "constant.language.nil", "constant.language.nil.lua", "constant.language.lua"],
+            "settings": {
+              "foreground": "#FFAA00"
+            }
+          }
+        ]
+    },
+    "editor.bracketPairColorization.enabled": false,
+    "workbench.colorCustomizations": {
+        "editor.background": "#080813",
+        "editor.foreground": "#CCCCCC",
+        "editorError.foreground": "#FF0000",
+        "editorBracketMatch.background": "#3a3a40",
+        "editorBracketMatch.border": "#00000000",
+        "editorLineNumber.activeForeground": "#408080",
+        "editorGutter.background": "#1a1a25",
+        "editorLineNumber.foreground": "#888888",
+        "scrollbar.background": "#1a1a25",
+        "editorRuler.foreground": "#202028"
+    },
+    "amp.url": "https://ampcode.com/",
+    "editor.wordBasedSuggestions": "off",
+    "cSpell.languageSettings": [
+        {
+            "languageId": "lua",
+            "includeRegExpList": [
+                "/--.*$/m",
+                "/--\\[=*\\[[\\s\\S]*?\\]=*\\]/"
+            ]
+        }
+    ],
+    "amp.tab.enabled": true,
+    "claudeCode.preferredLocation": "panel",
+    "workbench.secondarySideBar.defaultVisibility": "hidden",
+    "claudeCode.selectedModel": "opus",
+    "workbench.settings.applyToAllProfiles": [
+      "editor.matchBrackets"
+    ],
+    "terminal.integrated.initialHint": false,
+    "cSpell.userWords": [
+      "Apreutesei",
+      "autokill",
+      "chdir",
+      "cmdline",
+      "Cosmin",
+      "daemonized",
+      "errno",
+      "luafile",
+      "prctl",
+      "sigprocmask"
+    ],
+    "terminal.integrated.enableMultiLinePasteWarning": "never",
+    "workbench.activityBar.location": "top",
+    "terminal.integrated.tabs.enabled": false,
+    "terminal.integrated.defaultLocation": "editor",
+    "workbench.editor.empty.hint": "hidden",
+    "extensions.autoUpdate": false,
+    "files.autoSave": "onFocusChange",
+    "editor.insertSpaces": false,
+    "bookmarks.navigateThroughAllFiles": false,
+    "editor.wordWrap": "off",
+    "editor.fontSize": 13
+}
