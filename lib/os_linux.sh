@@ -254,13 +254,19 @@ uninstall_goful() {
 }
 
 install_lazygit() {
-	local VER=0.49.0
+	local VER=`curl -sI https://github.com/jesseduffield/lazygit/releases/latest | grep -i location | awk -F'/' '{print $NF}' | tr -d '\rv'`
+	checkvars VER
 	sayn "Installing lazygit $VER ... "
-	local file=lazygit_${VER}_Linux_x86_64.tar.gz
-	must curl -s -L https://github.com/jesseduffield/lazygit/releases/latest/download/$file | tar xzO lazygit > /usr/local/bin/lazygit
+	local file=lazygit_${VER}_linux_x86_64.tar.gz
+	must curl -s -L https://github.com/jesseduffield/lazygit/releases/download/v$VER/$file | tar xzO lazygit > /usr/local/bin/lazygit
 	must chmod 755 /usr/local/bin/lazygit
 	say OK
 }
 uninstall_lazygit() {
 	rm_file /usr/local/bin/lazygit
+}
+
+install_sensors() {
+	# kernel module to read RAM temperature sensor
+	modprobe spd5118
 }
