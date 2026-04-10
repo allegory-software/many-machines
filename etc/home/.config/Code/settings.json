@@ -209,5 +209,6 @@
     "editor.insertSpaces": false,
     "bookmarks.navigateThroughAllFiles": false,
     "editor.wordWrap": "off",
-    "editor.fontSize": 13
+    "editor.fontSize": 13,
+    "security.workspace.trust.untrustedFiles": "open"
 }
