@@ -1,4 +1,5 @@
 #!/bin/bash
+[[ $EUID == 0 ]] || exec sudo "$0" "$@"
 [[ $PWD0 ]] || export PWD0=$PWD
 cd /root/mm || exit 1
 
