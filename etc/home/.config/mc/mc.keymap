@@ -2,3 +2,4 @@
 Store = ctrl-c
 Paste = ctrl-v
 Cut = ctrl-x
+WordRight = ctrl-right
