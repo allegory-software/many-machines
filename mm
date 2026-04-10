@@ -14,7 +14,7 @@ set -o pipefail
 
 on_exit sayn $ENDCOLOR
 
-[[ $UID == 0 ]] || die "Must be root."
+[[ $EUID == 0 ]] || die "Must be root."
 
 usage() {
 	say
