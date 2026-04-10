@@ -1,24 +1,71 @@
 #!/bin/bash
-# MONITOR ; [start|stop|restart|status [-q]|reset|pause|resume|unpause|clear-samples] ; continuous monitoring service
-. mmlib
+#
+# MM MON: Continuous Monitoring Service
+# Written by Cosmin Apreutesei. Public Domain.
+#
+# mon start | stop | restart | [-q] status        start as unmanaged daemon
+# mon reset                                       reset alerts
+# mon clear-samples                               clear sample history
+# mon pause | resume|unpause                      pause/resume sampling
 
-# make mon start without mm (systemd service runs it directly).
-[[ $THIS_MACHINE ]] || THIS_MACHINE=`basename "$(readlink machine)"`
-checkvars THIS_MACHINE
-MACHINE=$THIS_MACHINE
+# utils ----------------------------------------------------------------------
+
+die()  { printf "%s\n" "$*" >&2; exit 1; }
+say()  { printf "%s\n" "$*" >&2; }
+must() { "$@" || die "$* [failed]"; }
+
+catfile() { # FILE -> R1 (no subprocess)
+	IFS= read -r -d '' R1 < "$1"
+	R1=${R1%$'\n'}
+}
+
+timeago() { # EPOCH -> R1
+	local d=$(( $(date +%s) - $1 ))
+	if   ((d < 120      )); then R1="$d seconds ago"
+	elif ((d < 7200     )); then R1="$((d/60)) minutes ago"
+	elif ((d < 172800   )); then R1="$((d/3600)) hours ago"
+	elif ((d < 5184000  )); then R1="$((d/86400)) days ago"
+	elif ((d < 63072000 )); then R1="$((d/2592000)) months ago"
+	else                         R1="$((d/31536000)) years ago"
+	fi
+}
+
+# init -----------------------------------------------------------------------
+
+[[ $EUID == 0 ]] || exec sudo "$0" "$@"
+[[ $EUID == 0 ]] || die "Must be root."
+
+must cd "${0%mon}"
 
 # config ---------------------------------------------------------------------
 
-# probing intervals
-PROBE_TICK=${PROBE_TICK:-60}
+SMARTCTL=/usr/sbin/smartctl
+MACHINE=$(hostname -s)
+
+PROBING_INTERVAL=60
+MAX_CPU=90
+MAXT_CPU=1
+MIN_FREE_RAM_MB=50
+MAXT_FREE_RAM=1
+
+SERVICES_BLACKLIST=(
+	mon mm-mon
+	anacron avahi-daemon cups cups-browsed e2scrub_reap
+	grub-common irqbalance lm-sensors
+	ModemManager NetworkManager 'NetworkManager-*'
+	console-setup keyboard-setup remote-fs
+	'systemd-*' 'dbus-*' wpa_supplicant
+	apparmor 'plymouth-*' smartd smartmontools
+	display-manager
+)
+
+[[ -f mon.conf ]] && . mon.conf
 
 # parse cmdline & damonize ---------------------------------------------------
 
-must mkdir -p mon/alerts
-must mkdir -p mon/notified
-must mkdir -p mon/samples
+must mkdir -p alerts notified samples
 
-mon_pid() { pgrep -f 'bin/bash cmd/mon daemon'; }
+mon_pid() { pgrep -f 'bin/bash.*mon/mon daemon'; }
 
 RUN=
 if [[ $1 == start ]]; then
@@ -36,15 +83,14 @@ elif [[ $1 == status ]]; then
 	[[ $2 == -q ]] || { [[ $x == 0 ]] && say "Running. PID: $pid" || say "Not running."; }
 	exit $x
 elif [[ $1 == reset ]]; then
-	REL_PATH_OK=1 empty_dir mon/alerts
-	REL_PATH_OK=1 empty_dir mon/notified
+	find alerts notified -mindepth 1 -delete
 elif [[ $1 == pause ]]; then
-	touch mon/paused
+	touch paused
 elif [[ $1 == resume || $1 == unpause ]]; then
-	REL_PATH_OK=1 rm_file mon/paused
+	rm -f paused
 elif [[ $1 == clear-samples ]]; then
 	[[ $2 == please ]] || die "Say please."
-	REL_PATH_OF=1 rm_dir mon/samples
+	rm -rf samples
 elif [[ $1 == daemon || $1 == systemd ]]; then
 	RUN=1
 	DAEMON=1
@@ -73,12 +119,12 @@ log() { # K= V= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
 
 	# log the value in samples file to show in a graph
 	[[ $DAEMON ]] && {
-		[[ -d mon/samples/$K ]] || {
-			must mkdir -p mon/samples/$K
-			printf "%d\n" $MIN > mon/samples/$K/min
-			printf "%d\n" $MAX > mon/samples/$K/max
+		[[ -d samples/$K ]] || {
+			must mkdir -p samples/$K
+			printf "%d\n" $MIN > samples/$K/min
+			printf "%d\n" $MAX > samples/$K/max
 		}
-		printf "%05d %s\n" $((T - T0)) $V >> mon/samples/$K/$FILE.sam
+		printf "%05d %s\n" $((T - T0)) $V >> samples/$K/$FILE.sam
 	}
 
 	# check alert thresholds
@@ -99,14 +145,15 @@ log() { # K= V= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
 
 	# record alert
 	[[ $DAEMON && $ALERT ]] && {
-		local file=mon/alerts/$K
+		local file=alerts/$K
 		printf "%s\n" $V > $file
 	}
 }
 
 notify() {
 	[[ $DAEMON ]] || return
-	must pushd mon/alerts
+	[[ $NTFY_URL ]] || return
+	must pushd alerts >/dev/null
 	local f s
 	# list alerts of < 24h ago and notify at most once every 24h for each.
 	for f in `find -maxdepth 1 -type f -mmin -1440 -printf '%f\n'`; do
@@ -119,13 +166,16 @@ notify() {
 	done
 	must popd
 	[[ $s ]] || return
-	dry mm ntfy -H "Tags: warning" -H "Title: MM @ $MACHINE ALERT" -d "$s"
+	curl -s -d "$s" -H "Tags: warning" -H "Title: MON @ $MACHINE ALERT" "$NTFY_URL" >/dev/null
 }
 
 # probing modules ------------------------------------------------------------
 
-md_var MIN_FREE_RAM_MB 50; MIN_FREE_RAM_MB=$R1
-md_var MAXT_FREE_RAM 1; MAXT_FREE_RAM=$R1
+is_running() {
+	local p=/sys/fs/cgroup/system.slice/$1.service/cgroup.procs
+	[[ -e $p ]] && IFS= read -r _ < "$p"
+}
+
 RAM_MB=`cat /proc/meminfo | awk '/MemTotal/ {print int($2/1024)}'`
 probe_ram() {
 	local FREE_RAM_MB=`cat /proc/meminfo | awk '/MemAvailable/ {print int($2/1024)}'`
@@ -141,13 +191,11 @@ probe_disks() {
 		[[ $mount == / ]] && label=root
 		[[ $label ]] || label=`basename $mount`
 		read size avail < <(df -m --output=size,avail $mount | tail -n1)
-		md_var MIN_FREE_${LABEL}_MB 2048; local MIN=$R1
+		local minvar="MIN_FREE_${label^^}_MB"; local MIN=${!minvar}; MIN=${MIN:-2048}
 		K=FREE-$label V=$avail MAX=$size log
 	done < <(lsblk -ln -o NAME,FSTYPE,MOUNTPOINT,LABEL)
 }
 
-md_var MAX_CPU 90; MAX_CPU=$R1
-md_var MAXT_CPU 1; MAXT_CPU=$R1
 unset CPU_STATS1
 unset CPU_STATS2
 probe_cpu() {
@@ -179,25 +227,20 @@ probe_cpu() {
 	CPU_STATS1=("${CPU_STATS2[@]}")
 }
 
-probe_deploy_services() {
-	machine_deploys
-	local DEPLOY
-	for DEPLOY in $R1; do
-		md_var DEPLOY_SERVICES; local DEPLOY_SERVICES=$R1
-		md_var APP; local APP=$R1
-		for SERVICE in $DEPLOY_SERVICES; do
-			local V; md_is_running $SERVICE && V=1 || V=0
-			K=service-${SERVICE}-${DEPLOY} MAX=1 MIN=1 log
-		done
-	done
-}
-
 probe_services() {
-	md_var SERVICES; local SERVICES=$R1
-	for SERVICE in $SERVICES; do
-		[[ $SERVICE == mon ]] && continue
-		local V; md_is_running $SERVICE && V=1 || V=0
-		K=service-$SERVICE MAX=1 MIN=1 log
+	local f name pat skip
+	declare -A seen
+	for f in /etc/systemd/system/multi-user.target.wants/*.service \
+	         /etc/systemd/system/*.service; do
+		[[ -e $f ]] || continue
+		name=$(basename "$f" .service)
+		[[ ${seen[$name]} ]] && continue; seen[$name]=1
+		skip=; for pat in "${SERVICES_BLACKLIST[@]}"; do
+			[[ $name == $pat ]] && { skip=1; break; }
+		done
+		[[ $skip ]] && continue
+		local V; is_running "$name" && V=1 || V=0
+		K=service-$name MAX=1 MIN=1 log
 	done
 }
 
@@ -212,11 +255,11 @@ probe_ups_apc() { # -> BATTERY_CHARGE LINE_VOLTAGE UPS_LOAD
 			UPS_LOAD=${v%%.*}
 			UPS_LOAD=$((VA * PF * UPS_LOAD / 10000)) # in watts
 		}
-	done < <(apcaccess status 2>/dev/null)
+	done < <(timeout 3 apcaccess status 2>/dev/null)
 }
 
 probe_ups() {
-	md_modules; echo "$R1" | grep -qw ups_apc || return
+	command -v apcaccess >/dev/null || return
 	local BATTERY_CHARGE LINE_VOLTAGE UPS_LOAD
 	probe_ups_apc
 	K=BATTERY_CHARGE V=$BATTERY_CHARGE MAX=100 MIN=50 log
@@ -237,18 +280,43 @@ probe_temps() {
 	done
 }
 
-probe_nvmes() {
-	local NVME; for NVME in `ls /sys/class/nvme`; do
-		local warn spare used errs
+probe_smart() {
+	[[ -x $SMARTCTL ]] || return
+
+	local dev name warn spare used errs realloc pending
+
+	for dev in /sys/class/nvme/nvme*; do
+		[[ -d $dev ]] || continue
+		name=$(basename "$dev")
 		read -r warn spare used errs < <(
-			# querying nvme is slow so we get all vars with one query.
-			nvme smart-log /dev/$NVME -o json | \
-				jq -r '[.critical_warning, .avail_spare, .percent_used, .media_errors] | @tsv'
+			timeout 3 $SMARTCTL -a -j /dev/$name | \
+			jq -r '[
+				.nvme_smart_health_information_log.critical_warning // 0,
+				.nvme_smart_health_information_log.available_spare  // 0,
+				.nvme_smart_health_information_log.percentage_used  // 0,
+				.nvme_smart_health_information_log.media_errors     // 0
+			] | @tsv'
 		)
-		K=${NVME}-warn   V=$warn  MAX=0   MIN=0  log # bitmask of serious health issues
-		K=${NVME}-spare  V=$spare MAX=100 MIN=10 log # drive is near EOL if < 10
-		K=${NVME}-wear   V=$used  MAX=80  MIN=0  log # lifespan indicator
-		K=${NVME}-errors V=$errs  MAX=0   MIN=0  log # data loss events
+		[[ $warn ]] || continue
+		K=${name}-warn   V=$warn  MAX=0   MIN=0  log # bitmask of serious health issues
+		K=${name}-spare  V=$spare MAX=100 MIN=10 log # drive is near EOL if < 10
+		K=${name}-wear   V=$used  MAX=80  MIN=0  log # lifespan indicator
+		K=${name}-errors V=$errs  MAX=0   MIN=0  log # data loss events
+	done
+
+	for dev in /sys/block/sd[a-z]; do
+		[[ -d $dev ]] || continue
+		name=$(basename "$dev")
+		read -r realloc pending < <(
+			timeout 3 $SMARTCTL -a -j /dev/$name | \
+			jq -r '[
+				(.ata_smart_attributes.table // [] | map(select(.id==5))   | first | .raw.value // 0),
+				(.ata_smart_attributes.table // [] | map(select(.id==197)) | first | .raw.value // 0)
+			] | @tsv'
+		)
+		[[ $realloc ]] || continue
+		K=${name}-realloc V=$realloc MAX=0 MIN=0 log # reallocated sectors
+		K=${name}-pending V=$pending MAX=0 MIN=0 log # pending sectors
 	done
 }
 
@@ -258,16 +326,20 @@ probe_reboot_required() {
 
 # main loop ------------------------------------------------------------------
 
+[[ $NTFY_URL ]] || say "NTFY_URL not set. Notifications are disabled."
+[[ $SMARTCTL ]] || say "smartctl not found. SSD health will not be monitored."
+command -v apcaccess >/dev/null || say "apcaccess not found. UPS state will not be monitored."
+
 # trap Ctrl+C to stop the loop cleanly.
 STOP=
 trap 'STOP=1' SIGTERM SIGINT
 
 next_tick() {
-	sleep $PROBE_TICK  # returns immediately on Ctrl+C
+	sleep $PROBING_INTERVAL  # returns immediately on Ctrl+C
 }
 while [[ ! $STOP ]]; do
 
-	[[ -f mon/paused ]] && {
+	[[ -f paused ]] && {
 		next_tick
 		continue
 	}
@@ -279,19 +351,18 @@ while [[ ! $STOP ]]; do
 
 	printf "%15s %1s %s\n" @ "" "$(date '+%F %T')"
 
-	P probe_disks
-	P probe_cpu
-	P probe_ram
-	P probe_deploy_services
-	P probe_services
-	P probe_ups
-	P probe_temps
-	P probe_nvmes
-	P probe_reboot_required
+	probe_disks
+	probe_cpu
+	probe_ram
+	probe_services
+	probe_ups
+	probe_temps
+	probe_smart
+	probe_reboot_required
 
 	echo
 
-	P notify
+	notify
 
 	next_tick
 done

@@ -51,9 +51,14 @@ start_mon()      { service_start      mm-mon; }
 stop_mon()       { service_stop       mm-mon; }
 version_mon()    { version_mm; }
 
+preinstall_mon() {
+	SRC_DIR=mon/mon DST_DIR=/root/ DST_MACHINE=$MACHINE rsync_dir
+	SRC_DIR=mon/tui DST_DIR=/root/ DST_MACHINE=$MACHINE rsync_dir
+}
 install_mon() {
 
-	package_install sensors nvme-cli
+	install_sensors
+	package_install smartmontools
 
 	save "
 [Unit]
@@ -73,10 +78,9 @@ Type=simple
 
 # skip monitoring the first 10s to give time for other services to start
 ExecStartPre=/bin/sh -c '[ \"$SYSTEMD_INVOCATION_ID\" != \"\" ] && sleep 10 || true'
-ExecStart=/root/mm/cmd/mon systemd
-WorkingDirectory=/root/mm
+ExecStart=/root/mon/mon systemd
+WorkingDirectory=/root/mon
 StandardOutput=null
-StandardError=null
 
 # restart only if exit code != 0
 Restart=on-failure

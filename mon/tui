@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""mon tui — monitoring samples browser"""
+import os, sys, tty, termios, select, shutil, signal
+from pathlib import Path
+import plotext as plt
+
+SAMPLES = Path(__file__).parent / "samples"
+
+# ── data ──────────────────────────────────────────────────────────────────────
+
+def _int(p):     return int(p.read_text().strip())
+def _oob(v, lo, hi): return v < lo or v > hi
+
+def scan_day(path, lo, hi):
+    ts, vs, oob = [], [], False
+    for line in path.read_bytes().replace(b"\x00", b"").decode().splitlines():
+        if line.strip():
+            t, v = line.split(); v = int(v)
+            ts.append(int(t)); vs.append(v)
+            if _oob(v, lo, hi): oob = True
+    return ts, vs, oob
+
+def load_topics():
+    return sorted(p.name for p in SAMPLES.iterdir() if p.is_dir())
+
+def load_days(topic):
+    d = SAMPLES / topic
+    lo, hi = _int(d / "min"), _int(d / "max")
+    days = []
+    for p in sorted(d.glob("*.sam"), key=lambda p: p.stem):
+        _, _, oob = scan_day(p, lo, hi)
+        days.append((p.stem, oob))
+    return days, lo, hi
+
+def graph_lines(topic, date, lo, hi, w, h):
+    ts, vs, _ = scan_day(SAMPLES / topic / f"{date}.sam", lo, hi)
+    xs = [t / 3600 for t in ts]
+    ok_x  = [x for x, v in zip(xs, vs) if not _oob(v, lo, hi)]
+    ok_v  = [v for v in vs if not _oob(v, lo, hi)]
+    bad_x = [x for x, v in zip(xs, vs) if _oob(v, lo, hi)]
+    bad_v = [v for v in vs if _oob(v, lo, hi)]
+    plt.clf(); plt.plotsize(w, h); plt.theme("dark")
+    plt.title(f"{topic}  {date}   [{lo} – {hi}]"); plt.xlabel("hour"); plt.xlim(0, 24)
+    plt.hline(lo, "green"); plt.hline(hi, "red")
+    if ok_x:  plt.scatter(ok_x,  ok_v,  color="white", marker="dot")
+    if bad_x: plt.scatter(bad_x, bad_v, color="red",   marker="dot")
+    return plt.build().split("\n")
+
+# ── terminal ──────────────────────────────────────────────────────────────────
+
+def tsize():        return shutil.get_terminal_size()
+def at(r, c):       return f"\033[{r};{c}H"
+def rev(s):         return f"\033[7m{s}\033[0m"
+def red(s):         return f"\033[31m{s}\033[0m"
+def bold(s):        return f"\033[1m{s}\033[0m"
+
+def read_key():
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        try:
+            ch = os.read(fd, 1).decode("utf-8", errors="replace")
+        except InterruptedError:
+            return ""
+        if ch == "\x1b":
+            r, _, _ = select.select([fd], [], [], 0.05)
+            if r: ch += os.read(fd, 6).decode("utf-8", errors="replace")
+        return ch
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
+# ── draw ──────────────────────────────────────────────────────────────────────
+
+TW, DW = 22, 16   # topic / day column widths
+
+def draw(topics, ti, days, lo, hi, di, pane):
+    cols, rows = tsize()
+    gx  = TW + DW + 3          # graph start col (1-based)
+    gw  = max(20, cols - gx)
+    gh  = max(5,  rows - 3)
+    out = ["\033[H\033[2J\033[?25l"]
+
+    # topic list
+    for i, name in enumerate(topics):
+        if i >= rows - 2: break
+        label = f"{name:{TW-1}.{TW-1}}"
+        out.append(at(i + 2, 1) + (rev(label) if i == ti and pane == 0
+                                    else bold(label) if i == ti
+                                    else label))
+
+    # day list
+    for i, (date, oob) in enumerate(days):
+        if i >= rows - 2: break
+        label = f"{date + (' ●' if oob else ''):{DW-1}.{DW-1}}"
+        out.append(at(i + 2, TW + 2) + (rev(label) if i == di and pane == 1
+                                          else bold(label) if i == di
+                                          else red(label) if oob
+                                          else label))
+
+    # graph
+    date = days[di][0]
+    for i, line in enumerate(graph_lines(topics[ti], date, lo, hi, gw, gh)):
+        if i >= rows - 2: break
+        out.append(at(i + 2, gx) + line + "\033[0m")
+
+    # status bar
+    bar = f" {topics[ti]}  [{lo}–{hi}]  ↑↓:navigate  ←→/enter:switch pane  q:quit "
+    out.append(at(rows, 1) + f"\033[7m{bar:{cols}.{cols}}\033[0m")
+
+    sys.stdout.write("".join(out))
+    sys.stdout.flush()
+
+# ── main loop ─────────────────────────────────────────────────────────────────
+
+def main():
+    topics  = load_topics()
+    cache   = {}   # topic -> (days, lo, hi)
+
+    def days_of(topic):
+        if topic not in cache: cache[topic] = load_days(topic)
+        return cache[topic]
+
+    signal.signal(signal.SIGWINCH, lambda *_: None)  # wake read_key on resize
+
+    ti, di, pane = 0, -1, 0
+
+    sys.stdout.write("\033[?1049h")  # enter alt screen
+    try:
+        while True:
+            days, lo, hi = days_of(topics[ti])
+            n = len(days)
+            if not n: continue
+            if di < 0 or di >= n: di = n - 1
+
+            draw(topics, ti, days, lo, hi, di, pane)
+
+            key = read_key()
+            if   key in ("q", "\x03"):                          break
+            elif key in ("\x1b[A", "k"):                        # up
+                if pane == 0: ti = max(0, ti - 1); di = -1
+                else:         di = max(0, di - 1)
+            elif key in ("\x1b[B", "j"):                        # down
+                if pane == 0: ti = min(len(topics) - 1, ti + 1); di = -1
+                else:         di = min(n - 1, di + 1)
+            elif key in ("\x1b[C", "\r", "\n", " ", "l"):      # right / enter
+                pane = 1
+            elif key in ("\x1b[D", "h"):                        # left
+                pane = 0
+    finally:
+        sys.stdout.write("\033[?25h\033[?1049l")  # restore screen
+        sys.stdout.flush()
+
+if __name__ == "__main__":
+    main()
