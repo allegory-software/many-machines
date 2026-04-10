@@ -314,16 +314,6 @@ uninstall_gdu() {
 	rm_file /usr/local/bin/gdu
 }
 
-install_goful() {
-	sayn "Installing goful latest ... "
-	must curl -s -L https://github.com/anmitsu/goful/releases/latest/download/goful_linux_x86_64.tar.gz | tar xzO goful > /usr/local/bin/goful
-	must chmod 755 /usr/local/bin/goful
-	say OK
-}
-uninstall_goful() {
-	rm_file /usr/local/bin/goful
-}
-
 install_lazygit() {
 	local VER=`curl -sI https://github.com/jesseduffield/lazygit/releases/latest | grep -i location | awk -F'/' '{print $NF}' | tr -d '\rv'`
 	checkvars VER
