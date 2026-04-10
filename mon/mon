@@ -8,6 +8,8 @@
 # mon clear-samples                               clear sample history
 # mon pause | resume|unpause                      pause/resume sampling
 
+[[ $EUID == 0 ]] || exec sudo "$0" "$@"
+
 # utils ----------------------------------------------------------------------
 
 die()  { printf "%s\n" "$*" >&2; exit 1; }
@@ -32,9 +34,7 @@ timeago() { # EPOCH -> R1
 
 # init -----------------------------------------------------------------------
 
-[[ $EUID == 0 ]] || exec sudo "$0" "$@"
 [[ $EUID == 0 ]] || die "Must be root."
-
 must cd "${0%mon}"
 
 # config ---------------------------------------------------------------------
@@ -227,20 +227,34 @@ probe_cpu() {
 	CPU_STATS1=("${CPU_STATS2[@]}")
 }
 
+declare -A RESTART_COUNTS  # previous values
+
 probe_services() {
-	local f name pat skip
 	declare -A seen
+	local f
 	for f in /etc/systemd/system/multi-user.target.wants/*.service \
 	         /etc/systemd/system/*.service; do
+
+		# filter services
 		[[ -e $f ]] || continue
-		name=$(basename "$f" .service)
+		local name=$(basename "$f" .service)
 		[[ ${seen[$name]} ]] && continue; seen[$name]=1
-		skip=; for pat in "${SERVICES_BLACKLIST[@]}"; do
+		local pat skip=
+		for pat in "${SERVICES_BLACKLIST[@]}"; do
 			[[ $name == $pat ]] && { skip=1; break; }
 		done
 		[[ $skip ]] && continue
+
+		# log running status
 		local V; is_running "$name" && V=1 || V=0
 		K=service-$name MAX=1 MIN=1 log
+
+		# log crash counts
+		local count=$(systemctl show $name --property=NRestarts --value)
+		local prev=${RESTART_COUNTS[$name]:-$count}  # init to current on first run
+		local delta=$((count - prev))
+		RESTART_COUNTS[$name]=$count
+		[[ $delta -gt 0 ]] && K=crashes-$name V=$delta MAX=0 MIN=0 log
 	done
 }
 
