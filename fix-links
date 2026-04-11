@@ -4,12 +4,13 @@
 
 fix_symlink() {
 	local symlink=$1
-	local parent_dir=$(dirname "$symlink")
-	local target=$(readlink "$symlink")
-	local abs_target=$(readlink -f "$symlink")
+	local parent_dir=`dirname "$symlink"`
+	local target=`readlink "$symlink"`
+	local abs_target=`readlink -f "$symlink"`
 	local rel_target
-	if [[ $abs_target == /root/mm/* ]]; then
-		rel_target=$(realpath --relative-to="$parent_dir" "$abs_target")
+	local mm_dir=$PWD
+	if [[ $abs_target == $mm_dir/* ]]; then
+		rel_target=`realpath --relative-to="$parent_dir" "$abs_target"`
 	else
 		rel_target=$abs_target
 	fi
