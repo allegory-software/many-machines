@@ -56,7 +56,7 @@ SERVICES_BLACKLIST=(
 	console-setup keyboard-setup remote-fs
 	'systemd-*' 'dbus-*' wpa_supplicant
 	apparmor 'plymouth-*' smartd smartmontools
-	display-manager
+	display-manager apcupsd exim4
 )
 
 [[ -f mon.conf ]] && . mon.conf
@@ -253,8 +253,9 @@ probe_services() {
 
 		# filter services
 		[[ -e $f ]] || continue
+		local canonical=$(basename "$(realpath "$f")" .service)
 		local name=$(basename "$f" .service)
-		[[ ${seen[$name]} ]] && continue; seen[$name]=1
+		[[ ${seen[$canonical]} ]] && continue; seen[$canonical]=1
 		local pat skip=
 		for pat in "${SERVICES_BLACKLIST[@]}"; do
 			[[ $name == $pat ]] && { skip=1; break; }
