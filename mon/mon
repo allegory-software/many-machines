@@ -253,8 +253,8 @@ probe_services() {
 
 		# filter services
 		[[ -e $f ]] || continue
-		local name=$(basename "$f" .service)
-		local canonical=$(basename "$(realpath "$f")" .service)
+		local name=`basename "$f" .service`
+		local canonical=`basename "$(realpath "$f")" .service`
 		[[ ${seen[$canonical]} ]] && continue; seen[$canonical]=1
 		local pat skip=
 		for pat in "${SERVICES_BLACKLIST[@]}"; do
@@ -383,7 +383,8 @@ STOP=
 trap 'STOP=1' SIGTERM SIGINT
 
 next_tick() {
-	read -t $PROBING_INTERVAL <>/dev/null || true  # interruptible by traps
+	# creating a subprocess because SIGTERM won't kill sleep. yay bash.
+	sleep $PROBING_INTERVAL & wait
 }
 while [[ ! $STOP ]]; do
 
