@@ -354,6 +354,19 @@ probe_reboot_required() {
 	[[ -f /var/run/reboot-required ]] && K=reboot-required V=1 LO=0 HI=1 MIN=1 MAX=1 log
 }
 
+probe_forced_reboot() {
+	local btime_file=.boot_time
+	local btime=$(awk '/^btime / {print $2}' /proc/stat)
+	local prev_btime
+	[[ -f $btime_file ]] && IFS= read -r prev_btime < $btime_file
+	printf "%d\n" $btime > $btime_file
+	[[ $prev_btime && $prev_btime != $btime ]] || return
+	# machine rebooted — check if previous boot ended cleanly
+	journalctl -b -1 --no-pager -q 2>/dev/null \
+		| grep -q "systemd-reboot\|systemd-poweroff\|systemd-halt" && return
+	K=forced-reboot V=1 LO=0 HI=1 MIN=0 MAX=0 log
+}
+
 # main loop ------------------------------------------------------------------
 
 [[ $NTFY_URL ]] || say "NTFY_URL not set. Notifications are disabled."
@@ -389,6 +402,7 @@ while [[ ! $STOP ]]; do
 	probe_temps
 	probe_smart
 	probe_reboot_required
+	probe_forced_reboot
 
 	echo
 
