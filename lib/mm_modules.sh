@@ -97,14 +97,28 @@ _md_action() { # ACTION= [REMOTE=] [VARS=] LIST= [REVERSE=1] [all | NAME1 ...]
 
 # executed both locally (pre/post functions) and remotely (main function).
 _md_combined_action() { # ACTION= [MODULE1 ...]
+	checkvars ACTION
 	_md_names "$@"; [[ $? == 2 ]] && return
 	local names=$R1
 	local module
+	local -A FAILS
 	for module in $names; do
-		ACTION=pre$ACTION  _md_action $module
-		REMOTE=1           _md_action $module
-		ACTION=post$ACTION _md_action $module
+		local failed=
+		say; say "${LIGHTYELLOW}$module${ENDCOLOR}"
+		ACTION=pre$ACTION md_fn $module && { run dry $R1 $module || failed=$?; }
+		VARS="ACTION $VARS" md_ssh_script "md_fn $module && run dry \$R1 $module" || failed=$?
+		ACTION=post$ACTION md_fn $module && { run dry $R1 $module || failed=$?; }
+		if [[ $failed == 1 ]]; then
+			FAILS[$module]=1
+			say; say "${LIGHTRED}FAILED [$failed] ${ENDCOLOR}"
+		fi
 	done
+	if (( ${#FAILS[@]} > 0 )); then
+		say; say "${LIGHTRED}MODULES THAT FAILED:${ENDCOLOR} ${!FAILS[@]}."; say
+		return 1
+	else
+		say; say "ALL OK"; say
+	fi
 }
 md_install()   { ACTION=install   LIST=md_modules           _md_combined_action "$@"; }
 md_uninstall() { ACTION=uninstall LIST=md_modules REVERSE=1 _md_combined_action "$@"; }
