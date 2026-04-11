@@ -81,8 +81,7 @@ deploy_install_app_service() {
 [Unit]
 Description=$DEPLOY
 After=multi-user.target
-After=network-online.target
-Requires=network-online.target
+After=network.target
 
 # try restarting for 60s
 StartLimitIntervalSec=60

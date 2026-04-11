@@ -211,6 +211,12 @@ uninstall_irqbalance() {
 install_networkd() {
 	service_enable systemd-networkd
 	service_disable networking
+	save "
+[Service]
+ExecStart=
+ExecStart=/lib/systemd/systemd-networkd-wait-online --any --timeout=10
+" /etc/systemd/system/systemd-networkd-wait-online.service.d/override.conf
+	systemctl daemon-reload
 }
 
 uninstall_networkd() {
