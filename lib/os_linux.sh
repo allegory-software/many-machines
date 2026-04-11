@@ -306,8 +306,9 @@ uninstall_secure_fs() {
 
 install_gdu() {
 	sayn "Installing gdu latest ... "
-	must curl -s -L https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64-x.tgz | tar xzO gdu_linux_amd64-x > /usr/local/bin/gdu
-	must chmod 755 /usr/local/bin/gdu
+	must curl -L https://github.com/dundee/gdu/releases/latest/download/gdu_linux_amd64.tgz | tar xz
+	must chmod 755 gdu_linux_amd64
+	mv gdu_linux_amd64 /usr/local/bin/gdu
 	say OK
 }
 uninstall_gdu() {
