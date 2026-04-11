@@ -1,8 +1,16 @@
 #!/bin/bash
-# install mm locally
+# install mm locally by symlinking from this location (no copy!)
 
-ln -sf /root/mm/mm      /usr/bin/mm
-ln -sf /root/mm/mmd     /usr/bin/mmd
-ln -sf /root/mm/lib/all /usr/bin/mmlib
-sed -i '/mm-autocomplete.sh/d' /root/.bashrc
-echo ". /root/mm/mm-autocomplete.sh" > /root/.bashrc
+DIR=`realpath ${0%install}`
+
+# mm expects to be in /root/mm, but if it's somewhere else, just link it.
+[[ $DIR != /root/mm ]] && sudo ln -snf $DIR /root/mm
+
+sudo ln -snf $DIR/mm      /usr/bin/mm
+sudo ln -snf $DIR/mmd     /usr/bin/mmd
+sudo ln -snf $DIR/lib/all /usr/bin/mmlib
+
+for f in ~/.bashrc /root/.bashrc; do
+	sudo sed -i '/mm-autocomplete.sh/d' $f
+	echo ". $DIR/mm-autocomplete.sh" | sudo tee -a $f >/dev/null
+done
