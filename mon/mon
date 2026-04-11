@@ -359,6 +359,25 @@ probe_reboot_required() {
 	[[ -f /var/run/reboot-required ]] && K=reboot-required V=1 LO=0 HI=1 MIN=1 MAX=1 log
 }
 
+probe_ssl_expired() {
+	local dir
+	for dir in /root/.acme.sh.etc/*/; do
+		[[ $dir == ca ]] && continue
+		[[ -d $dir ]] || continue
+		local cert=${dir}fullchain.cer
+		[[ -f $cert ]] || continue
+		local domain
+		domain=$(basename "$dir")
+		local exp_date
+		exp_date=$(openssl x509 -enddate -noout -in "$cert" 2>/dev/null) || continue
+		exp_date=${exp_date#notAfter=}
+		local exp_epoch
+		exp_epoch=$(date -d "$exp_date" +%s) || continue
+		local days=$(( (exp_epoch - $(date +%s)) / 86400 ))
+		K=ssl-$domain V=$days LO=0 HI=90 MIN=14 MAX=3650 log
+	done
+}
+
 probe_forced_reboot() {
 	local btime_file=.boot_time
 	local btime=$(awk '/^btime / {print $2}' /proc/stat)
@@ -382,11 +401,14 @@ command -v apcaccess >/dev/null || say "apcaccess not found. UPS state will not 
 STOP=
 trap 'STOP=1' SIGTERM SIGINT
 
-next_tick() {
-	# creating a subprocess because SIGTERM won't kill sleep. yay bash.
-	sleep $PROBING_INTERVAL & wait
-}
+TICK=0
+every() { (( TICK % $1 == 0 )); } # true every N ticks
+# the `sleep & wait` is because SIGTERM won't reach sleep which causes
+# `systemctl stop` to hang. yay bash.
+next_tick() { sleep $PROBING_INTERVAL & wait; }
+
 while [[ ! $STOP ]]; do
+	((TICK++)) || true
 
 	[[ -f paused ]] && {
 		next_tick
@@ -400,15 +422,16 @@ while [[ ! $STOP ]]; do
 
 	printf "%15s %1s %s\n" @ "" "$(date '+%F %T')"
 
-	probe_disks
 	probe_cpu
 	probe_ram
-	probe_services
-	probe_ups
 	probe_temps
-	probe_smart
-	probe_reboot_required
+	probe_services
 	probe_forced_reboot
+	probe_ups
+	probe_disks
+	every 60 && probe_smart
+	every 60 && probe_reboot_required
+	every 60 && probe_ssl_expired
 
 	echo
 
