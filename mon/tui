@@ -8,16 +8,21 @@ SAMPLES = Path(__file__).parent / "samples"
 
 # ── data ──────────────────────────────────────────────────────────────────────
 
-def _int(p):     return int(p.read_text().strip())
-def _oob(v, lo, hi): return v < lo or v > hi
+def _int(p):          return int(p.read_text().strip())
+def _int_or(p, d):    return _int(p) if p.exists() else d
+def _oob(v, mn, mx):  return v < mn or v > mx
 
-def scan_day(path, lo, hi):
+def scan_day(path, mn, mx):
     ts, vs, oob = [], [], False
     for line in path.read_bytes().replace(b"\x00", b"").decode().splitlines():
-        if line.strip():
-            t, v = line.split(); v = int(v)
-            ts.append(int(t)); vs.append(v)
-            if _oob(v, lo, hi): oob = True
+        parts = line.split()
+        if len(parts) != 2: continue
+        try:
+            t, v = int(parts[0]), int(parts[1])
+        except ValueError:
+            continue
+        ts.append(t); vs.append(v)
+        if _oob(v, mn, mx): oob = True
     return ts, vs, oob
 
 def load_topics():
@@ -25,23 +30,26 @@ def load_topics():
 
 def load_days(topic):
     d = SAMPLES / topic
-    lo, hi = _int(d / "min"), _int(d / "max")
+    mn, mx = _int(d / "min"), _int(d / "max")
+    lo = _int_or(d / "lo", mn)
+    hi = _int_or(d / "hi", mx)
     days = []
     for p in sorted(d.glob("*.sam"), key=lambda p: p.stem):
-        _, _, oob = scan_day(p, lo, hi)
+        _, _, oob = scan_day(p, mn, mx)
         days.append((p.stem, oob))
-    return days, lo, hi
+    return days, mn, mx, lo, hi
 
-def graph_lines(topic, date, lo, hi, w, h):
-    ts, vs, _ = scan_day(SAMPLES / topic / f"{date}.sam", lo, hi)
+def graph_lines(topic, date, mn, mx, lo, hi, w, h):
+    ts, vs, _ = scan_day(SAMPLES / topic / f"{date}.sam", mn, mx)
     xs = [t / 3600 for t in ts]
-    ok_x  = [x for x, v in zip(xs, vs) if not _oob(v, lo, hi)]
-    ok_v  = [v for v in vs if not _oob(v, lo, hi)]
-    bad_x = [x for x, v in zip(xs, vs) if _oob(v, lo, hi)]
-    bad_v = [v for v in vs if _oob(v, lo, hi)]
+    ok_x  = [x for x, v in zip(xs, vs) if not _oob(v, mn, mx)]
+    ok_v  = [v for v in vs if not _oob(v, mn, mx)]
+    bad_x = [x for x, v in zip(xs, vs) if _oob(v, mn, mx)]
+    bad_v = [v for v in vs if _oob(v, mn, mx)]
     plt.clf(); plt.plotsize(w, h); plt.theme("dark")
-    plt.title(f"{topic}  {date}   [{lo} – {hi}]"); plt.xlabel("hour"); plt.xlim(0, 24)
-    plt.hline(lo, "green"); plt.hline(hi, "red")
+    plt.title(f"{topic}  {date}   [{mn} – {mx}]"); plt.xlabel("hour"); plt.xlim(0, 24)
+    plt.ylim(lo, hi if hi > lo else lo + 1)
+    plt.hline(mn, "green"); plt.hline(mx, "red")
     if ok_x:  plt.scatter(ok_x,  ok_v,  color="white", marker="dot")
     if bad_x: plt.scatter(bad_x, bad_v, color="red",   marker="dot")
     return plt.build().split("\n")
@@ -74,7 +82,7 @@ def read_key():
 
 TW, DW = 22, 16   # topic / day column widths
 
-def draw(topics, ti, days, lo, hi, di, pane):
+def draw(topics, ti, days, mn, mx, lo, hi, di, pane):
     cols, rows = tsize()
     gx  = TW + DW + 3          # graph start col (1-based)
     gw  = max(20, cols - gx)
@@ -100,12 +108,12 @@ def draw(topics, ti, days, lo, hi, di, pane):
 
     # graph
     date = days[di][0]
-    for i, line in enumerate(graph_lines(topics[ti], date, lo, hi, gw, gh)):
+    for i, line in enumerate(graph_lines(topics[ti], date, mn, mx, lo, hi, gw, gh)):
         if i >= rows - 2: break
         out.append(at(i + 2, gx) + line + "\033[0m")
 
     # status bar
-    bar = f" {topics[ti]}  [{lo}–{hi}]  ↑↓:navigate  ←→/enter:switch pane  q:quit "
+    bar = f" {topics[ti]}  [{mn}–{mx}]  ↑↓:navigate  ←→/enter:switch pane  q:quit "
     out.append(at(rows, 1) + f"\033[7m{bar:{cols}.{cols}}\033[0m")
 
     sys.stdout.write("".join(out))
@@ -115,7 +123,7 @@ def draw(topics, ti, days, lo, hi, di, pane):
 
 def main():
     topics  = load_topics()
-    cache   = {}   # topic -> (days, lo, hi)
+    cache   = {}   # topic -> (days, mn, mx, lo, hi)
 
     def days_of(topic):
         if topic not in cache: cache[topic] = load_days(topic)
@@ -128,12 +136,12 @@ def main():
     sys.stdout.write("\033[?1049h")  # enter alt screen
     try:
         while True:
-            days, lo, hi = days_of(topics[ti])
+            days, mn, mx, lo, hi = days_of(topics[ti])
             n = len(days)
             if not n: continue
             if di < 0 or di >= n: di = n - 1
 
-            draw(topics, ti, days, lo, hi, di, pane)
+            draw(topics, ti, days, mn, mx, lo, hi, di, pane)
 
             key = read_key()
             if   key in ("q", "\x03"):                          break

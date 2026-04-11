@@ -44,9 +44,11 @@ MACHINE=$(hostname -s)
 
 PROBING_INTERVAL=60
 MAX_CPU=90
-MAXT_CPU=1
-MIN_FREE_RAM_MB=50
-MAXT_FREE_RAM=1
+MAXT_CPU=3
+MIN_FREE_RAM_MB=1000
+MAXT_FREE_RAM=3
+MIN_FREE_DISK_MB=2000
+UPS_VA=850
 
 SERVICES_BLACKLIST=(
 	mon mm-mon
@@ -115,12 +117,25 @@ set_file
 # we only report values that were out of range more than MAXT times.
 declare -A COUNTS # k->n
 
-log() { # K= V= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
+log() { # K= V= LO= HI= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
+	[[ $V ]] || return
 
 	# log the value in samples file to show in a graph
 	[[ $DAEMON ]] && {
+		local lo=${LO:-$MIN} hi=${HI:-$MAX}
+		if [[ -d samples/$K ]]; then
+			# archive if lo/hi changed (e.g. RAM/disk upgrade)
+			local old_lo old_hi
+			IFS= read -r old_lo < samples/$K/lo
+			IFS= read -r old_hi < samples/$K/hi
+			if [[ $old_lo != $lo || $old_hi != $hi ]]; then
+				mv samples/$K samples/${K}-${old_lo}-${old_hi}
+			fi
+		fi
 		[[ -d samples/$K ]] || {
 			must mkdir -p samples/$K
+			printf "%d\n" $lo  > samples/$K/lo
+			printf "%d\n" $hi  > samples/$K/hi
 			printf "%d\n" $MIN > samples/$K/min
 			printf "%d\n" $MAX > samples/$K/max
 		}
@@ -178,8 +193,9 @@ is_running() {
 
 RAM_MB=`cat /proc/meminfo | awk '/MemTotal/ {print int($2/1024)}'`
 probe_ram() {
-	local FREE_RAM_MB=`cat /proc/meminfo | awk '/MemAvailable/ {print int($2/1024)}'`
-	K=RAM V=$FREE_RAM_MB MAX=$RAM_MB MIN=$MIN_FREE_RAM_MB MAXT=$MAXT_FREE_RAM log
+	local free=`cat /proc/meminfo | awk '/MemAvailable/ {print int($2/1024)}'`
+	local used=$((RAM_MB - free))
+	K=RAM V=$used LO=0 HI=$RAM_MB MAX=$((RAM_MB - MIN_FREE_RAM_MB)) MIN=0 MAXT=$MAXT_FREE_RAM log
 }
 
 probe_disks() {
@@ -187,12 +203,14 @@ probe_disks() {
 	while read name fstype mount label; do
 		[[ $mount ]] || continue
 		[[ $mount == /boot/efi ]] && continue
-		[[ $fstype == ext4 ]] || continue
+		case $fstype in ext4|xfs|btrfs|zfs) ;; *) continue;; esac
 		[[ $mount == / ]] && label=root
 		[[ $label ]] || label=`basename $mount`
 		read size avail < <(df -m --output=size,avail $mount | tail -n1)
-		local minvar="MIN_FREE_${label^^}_MB"; local MIN=${!minvar}; MIN=${MIN:-2048}
-		K=FREE-$label V=$avail MAX=$size log
+		local used=$((size - avail))
+		local minvar="MIN_FREE_${label^^}_MB"; local minfree=${!minvar}
+		minfree=${minfree:-$MIN_FREE_DISK_MB}
+		K=DISK-$label V=$used LO=0 HI=$size MAX=$((size - minfree)) MIN=0 log
 	done < <(lsblk -ln -o NAME,FSTYPE,MOUNTPOINT,LABEL)
 }
 
@@ -221,7 +239,7 @@ probe_cpu() {
 			local total=$((total2 - total1))
 			local idle=$((idle2 - idle1))
 			local usage=$((100 * (total - idle) / total))
-			K=CPU$i V=$usage MAX=$MAX_CPU MIN=0 MAXT=$MAXT_CPU log
+			K=CPU$i V=$usage LO=0 HI=100 MAX=$MAX_CPU MIN=0 MAXT=$MAXT_CPU log
 		done
 	fi
 	CPU_STATS1=("${CPU_STATS2[@]}")
@@ -260,14 +278,13 @@ probe_services() {
 
 probe_ups_apc() { # -> BATTERY_CHARGE LINE_VOLTAGE UPS_LOAD
 	local k v
-	local VA=850
 	local PF=70 # 100x scale
 	while IFS=: read -r k v; do
 		[[ $k == BCHARGE* ]] && BATTERY_CHARGE=${v%%.*}
 		[[ $k == LINEV*   ]] && LINE_VOLTAGE=${v%%.*}
 		[[ $k == LOADPCT* ]] && {
 			UPS_LOAD=${v%%.*}
-			UPS_LOAD=$((VA * PF * UPS_LOAD / 10000)) # in watts
+			UPS_LOAD=$((UPS_VA * PF * UPS_LOAD / 10000)) # in watts
 		}
 	done < <(timeout 3 apcaccess status 2>/dev/null)
 }
@@ -276,9 +293,9 @@ probe_ups() {
 	command -v apcaccess >/dev/null || return
 	local BATTERY_CHARGE LINE_VOLTAGE UPS_LOAD
 	probe_ups_apc
-	K=BATTERY_CHARGE V=$BATTERY_CHARGE MAX=100 MIN=50 log
-	K=LINE_VOLTAGE   V=$LINE_VOLTAGE   MAX=250 MIN=190 log
-	K=UPS_LOAD       V=$UPS_LOAD       MAX=200 MIN=1 log
+	K=UPS_BATTERY_CHARGE V=$BATTERY_CHARGE LO=0   HI=100 MAX=100 MIN=50  log
+	K=UPS_LINE_VOLTAGE   V=$LINE_VOLTAGE   LO=100 HI=260 MAX=250 MIN=190 log
+	K=UPS_LOAD           V=$UPS_LOAD       LO=0   HI=850 MAX=200 MIN=1   log
 }
 
 probe_temps() {
@@ -312,10 +329,10 @@ probe_smart() {
 			] | @tsv'
 		)
 		[[ $warn ]] || continue
-		K=${name}-warn   V=$warn  MAX=0   MIN=0  log # bitmask of serious health issues
-		K=${name}-spare  V=$spare MAX=100 MIN=10 log # drive is near EOL if < 10
-		K=${name}-wear   V=$used  MAX=80  MIN=0  log # lifespan indicator
-		K=${name}-errors V=$errs  MAX=0   MIN=0  log # data loss events
+		K=${name}-warn   V=$warn  LO=0 HI=255 MAX=0   MIN=0  log # bitmask of serious health issues
+		K=${name}-spare  V=$spare LO=0 HI=100 MAX=100 MIN=10 log # drive is near EOL if < 10
+		K=${name}-wear   V=$used  LO=0 HI=100 MAX=80  MIN=0  log # lifespan indicator
+		K=${name}-errors V=$errs  LO=0 HI=10  MAX=0   MIN=0  log # data loss events
 	done
 
 	for dev in /sys/block/sd[a-z]; do
@@ -329,8 +346,8 @@ probe_smart() {
 			] | @tsv'
 		)
 		[[ $realloc ]] || continue
-		K=${name}-realloc V=$realloc MAX=0 MIN=0 log # reallocated sectors
-		K=${name}-pending V=$pending MAX=0 MIN=0 log # pending sectors
+		K=${name}-realloc V=$realloc LO=0 HI=100 MAX=0 MIN=0 log # reallocated sectors
+		K=${name}-pending V=$pending LO=0 HI=100 MAX=0 MIN=0 log # pending sectors
 	done
 }
 
