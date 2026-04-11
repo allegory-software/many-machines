@@ -263,15 +263,15 @@ probe_services() {
 		[[ $skip ]] && continue
 
 		# log running status
-		local V; is_running "$name" && V=1 || V=0
-		K=service-$name LO=0 HI=1 MIN=1 MAX=1 log
+		local V; is_running "$canonical" && V=1 || V=0
+		K=service-$canonical LO=0 HI=1 MIN=1 MAX=1 log
 
 		# log crash counts
-		local count=$(systemctl show $name --property=NRestarts --value)
-		local prev=${RESTART_COUNTS[$name]:-$count}  # init to current on first run
+		local count=$(systemctl show $canonical --property=NRestarts --value)
+		local prev=${RESTART_COUNTS[$canonical]:-$count}  # init to current on first run
 		local delta=$((count - prev))
-		RESTART_COUNTS[$name]=$count
-		[[ $delta -gt 0 ]] && K=crashes-$name V=$delta LO=0 HI=10 MIN=0 MAX=0 log
+		RESTART_COUNTS[$canonical]=$count
+		[[ $delta -gt 0 ]] && K=crashes-$canonical V=$delta LO=0 HI=10 MIN=0 MAX=0 log
 	done
 }
 
