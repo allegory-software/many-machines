@@ -298,14 +298,18 @@ probe_ups() {
 
 probe_temps() {
 	local n
+	local -A seen
 	for n in `ls /sys/class/hwmon`; do
 		[[ -f /sys/class/hwmon/$n/temp1_input ]] || continue
-		catfile /sys/class/hwmon/$n/name; K=${R1}
+		catfile /sys/class/hwmon/$n/name; local name=$R1
 		catfile /sys/class/hwmon/$n/temp1_input; V=$((R1 / 1000))
-		[[ $K == acpitz ]] && continue # fake
-		[[ $K == spd5118 ]] && K=ram
-		[[ $K == coretemp ]] && K=cpu
-		LO=0 MAX=100 MIN=20 MAX=70 K=TEMP-$K log
+		[[ $name == acpitz ]] && continue # fake
+		[[ $name == spd5118 ]] && name=ram
+		[[ $name == coretemp ]] && name=cpu
+		local i=${seen[$name]:-0}
+		seen[$name]=$((i + 1))
+		local suffix; ((i > 0)) && suffix=$i || true
+		K=TEMP-$name$suffix LO=0 HI=100 MIN=20 MAX=70 log
 	done
 }
 

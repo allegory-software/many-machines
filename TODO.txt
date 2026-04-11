@@ -1,4 +1,4 @@
-- modules list is not overridable (+, -)
+- modules list is not overridable (+, -); current lame mitigation: extra_modules.
 
 - BUG: why does md_install wants cat_vars ??
 

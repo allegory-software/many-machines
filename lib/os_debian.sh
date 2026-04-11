@@ -139,6 +139,8 @@ install_avahi_daemon() {
 uninstall_avahi_daemon() {
 	service_disable avahi-daemon.socket
 	service_disable avahi-daemon
+	service_stop avahi-daemon.socket
+	service_stop avahi-daemon
 }
 
 install_iptables() {
