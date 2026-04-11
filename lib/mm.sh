@@ -30,7 +30,7 @@ install_mm_var() {
 # only install this module on trusted machines that you want to use mm on.
 postinstall_mm_var() {
 	local VAR_LOCK_KEY=`var_lock_key` || die "var_lock_key error: $?"
-	ssh_script var_unlock "$VAR_LOCK_KEY"
+	must ssh_script var_unlock "$VAR_LOCK_KEY"
 }
 
 uninstall_mm_var() {
@@ -307,7 +307,7 @@ each_machine() { # [NOTHIS=1] [NOALL=1] [ALL=1] [NOSUBPROC=1] MACHINES= DEPLOYS=
 	for MACHINE in $MACHINES; do
 		[[ $QUIET ]] || say "On machine $MACHINE:"
 		[[ $NOTHIS && $MACHINE == $THIS_MACHINE ]] && {
-			say "Excluding this machine."
+			say "Excluding this machine for $CMD."
 			continue
 		}
 		if [[ $NOSUBPROC ]]; then

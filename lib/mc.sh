@@ -3,7 +3,7 @@
 mc_conf_upload() { # MACHINE=
 	say; say "Uploading mc config files to machine '$MACHINE' ..."
 	NODELETE=1 SRC_DIR=etc/home/./.config/mc DST_DIR=/root DST_MACHINE=$MACHINE rsync_dir
-	ssh_script "mc_conf_spread"
+	must ssh_script "mc_conf_spread"
 }
 
 postinstall_mc() { mc_conf_upload; }

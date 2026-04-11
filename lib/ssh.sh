@@ -34,7 +34,9 @@ ssh_to() { # [AS_USER=] [AS_DEPLOY=1 DEPLOY=] MACHINE= [SSH_TTY=1] ["SCRIPT" ARG
 	# NOTE: ssh relays the remote command's exit code back to the user,
 	# so it's hard to tell when ssh fails from when the command fails,
 	# so all scripts must exit with code 0, anything else will cause an abort.
-	run ssh "${R1[@]}" $HOST${PORT:+:$PORT} -- $sudo "$@" || die "MACHINE=$MACHINE ssh_to $sudo: [$?]"
+	run ssh "${R1[@]}" $HOST${PORT:+:$PORT} -- $sudo "$@"; local ret=$?
+	[[ $ret == 0 ]] || debug "MACHINE=$MACHINE ssh_to $sudo: [$ret]"
+	return $ret
 }
 
 # NOTE: no stdin support with ssh_script because we feed the script that includes
