@@ -52,8 +52,12 @@ stop_mon()       { service_stop       mm-mon; }
 version_mon()    { version_mm; }
 
 preinstall_mon() {
-	SRC_DIR=mon/mon DST_DIR=/root/ DST_MACHINE=$MACHINE rsync_dir
-	SRC_DIR=mon/tui DST_DIR=/root/ DST_MACHINE=$MACHINE rsync_dir
+	if [[ $MACHINE == $THIS_MACHINE ]]; then # dev machine
+		must ln -snf $PWD/mon /root/mon
+	else
+		SRC_DIR=mon/mon DST_DIR=/root/ DST_MACHINE=$MACHINE rsync_dir
+		SRC_DIR=mon/tui DST_DIR=/root/ DST_MACHINE=$MACHINE rsync_dir
+	fi
 }
 install_mon() {
 
