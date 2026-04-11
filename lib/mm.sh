@@ -84,11 +84,7 @@ After=multi-user.target
 After=network-online.target
 Requires=network-online.target
 
-# try restarting for 60s
-StartLimitIntervalSec=60
-
-# try restarting 1 times
-StartLimitBurst=1
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple

@@ -383,7 +383,7 @@ STOP=
 trap 'STOP=1' SIGTERM SIGINT
 
 next_tick() {
-	sleep $PROBING_INTERVAL  # returns immediately on Ctrl+C
+	read -t $PROBING_INTERVAL <>/dev/null || true  # interruptible by traps
 }
 while [[ ! $STOP ]]; do
 
