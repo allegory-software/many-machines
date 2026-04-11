@@ -2,7 +2,6 @@
 """mon tui — monitoring samples browser"""
 import os, sys, tty, termios, select, shutil, signal
 from pathlib import Path
-import plotext as plt
 
 SAMPLES = Path(__file__).parent / "samples"
 
@@ -40,19 +39,48 @@ def load_days(topic):
     return days, mn, mx, lo, hi
 
 def graph_lines(topic, date, mn, mx, lo, hi, w, h):
+    if hi <= lo: hi = lo + 1
+
+    YW = 6
+    pw = max(1, w - YW - 2)   # plot width (after "label│ ")
+    ph = max(1, h - 3)         # plot height (title + plot + separator + x-axis = h)
+
+    def to_col(x): return min(pw - 1, max(0, int(x / 24 * pw)))
+    def to_row(v): return min(ph - 1, max(0, int((1 - (v - lo) / (hi - lo)) * ph)))
+
+    cells = {}  # (row, col) -> (char, ansi_color)
+
     ts, vs, _ = scan_day(SAMPLES / topic / f"{date}.sam", mn, mx)
-    xs = [t / 3600 for t in ts]
-    ok_x  = [x for x, v in zip(xs, vs) if not _oob(v, mn, mx)]
-    ok_v  = [v for v in vs if not _oob(v, mn, mx)]
-    bad_x = [x for x, v in zip(xs, vs) if _oob(v, mn, mx)]
-    bad_v = [v for v in vs if _oob(v, mn, mx)]
-    plt.clf(); plt.plotsize(w, h); plt.theme("dark")
-    plt.title(f"{topic}  {date}   [{mn} – {mx}]"); plt.xlabel("hour"); plt.xlim(0, 24)
-    plt.ylim(lo, hi if hi > lo else lo + 1)
-    plt.hline(mn, "green"); plt.hline(mx, "red")
-    if ok_x:  plt.scatter(ok_x,  ok_v,  color="white", marker="dot")
-    if bad_x: plt.scatter(bad_x, bad_v, color="red",   marker="dot")
-    return plt.build().split("\n")
+    for t, v in zip(ts, vs):
+        color = '\033[31m' if _oob(v, mn, mx) else '\033[37m'
+        cells[to_row(v), to_col(t / 3600)] = ('·', color)
+
+    out = []
+    out.append(f"{topic}  {date}   [{mn} – {mx}]"[:w])
+
+    step = max(1, (ph - 1) // 4)
+    label_rows = set(range(0, ph, step)) | {ph - 1}
+    for r in range(ph):
+        v_at = lo + (1 - r / (ph - 1 or 1)) * (hi - lo)
+        lbl = f"{str(round(v_at)):>{YW}.{YW}}" if r in label_rows else ' ' * YW
+        row = []
+        for c in range(pw):
+            ch, col = cells.get((r, c), (' ', ''))
+            row.append(f"{col}{ch}\033[0m" if col else ch)
+        out.append(lbl + '│' + ''.join(row))
+
+    out.append(' ' * YW + '└' + '─' * pw)
+
+    x_row = [' '] * pw
+    for hour in (0, 6, 12, 18, 24):
+        c = to_col(hour)
+        lbl = str(hour)
+        c = max(0, c - len(lbl) + 1)
+        for i, ch in enumerate(lbl):
+            if c + i < pw: x_row[c + i] = ch
+    out.append(' ' * (YW + 1) + ''.join(x_row))
+
+    return out
 
 # ── terminal ──────────────────────────────────────────────────────────────────
 

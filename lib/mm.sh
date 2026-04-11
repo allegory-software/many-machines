@@ -64,6 +64,19 @@ install_mon() {
 	install_sensors
 	package_install smartmontools
 
+	dump_vars "
+		SMARTCTL
+		MACHINE
+		PROBING_INTERVAL
+		MAX_CPU
+		MAXT_CPU
+		MIN_FREE_RAM_MB
+		MAXT_RAM
+		MIN_FREE_DISK_MB
+		UPS_VA
+	"
+	save "$R1" /root/mon/mon.conf
+
 	save "
 [Unit]
 Description=mm runtime monitor service
@@ -99,6 +112,7 @@ WantedBy=multi-user.target
 
 	systemctl daemon-reload
 	service_enable mm-mon.service
+	service_restart mm-mon.service
 }
 
 uninstall_mon() {

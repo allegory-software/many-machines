@@ -41,15 +41,13 @@ must cd "${0%mon}"
 
 SMARTCTL=/usr/sbin/smartctl
 MACHINE=$(hostname -s)
-
 PROBING_INTERVAL=60
 MAX_CPU=90
 MAXT_CPU=3
-MIN_FREE_RAM_MB=1000
-MAXT_FREE_RAM=3
-MIN_FREE_DISK_MB=2000
+MIN_FREE_RAM_MB=1024
+MAXT_RAM=3
+MIN_FREE_DISK_MB=4096
 UPS_VA=850
-
 SERVICES_BLACKLIST=(
 	mon mm-mon
 	anacron avahi-daemon cups cups-browsed e2scrub_reap
@@ -195,7 +193,7 @@ RAM_MB=`cat /proc/meminfo | awk '/MemTotal/ {print int($2/1024)}'`
 probe_ram() {
 	local free=`cat /proc/meminfo | awk '/MemAvailable/ {print int($2/1024)}'`
 	local used=$((RAM_MB - free))
-	K=RAM V=$used LO=0 HI=$RAM_MB MAX=$((RAM_MB - MIN_FREE_RAM_MB)) MIN=0 MAXT=$MAXT_FREE_RAM log
+	K=RAM V=$used LO=0 HI=$RAM_MB MIN=0 MAX=$((RAM_MB - MIN_FREE_RAM_MB)) MAXT=$MAXT_RAM log
 }
 
 probe_disks() {
@@ -210,7 +208,7 @@ probe_disks() {
 		local used=$((size - avail))
 		local minvar="MIN_FREE_${label^^}_MB"; local minfree=${!minvar}
 		minfree=${minfree:-$MIN_FREE_DISK_MB}
-		K=DISK-$label V=$used LO=0 HI=$size MAX=$((size - minfree)) MIN=0 log
+		K=DISK-$label V=$used LO=0 HI=$size MIN=0 MAX=$((size - minfree)) log
 	done < <(lsblk -ln -o NAME,FSTYPE,MOUNTPOINT,LABEL)
 }
 
@@ -239,7 +237,7 @@ probe_cpu() {
 			local total=$((total2 - total1))
 			local idle=$((idle2 - idle1))
 			local usage=$((100 * (total - idle) / total))
-			K=CPU$i V=$usage LO=0 HI=100 MAX=$MAX_CPU MIN=0 MAXT=$MAXT_CPU log
+			K=CPU$i V=$usage LO=0 HI=100 MIN=0 MAX=$MAX_CPU MAXT=$MAXT_CPU log
 		done
 	fi
 	CPU_STATS1=("${CPU_STATS2[@]}")
@@ -265,14 +263,14 @@ probe_services() {
 
 		# log running status
 		local V; is_running "$name" && V=1 || V=0
-		K=service-$name MAX=1 MIN=1 log
+		K=service-$name LO=0 HI=1 MIN=1 MAX=1 log
 
 		# log crash counts
 		local count=$(systemctl show $name --property=NRestarts --value)
 		local prev=${RESTART_COUNTS[$name]:-$count}  # init to current on first run
 		local delta=$((count - prev))
 		RESTART_COUNTS[$name]=$count
-		[[ $delta -gt 0 ]] && K=crashes-$name V=$delta MAX=0 MIN=0 log
+		[[ $delta -gt 0 ]] && K=crashes-$name V=$delta LO=0 HI=10 MIN=0 MAX=0 log
 	done
 }
 
@@ -293,9 +291,9 @@ probe_ups() {
 	command -v apcaccess >/dev/null || return
 	local BATTERY_CHARGE LINE_VOLTAGE UPS_LOAD
 	probe_ups_apc
-	K=UPS_BATTERY_CHARGE V=$BATTERY_CHARGE LO=0   HI=100 MAX=100 MIN=50  log
-	K=UPS_LINE_VOLTAGE   V=$LINE_VOLTAGE   LO=100 HI=260 MAX=250 MIN=190 log
-	K=UPS_LOAD           V=$UPS_LOAD       LO=0   HI=850 MAX=200 MIN=1   log
+	K=UPS_BATTERY_CHARGE V=$BATTERY_CHARGE LO=0   HI=100 MIN=50  MAX=100 log
+	K=UPS_LINE_VOLTAGE   V=$LINE_VOLTAGE   LO=190 HI=270 MIN=207 MAX=253 log
+	K=UPS_LOAD           V=$UPS_LOAD       LO=0   HI=850 MIN=0   MAX=200 log
 }
 
 probe_temps() {
@@ -307,7 +305,7 @@ probe_temps() {
 		[[ $K == acpitz ]] && continue # fake
 		[[ $K == spd5118 ]] && K=ram
 		[[ $K == coretemp ]] && K=cpu
-		MIN=20 MAX=70 K=TEMP-$K log
+		LO=0 MAX=100 MIN=20 MAX=70 K=TEMP-$K log
 	done
 }
 
@@ -329,10 +327,10 @@ probe_smart() {
 			] | @tsv'
 		)
 		[[ $warn ]] || continue
-		K=${name}-warn   V=$warn  LO=0 HI=255 MAX=0   MIN=0  log # bitmask of serious health issues
-		K=${name}-spare  V=$spare LO=0 HI=100 MAX=100 MIN=10 log # drive is near EOL if < 10
-		K=${name}-wear   V=$used  LO=0 HI=100 MAX=80  MIN=0  log # lifespan indicator
-		K=${name}-errors V=$errs  LO=0 HI=10  MAX=0   MIN=0  log # data loss events
+		K=${name}-warn   V=$warn  LO=0 HI=255 MIN=0  MAX=0   log # bitmask of serious health issues
+		K=${name}-spare  V=$spare LO=0 HI=100 MIN=10 MAX=100 log # drive is near EOL if < 10
+		K=${name}-wear   V=$used  LO=0 HI=100 MIN=0  MAX=80  log # lifespan indicator
+		K=${name}-errors V=$errs  LO=0 HI=10  MIN=0  MAX=0   log # data loss events
 	done
 
 	for dev in /sys/block/sd[a-z]; do
@@ -346,13 +344,14 @@ probe_smart() {
 			] | @tsv'
 		)
 		[[ $realloc ]] || continue
-		K=${name}-realloc V=$realloc LO=0 HI=100 MAX=0 MIN=0 log # reallocated sectors
-		K=${name}-pending V=$pending LO=0 HI=100 MAX=0 MIN=0 log # pending sectors
+		K=${name}-realloc V=$realloc LO=0 HI=100 MIN=0 MAX=0 log # reallocated sectors
+		K=${name}-pending V=$pending LO=0 HI=100 MIN=0 MAX=0 log # pending sectors
 	done
 }
 
 probe_reboot_required() {
-	[[ -f /var/run/reboot-required ]] && K=reboot-required V=1 MIN=1 MAX=1 log # auto-upgrade events
+	# auto-upgrade events
+	[[ -f /var/run/reboot-required ]] && K=reboot-required V=1 LO=0 HI=1 MIN=1 MAX=1 log
 }
 
 # main loop ------------------------------------------------------------------

@@ -162,6 +162,14 @@ functions_with_prefix() { # PREFIX
 	done
 }
 
+dump_vars() { # "VAR1 ..." -> "VAR1=VAL\n..."
+	R1=
+	local var
+	for var in $1; do
+		[[ ${!var} ]] && R1+="$var=${!var}"$'\n'
+	done
+}
+
 # data manipulation
 
 trim() { # VARNAME
