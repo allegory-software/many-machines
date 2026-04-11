@@ -306,9 +306,9 @@ probe_temps() {
 		[[ $name == acpitz ]] && continue # fake
 		[[ $name == spd5118 ]] && name=ram
 		[[ $name == coretemp ]] && name=cpu
-		local i=${seen[$name]:-0}
+		local i=${seen[$name]:-1}
 		seen[$name]=$((i + 1))
-		local suffix; ((i > 0)) && suffix=$i || true
+		local suffix; ((i > 1)) && suffix=$i || true
 		K=TEMP-$name$suffix LO=0 HI=100 MIN=20 MAX=70 log
 	done
 }
