@@ -86,7 +86,7 @@ def graph_lines(topic, date, mn, mx, lo, hi, w, h):
 def tsize():        return shutil.get_terminal_size()
 def at(r, c):       return f"\033[{r};{c}H"
 def rev(s):         return f"\033[7m{s}\033[0m"
-def red(s):         return f"\033[31m{s}\033[0m"
+def red(s):         return f"\033[91m{s}\033[0m"
 def bold(s):        return f"\033[1m{s}\033[0m"
 
 def read_key():
@@ -128,9 +128,9 @@ def draw(topics, ti, days, mn, mx, lo, hi, di, pane):
     for i, (date, oob) in enumerate(days):
         if i >= rows - 2: break
         label = f"{date + (' ●' if oob else ''):{DW-1}.{DW-1}}"
+        label = red(label) if oob else label
         out.append(at(i + 2, TW + 2) + (rev(label) if i == di and pane == 1
-                                          else bold(label) if i == di
-                                          else red(label) if oob
+                                          else bold(label) if i == di and not oob
                                           else label))
 
     # graph
