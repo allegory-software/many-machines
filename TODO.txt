@@ -1,7 +1,5 @@
 - modules list is not overridable (+, -)
 
-- consolidate security module
-
 - BUG: why does md_install wants cat_vars ??
 
 - tuning:

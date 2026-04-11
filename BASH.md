@@ -109,4 +109,5 @@ local -A M     - create local hashmap (declare -A for global)
 M[key]=val     - assign key
 "${M[@]}"      - expand values (random order)
 "${!M[@]}"     - expand keys (random order)
+${#map[@]}     - element count
 ```
