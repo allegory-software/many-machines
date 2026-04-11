@@ -162,7 +162,7 @@ deploy_rename() { # DEPLOY= NEW_NAME ...
 	check_deploy $DEPLOY
 	check_md_new_name $DEPLOY1
 
-	md_ssh_script "deploy_stop all"
+	must md_ssh_script "deploy_stop all"
 
 	VARS="DEPLOY1" _md_rename all
 
