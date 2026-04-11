@@ -70,10 +70,11 @@ $LINENO - current line number
 ## Dealing with missing values
 
 ```
-${var:-default} - default if var is empty
-${var:=default} - same but also assigns var to default
-${var:+repl}    - use repl if var is non-empty
-${var:?err}     - err and exit if var is empty
+${var:-default}   - default if var is empty
+${var:=default}   - same but also assigns var to default
+: ${var:=default} - set a default
+${var:+repl}      - use repl if var is non-empty
+${var:?err}       - err and exit if var is empty
 ```
 
 ## String ops
@@ -88,6 +89,7 @@ ${var/patt/repl}  - replace first match with repl
 ${var//patt/repl} - replace all matches
 ${var/#patt/repl} - replace prefix
 ${var/%patt/repl} - replace suffix
+var+="..."        - append to string
 ```
 
 # Arrays
