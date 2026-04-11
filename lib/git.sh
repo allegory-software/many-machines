@@ -47,12 +47,23 @@ git_clone_for() { # USER REPO DIR [VERSION]
 	must mkdir -p $DIR
 	must chown -Rh root:root $DIR
 	must cd $DIR
-	[[ -d .git ]] || must git init $QUIET
+	if [[ -d .git ]]; then
+		local changes=$(git status --porcelain 2>/dev/null)
+		if [[ $changes && ! $FORCE_CHECKOUT ]]; then
+			say
+			say "${LIGHTRED}Skipping $DIR: has local changes (set FORCE_CHECKOUT=1 to overwrite)${ENDCOLOR}"
+			say
+			exit 0
+		fi
+		[[ $changes && $FORCE_CHECKOUT ]] && must git reset --hard
+	else
+		must git init $QUIET
+	fi
 	run  git remote rm  origin 2>/dev/null
 	must git remote add origin $REPO
 	must git -c advice.objectNameWarning=false fetch --depth=1 $QUIET origin "$VERSION:refs/remotes/origin/$VERSION"
 	must git -c advice.detachedHead=false checkout $QUIET -B "$VERSION" "origin/$VERSION"
-	local commit=$(must git rev-parse --short HEAD)
+	local commit; commit=$(git rev-parse --short HEAD) || die "git rev-parse --short HEAD [$?]"
 	say "Done. Now at: $commit"
 	[[ $SUBMODULES ]] && {
 		local SUB_PATH
@@ -62,7 +73,7 @@ git_clone_for() { # USER REPO DIR [VERSION]
 			say "Pulling $R1/$R2 ..."
 			must cd $R1
 			must git submodule update $QUIET --init --remote $R2
-			local commit=$(must cd $R2; must git rev-parse --short HEAD)
+			local commit; commit=$(cd $R2 && git rev-parse --short HEAD) || die "git rev-parse --short HEAD [$?]"
 			say "Done. Now at: $commit"
 			) || exit
 		done
