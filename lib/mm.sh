@@ -77,6 +77,8 @@ install_mon() {
 	"
 	save "$R1" /root/mon/mon.conf
 
+	touch /root/mon/.systemd
+
 	save "
 [Unit]
 Description=mm runtime monitor service

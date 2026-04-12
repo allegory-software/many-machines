@@ -1,6 +1,4 @@
-*.conf
-*.log
-.*
-alerts/
-notified/
-samples/
+*
+!mon
+!tui
+!TODO.txt

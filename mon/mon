@@ -3,10 +3,10 @@
 # MM MON: Continuous Monitoring Service
 # Written by Cosmin Apreutesei. Public Domain.
 #
-# mon start | stop | restart | [-q] status        start as unmanaged daemon
-# mon reset                                       reset alerts
-# mon clear-samples                               clear sample history
-# mon pause | resume|unpause                      pause/resume sampling
+# mon start|stop|restart|[-q] status    manage daemon
+# mon reset                             reset alerts
+# mon clear-samples                     clear sample history
+# mon pause | resume|unpause            pause/resume sampling
 
 [[ $EUID == 0 ]] || exec sudo "$0" "$@"
 
@@ -68,7 +68,11 @@ must mkdir -p alerts notified samples
 mon_pid() { pgrep -f 'bin/bash.*mon/mon daemon'; }
 
 RUN=
-if [[ $1 == start ]]; then
+if [[ -f .systemd && $1 =~ ^(start|stop|restart|status)$ ]]; then
+	systemctl $1 mm-mon
+elif [[ -f .systemd && $1 == -q && $2 == status ]]; then
+	systemctl is-active -q mm-mon
+elif [[ $1 == start ]]; then
 	pid=`mon_pid` && die "Already running. PID: $pid"
 	nohup "$0" daemon >/dev/null 2> mon.log &
 elif [[ $1 == stop ]]; then
