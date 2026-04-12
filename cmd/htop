@@ -1,3 +1,4 @@
 #!/bin/bash
 # STATUS ;; run htop on machine(s)
-mm ssh-tty htop ${DEPLOYS:+-u$DEPLOYS} "$@"
+. mmlib
+NOALL=1 MM_SSH_TTY=1 AS_DEPLOY=1 each_md ssh_to htop "$@"
