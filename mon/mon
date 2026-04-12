@@ -8,7 +8,7 @@
 # mon clear-samples                     clear sample history
 # mon pause | resume|unpause            pause/resume sampling
 
-[[ $EUID == 0 ]] || exec sudo "$0" "$@"
+[[ $EUID == 0 ]] || exec sudo -E "$0" "$@"
 
 # utils ----------------------------------------------------------------------
 
