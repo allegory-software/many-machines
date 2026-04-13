@@ -24,6 +24,9 @@ by exec'ed programs. However, they are always inherited by functions
 
 `echo "$VAR"` is not safe (what if VAR is "-n" ?), use `printf "%s\n" "$VAR"` instead.
 
+`local var=$(false) || die "Never dies."` - the local eats subshell's exit code.
+fix: `local var; var=$(false) || die "Now it dies."`
+
 ## Pipefail
 
 `pipefail` is enabled so that failure is not ignored when using `|`.
