@@ -7,6 +7,9 @@
 # mon reset                             reset alerts
 # mon clear-samples                     clear sample history
 # mon pause | resume|unpause            pause/resume sampling
+# mon install                           `mm . install mon`
+
+set -o pipefail
 
 [[ $EUID == 0 ]] || exec sudo -E "$0" "$@"
 
@@ -39,9 +42,11 @@ must cd "${0%mon}"
 
 # config ---------------------------------------------------------------------
 
+NTFY_URL=  # set it or you won't get notifications!
 SMARTCTL=/usr/sbin/smartctl
 MACHINE=$(hostname -s)
 PROBING_INTERVAL=60
+ALERT_COOLDOWN=3600  # suppress re-alerts within this many seconds (trickle suppressor)
 MAX_CPU=90
 MAXT_CPU=3
 MIN_FREE_RAM_MB=1024
@@ -56,7 +61,7 @@ SERVICES_BLACKLIST=(
 	console-setup keyboard-setup remote-fs
 	'systemd-*' 'dbus-*' wpa_supplicant
 	apparmor 'plymouth-*' smartd smartmontools
-	display-manager apcupsd exim4
+	display-manager apcupsd exim4 autorandr-lid-listener
 )
 
 [[ -f mon.conf ]] && . mon.conf
@@ -98,6 +103,8 @@ elif [[ $1 == clear-samples ]]; then
 elif [[ $1 == daemon || $1 == systemd ]]; then
 	RUN=1
 	DAEMON=1
+elif [[ $1 == install ]]; then
+	mm . install mon
 elif [[ $1 ]]; then
 	die "Invalid arg: $1"
 else

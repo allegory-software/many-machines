@@ -65,9 +65,11 @@ install_mon() {
 	package_install smartmontools
 
 	dump_vars "
+		NTFY_URL
 		SMARTCTL
 		MACHINE
 		PROBING_INTERVAL
+		ALERT_COOLDOWN
 		MAX_CPU
 		MAXT_CPU
 		MIN_FREE_RAM_MB
@@ -96,6 +98,7 @@ ExecStartPre=/bin/sh -c '[ \"$SYSTEMD_INVOCATION_ID\" != \"\" ] && sleep 10 || t
 ExecStart=/root/mon/mon systemd
 WorkingDirectory=/root/mon
 StandardOutput=null
+StandardError=journal
 
 # restart only if exit code != 0
 Restart=on-failure
