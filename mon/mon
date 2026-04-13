@@ -7,7 +7,7 @@
 # mon reset                             reset alerts
 # mon clear-samples                     clear sample history
 # mon pause | resume|unpause            pause/resume sampling
-# mon install                           `mm . install mon`
+# mon install                           run `mm . install mon`
 
 set -o pipefail
 
@@ -427,6 +427,7 @@ every() { (( TICK % $1 == 0 )); } # true every N ticks
 # `systemctl stop` to hang. yay bash.
 next_tick() { sleep $PROBING_INTERVAL & wait; }
 
+[[ $DAEMON ]] && say "Started."
 while [[ ! $STOP ]]; do
 	((TICK++)) || true
 
