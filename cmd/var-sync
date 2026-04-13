@@ -21,7 +21,7 @@ all_targets() { # BASE_DIR= DIR
 rsync_dir_with_link_targets() {
 	checkvars BASE_DIR SRC_DIR
 	rsync_dir
-	local FILE_LIST=`all_targets $SRC_DIR` || die "Symlinks external to $BASE_DIR detected."
+	local FILE_LIST; FILE_LIST=`all_targets $SRC_DIR` || die "Symlinks external to $BASE_DIR detected."
 	SRC_DIR=$BASE_DIR rsync_dir
 }
 

@@ -108,7 +108,7 @@ md_backups_sweep() {
 	mm_var backup_min_age_days     ; local min_age_s=$(( R1 * 3600 * 24 ))
 	mm_var backup_min_free_disk_gb ; local min_free_kb=$(( R1 * 1024 * 1024 ))
 
-	local free_kb=`df -l / | awk '(NR > 1) {print $3}'`
+	local free_kb; free_kb=`df -l / | awk '(NR > 1) {print $3}'`
 	dir_lean_size backups; local used_kb=$(( R1 / 1024 ))
 	local must_free=$(( (min_free_kb - free_kb) * 1024 ))
 	(( must_free < 0 )) && return 0
@@ -129,7 +129,7 @@ md_backups_sweep() {
 		printf "%s %s\n" $R1 $f
 	done
 	) | sort -k1n | while read d f; do
-		local fsize=`stat -c %s backups/$f`
+		local fsize; fsize=`stat -c %s backups/$f`
 		DRY=1 rm_file /root/mm/backups/$f
 		must_free=$(( must_free - fsize ))
 		(( must_free < 0 )) && break

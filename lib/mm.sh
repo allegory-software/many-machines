@@ -29,7 +29,7 @@ install_mm_var() {
 # mm_var package installs the encrypted mm var dir which contains the entire mm database.
 # only install this module on trusted machines that you want to use mm on.
 postinstall_mm_var() {
-	local VAR_LOCK_KEY=`var_lock_key` || die "var_lock_key error: $?"
+	local VAR_LOCK_KEY; VAR_LOCK_KEY=`var_lock_key` || die "var_lock_key error: $?"
 	must ssh_script var_unlock "$VAR_LOCK_KEY"
 }
 
