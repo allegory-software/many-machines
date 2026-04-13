@@ -157,8 +157,8 @@ log() { # K= V= LO= HI= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
 		((COUNTS[$K]++))
 		local C=${COUNTS[$K]}
 		local MAXT=${MAXT:-1}
-		if ((C >= MAXT)); then
-			ALERT=!
+		if ((C == MAXT)); then
+			ALERT=!  # only on episode start, not every tick
 		fi
 	else
 		COUNTS[$K]=0
@@ -167,7 +167,7 @@ log() { # K= V= LO= HI= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
 	# show the value when running mon in foreground.
 	printf "%25s %1s %s\n" $K "$ALERT" $V
 
-	# record alert
+	# record alert on episode start only (mtime = episode start time, not last tick)
 	[[ $DAEMON && $ALERT ]] && {
 		local file=alerts/$K
 		printf "%s\n" $V > $file
@@ -177,14 +177,20 @@ log() { # K= V= LO= HI= MIN= MAX= [MAXT=] T= T0= DIR= FILE=
 notify() {
 	[[ $DAEMON ]] || return
 	[[ $NTFY_URL ]] || return
+	local now; now=$(date +%s)
 	must pushd alerts >/dev/null
 	local f s
-	# list alerts of < 24h ago and notify at most once every 24h for each.
-	for f in `find -maxdepth 1 -type f -mmin -1440 -printf '%f\n'`; do
-		[[ -f ../notified/$f && $(find ../notified/$f -mmin -1440) ]] && continue
-		touch ../notified/$f
-		local t=`stat -c %Y $f` # mtime in seconds
-		timeago $t; t=$R1
+	for f in `find -maxdepth 1 -type f -printf '%f\n'`; do
+		local alert_mtime; alert_mtime=$(stat -c %Y $f)
+		local notified=../notified/$f
+		if [[ -f $notified ]]; then
+			local notified_mtime; notified_mtime=$(stat -c %Y $notified)
+			# suppress if no new episode since last notify, or cooldown hasn't elapsed
+			(( alert_mtime <= notified_mtime )) && continue
+			(( notified_mtime >= now - ALERT_COOLDOWN )) && continue
+		fi
+		touch $notified  # record time of this notification
+		local t; timeago $alert_mtime; t=$R1
 		catfile $f; local v=$R1
 		s="$s$f: $v ($t)"$'\n'
 	done
@@ -282,7 +288,7 @@ probe_services() {
 		local prev=${RESTART_COUNTS[$name]:-$count}  # init to current on first run
 		local delta=$((count - prev))
 		RESTART_COUNTS[$name]=$count
-		[[ $delta -gt 0 ]] && K=crashes-$name V=$delta LO=0 HI=10 MIN=0 MAX=0 log
+		K=crashes-$name V=$delta LO=0 HI=10 MIN=0 MAX=0 log
 	done
 }
 
@@ -367,18 +373,19 @@ probe_smart() {
 
 probe_reboot_required() {
 	# auto-upgrade events
-	[[ -f /var/run/reboot-required ]] && K=reboot-required V=1 LO=0 HI=1 MIN=1 MAX=1 log
+	local V=0; [[ -f /var/run/reboot-required ]] && V=1
+	K=reboot-required V=$V LO=0 HI=1 MIN=0 MAX=0 log
 }
 
 probe_ssl_expired() {
 	local dir
 	for dir in /root/.acme.sh.etc/*/; do
-		[[ $dir == ca ]] && continue
 		[[ -d $dir ]] || continue
 		local cert=${dir}fullchain.cer
 		[[ -f $cert ]] || continue
 		local domain
 		domain=$(basename "$dir")
+		[[ $domain == ca ]] && continue
 		local exp_date
 		exp_date=$(openssl x509 -enddate -noout -in "$cert" 2>/dev/null) || continue
 		exp_date=${exp_date#notAfter=}
@@ -395,11 +402,13 @@ probe_forced_reboot() {
 	local prev_btime
 	[[ -f $btime_file ]] && IFS= read -r prev_btime < $btime_file
 	printf "%d\n" $btime > $btime_file
-	[[ $prev_btime && $prev_btime != $btime ]] || return
-	# machine rebooted — check if previous boot ended cleanly
-	journalctl -b -1 --no-pager -q 2>/dev/null \
-		| grep -q "systemd-reboot\|systemd-poweroff\|systemd-halt" && return
-	K=forced-reboot V=1 LO=0 HI=1 MIN=0 MAX=0 log
+	local V=0
+	if [[ $prev_btime && $prev_btime != $btime ]]; then
+		# machine rebooted — check if previous boot ended cleanly
+		journalctl -b -1 --no-pager -q 2>/dev/null \
+			| grep -q "systemd-reboot\|systemd-poweroff\|systemd-halt" || V=1
+	fi
+	K=forced-reboot V=$V LO=0 HI=1 MIN=0 MAX=0 log
 }
 
 # main loop ------------------------------------------------------------------
