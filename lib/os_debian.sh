@@ -253,6 +253,11 @@ mm . hibernate-pc
 NOTHIS=1 mm '$UPS_MACHINES' shutdown
 ' /etc/apcupsd/doshutdown root 755
 
+	# Restart apcupsd when the UPS re-appears after USB disconnect/reconnect.
+	save 'ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="051d", ATTR{idProduct}=="0002", RUN+="/bin/systemctl restart apcupsd"
+' /etc/udev/rules.d/99-apcupsd-restart.rules root
+	udevadm control --reload-rules
+
 	service_enable apcupsd
 }
 
