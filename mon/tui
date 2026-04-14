@@ -109,7 +109,7 @@ def read_key():
 
 TW, DW = 22, 16   # topic / day column widths
 
-def draw(topics, ti, days, mn, mx, lo, hi, di, pane):
+def draw(topics, ti, days, mn, mx, lo, hi, di, pane, cache=None):
     cols, rows = tsize()
     gx  = TW + DW + 3          # graph start col (1-based)
     gw  = max(20, cols - gx)
@@ -120,8 +120,11 @@ def draw(topics, ti, days, mn, mx, lo, hi, di, pane):
     for i, name in enumerate(topics):
         if i >= rows - 2: break
         label = f"{name:{TW-1}.{TW-1}}"
+        tdays = cache[name][0] if cache else days if i == ti else []
+        is_red = tdays and tdays[-1][1]
+        if is_red: label = red(label)
         out.append(at(i + 2, 1) + (rev(label) if i == ti and pane == 0
-                                    else bold(label) if i == ti
+                                    else bold(label) if i == ti and not is_red
                                     else label))
 
     # day list
@@ -150,11 +153,7 @@ def draw(topics, ti, days, mn, mx, lo, hi, di, pane):
 
 def main():
     topics  = load_topics()
-    cache   = {}   # topic -> (days, mn, mx, lo, hi)
-
-    def days_of(topic):
-        if topic not in cache: cache[topic] = load_days(topic)
-        return cache[topic]
+    cache   = {t: load_days(t) for t in topics}
 
     signal.signal(signal.SIGWINCH, lambda *_: None)  # wake read_key on resize
 
@@ -163,12 +162,12 @@ def main():
     sys.stdout.write("\033[?1049h")  # enter alt screen
     try:
         while True:
-            days, mn, mx, lo, hi = days_of(topics[ti])
+            days, mn, mx, lo, hi = cache[topics[ti]]
             n = len(days)
             if not n: continue
             if di < 0 or di >= n: di = n - 1
 
-            draw(topics, ti, days, mn, mx, lo, hi, di, pane)
+            draw(topics, ti, days, mn, mx, lo, hi, di, pane, cache)
 
             key = read_key()
             if   key in ("q", "\x03"):                          break
