@@ -37,7 +37,7 @@ worker-src  "${CSP_WORKER_SRC:-'self'};"
 	local error_page="\
 	error_page 502 503 504 /5xx.html;
 	location /5xx.html {
-		root /var/www/$DEPLOY/5xx.html;
+		root /var/www/$DEPLOY;
 	}
 "
 
