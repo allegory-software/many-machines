@@ -58,10 +58,9 @@ def graph_lines(topic, date, mn, mx, lo, hi, w, h):
     out = []
     out.append(f"{topic}  {date}   [{mn} – {mx}]"[:w])
 
-    label_rows = {round(i * (ph - 1) / 4) for i in range(5)}
     for r in range(ph):
-        v_at = lo + (1 - r / (ph - 1 or 1)) * (hi - lo)
-        lbl = f"{str(round(v_at)):>{YW}.{YW}}" if r in label_rows else ' ' * YW
+        v_at = round(lo + (1 - r / (ph - 1 or 1)) * (hi - lo))
+        lbl = f"{str(v_at):>{YW}.{YW}}"
         row = []
         for c in range(pw):
             ch, col = cells.get((r, c), (' ', ''))
@@ -71,7 +70,7 @@ def graph_lines(topic, date, mn, mx, lo, hi, w, h):
     out.append(' ' * YW + '└' + '─' * pw)
 
     x_row = [' '] * pw
-    for hour in (0, 6, 12, 18, 24):
+    for hour in range(0, 25, 2):
         c = to_col(hour)
         lbl = str(hour)
         c = max(0, c - len(lbl) + 1)
