@@ -52,7 +52,8 @@ MAXT_CPU=3
 MIN_FREE_RAM_MB=1024
 MAXT_RAM=3
 MIN_FREE_DISK_MB=4096
-UPS_VA=850
+UPS_VA=600
+UPS_LOAD_HI=200
 SERVICES_BLACKLIST=(
 	mon mm-mon
 	anacron avahi-daemon cups cups-browsed e2scrub_reap
@@ -309,9 +310,9 @@ probe_ups() {
 	command -v apcaccess >/dev/null || return
 	local BATTERY_CHARGE LINE_VOLTAGE UPS_LOAD
 	probe_ups_apc
-	K=UPS_BATTERY_CHARGE V=$BATTERY_CHARGE LO=0   HI=100 MIN=50  MAX=100 log
-	K=UPS_LINE_VOLTAGE   V=$LINE_VOLTAGE   LO=190 HI=270 MIN=207 MAX=253 log
-	K=UPS_LOAD           V=$UPS_LOAD       LO=0   HI=850 MIN=0   MAX=200 log
+	K=UPS_BATTERY_CHARGE V=$BATTERY_CHARGE LO=0   HI=100          MIN=50  MAX=100 log
+	K=UPS_LINE_VOLTAGE   V=$LINE_VOLTAGE   LO=190 HI=270          MIN=207 MAX=253 log
+	K=UPS_LOAD           V=$UPS_LOAD       LO=0   HI=$UPS_LOAD_HI MIN=0   MAX=200 log
 }
 
 probe_temps() {

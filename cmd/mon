@@ -1,0 +1,3 @@
+#!/bin/bash
+# MON ;; run mon/tui on machine(s)
+mm ssh-tty /root/mon/tui "$@"
