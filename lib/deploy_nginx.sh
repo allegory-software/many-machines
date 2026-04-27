@@ -44,9 +44,11 @@ worker-src  "${CSP_WORKER_SRC:-'self'};"
 	local proxy_options="\
 		${HTTP_PORT:+proxy_pass http://127.0.0.1:$HTTP_PORT;}
 		${HTTP_UNIX_SOCKET:+proxy_pass http://unix:/run/$DEPLOY/http.sock;}
-		proxy_set_header X-Forwarded-Host \$http_host;
-		proxy_set_header X-Forwarded-For  \$proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Port \$server_port;
+		proxy_set_header Host              \$http_host;
+		proxy_set_header X-Forwarded-Host  \$http_host;
+		proxy_set_header X-Forwarded-For   \$remote_addr;
+		proxy_set_header X-Forwarded-Port  \$server_port;
+		proxy_set_header X-Forwarded-Proto \$scheme;
 "
 
 	local proxy_nobuffer_options="\

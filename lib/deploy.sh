@@ -2,10 +2,6 @@
 
 # deploy app module ----------------------------------------------------------
 
-deploy_secret_gen() {
-	must openssl rand 46 | base64 # result is 64 chars
-}
-
 try_app() {
 	checkvars DEPLOY APP
 	VARS="DEBUG VERBOSE" run_as $DEPLOY /home/$DEPLOY/app/$APP "$@"; local ret=$?
@@ -164,7 +160,7 @@ deploy_rename_app() {
 }
 
 deploy_gen_conf() {
-	checkvars MACHINE DEPLOY APP SECRET
+	checkvars MACHINE DEPLOY APP
 	local conf=/home/$DEPLOY/app/${APP}.conf
 	local HOST=${DOMAIN:-$PUBLIC_IP}
 	save "\
@@ -173,15 +169,12 @@ deploy = '$DEPLOY'
 machine = '$MACHINE'
 ${ENV:+env = '$ENV'}
 ${APP_VERSION:+version = '$APP_VERSION'}
-db_name = '$DEPLOY'
-db_user = '$DEPLOY'
-secret = '$SECRET'
 
 --custom vars
-${HTTP_PORT:+http_port = $HTTP_PORT}
-${HTTP_UNIX_SOCKET:+http_unix_socket = '/run/$DEPLOY/http.sock'}
-${HTTP_UNIX_SOCKET:+http_unix_socket_perms = '0660'}
-${HTTP_COMPRESS:+http_compress = $HTTP_COMPRESS}
+http_unix_socket = '/run/$DEPLOY/http.sock'
+http_unix_socket_perms = '0660'
+http_compress = false
+use_x_forwarded_headers = true
 ${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
 ${SMTP_HOST:+smtp_user = '$SMTP_USER'}
 ${SMTP_HOST:+smtp_pass = '$SMTP_PASS'}
