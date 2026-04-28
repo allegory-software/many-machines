@@ -171,14 +171,15 @@ ${ENV:+env = '$ENV'}
 ${APP_VERSION:+version = '$APP_VERSION'}
 
 --custom vars
-http_unix_socket = '/run/$DEPLOY/http.sock'
-http_unix_socket_perms = '0660'
-http_compress = false
-use_x_forwarded_headers = true
+http_host = '*' --trust host header
+x_forwarded_headers = true
+${HTTP_UNIX_SOCKET:+http_unix_socket = '/run/$DEPLOY/http.sock'}
+${HTTP_UNIX_SOCKET:+http_unix_socket_perms = '0660'}
+${HTTP_UNIX_SOCKET:+http_compress = false}
+${HTTP_PORT:+http_port = $HTT_PORT}
 ${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
 ${SMTP_HOST:+smtp_user = '$SMTP_USER'}
 ${SMTP_HOST:+smtp_pass = '$SMTP_PASS'}
-${HOST:+host = '$HOST'}
 ${NOREPLY_EMAIL:+noreply_email = '$NOREPLY_EMAIL'}
 ${DEV_EMAIL:+dev_email = '$DEV_EMAIL'}
 ${DEFAULT_COUNTRY:+default_country = '$DEFAULT_COUNTRY'}
