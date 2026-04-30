@@ -260,9 +260,27 @@ kernel.dmesg_restrict=1
 # hide kernel symbol addresses from unprivileged users (2=always hidden)
 kernel.kptr_restrict=2
 "
+	# see https://copy.fail/
+	say "Blacklisting AF_ALG kernel modules ..."
+	save "
+blacklist af_alg
+blacklist algif_hash
+blacklist algif_skcipher
+blacklist algif_rng
+blacklist algif_aead
+
+install af_alg /bin/false
+install algif_hash /bin/false
+install algif_skcipher /bin/false
+install algif_rng /bin/false
+install algif_aead /bin/false
+" /etc/modprobe.d/blacklist-crypto-user-api.conf
+	update-initramfs -u
 }
 uninstall_secure_kernel() {
 	kernel_config_remove 50-secure-kernel.conf
+	rm_file /etc/modprobe.d/blacklist-crypto-user-api.conf
+	update-initramfs -u
 }
 
 install_secure_net() {
