@@ -90,10 +90,11 @@ Type=simple
 User=$DEPLOY
 Group=$DEPLOY
 
-ExecStart=/home/$DEPLOY/app/$APP run
+ExecStart=/home/$DEPLOY/app/$APP -q run
 WorkingDirectory=/home/$DEPLOY/app
 StandardOutput=null
-StandardError=null
+# app runs in quiet mode so only fatal errors go to journal.
+StandardError=journal
 
 PrivateTmp=yes
 NoNewPrivileges=yes
