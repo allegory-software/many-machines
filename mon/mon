@@ -373,8 +373,11 @@ probe_smart() {
 }
 
 probe_reboot_required() {
-	# auto-upgrade events
-	local V=0; [[ -f /var/run/reboot-required ]] && V=1
+	# running kernel != latest installed (per /vmlinuz symlink, kept current
+	# by linux-image postinst). Catches kernel security updates like Dirty Frag.
+	local V=0
+	local target=$(readlink /vmlinuz 2>/dev/null)
+	[[ -n $target && ${target##*/vmlinuz-} != $(uname -r) ]] && V=1
 	K=reboot-required V=$V LO=0 HI=1 MIN=0 MAX=0 log
 }
 

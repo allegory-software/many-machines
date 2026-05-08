@@ -260,8 +260,7 @@ kernel.dmesg_restrict=1
 # hide kernel symbol addresses from unprivileged users (2=always hidden)
 kernel.kptr_restrict=2
 "
-	# see https://copy.fail/
-	say "Blacklisting AF_ALG kernel modules ..."
+	say "Blacklisting Copy Fail vulnerability kernel modules ..."
 	save "
 blacklist af_alg
 blacklist algif_hash
@@ -275,11 +274,22 @@ install algif_skcipher /bin/false
 install algif_rng /bin/false
 install algif_aead /bin/false
 " /etc/modprobe.d/blacklist-crypto-user-api.conf
+	say "Blacklisting Dirty Frag vulnerability kernel modules ..."
+	save "
+blacklist esp4
+blacklist esp6
+blacklist rxrpc
+
+install esp4 /bin/false
+install esp6 /bin/false
+install rxrpc /bin/false
+" /etc/modprobe.d/blacklist-dirty-frag.conf
 	update-initramfs -u
 }
 uninstall_secure_kernel() {
 	kernel_config_remove 50-secure-kernel.conf
 	rm_file /etc/modprobe.d/blacklist-crypto-user-api.conf
+	rm_file /etc/modprobe.d/blacklist-dirty-frag.conf
 	update-initramfs -u
 }
 
