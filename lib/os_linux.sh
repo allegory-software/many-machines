@@ -284,12 +284,21 @@ install esp4 /bin/false
 install esp6 /bin/false
 install rxrpc /bin/false
 " /etc/modprobe.d/blacklist-dirty-frag.conf
+	say "Blacklisting Copy Fail 2 vulnerability kernel modules ..."
+	save "
+blacklist xfrm_user
+blacklist xfrm_algo
+
+install xfrm_user /bin/false
+install xfrm_algo /bin/false
+" /etc/modprobe.d/blacklist-copy-fail-2.conf
 	update-initramfs -u
 }
 uninstall_secure_kernel() {
 	kernel_config_remove 50-secure-kernel.conf
 	rm_file /etc/modprobe.d/blacklist-crypto-user-api.conf
 	rm_file /etc/modprobe.d/blacklist-dirty-frag.conf
+	rm_file /etc/modprobe.d/blacklist-copy-fail-2.conf
 	update-initramfs -u
 }
 

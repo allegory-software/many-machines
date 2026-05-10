@@ -328,7 +328,7 @@ probe_temps() {
 		local i=${seen[$name]:-1}
 		seen[$name]=$((i + 1))
 		local suffix; ((i > 1)) && suffix=$i || true
-		K=TEMP-$name$suffix LO=0 HI=100 MIN=20 MAX=70 log
+		K=TEMP-$name$suffix LO=10 HI=90 MIN=20 MAX=70 log
 	done
 }
 

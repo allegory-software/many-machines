@@ -96,14 +96,47 @@ StandardOutput=null
 # app runs in quiet mode so only fatal errors go to journal.
 StandardError=journal
 
-PrivateTmp=yes
-NoNewPrivileges=yes
-
 # restart only if exit code != 0
 Restart=on-failure
-
 # wait 1s before restarting
 RestartSec=1
+
+### protection: filesystem
+#
+# entire fs is r/o except /dev, /proc, /sys, ReadWritePaths=
+ProtectSystem=strict
+# mount a private /tmp and /var/tmp
+PrivateTmp=yes
+# replace with empty tmpfs: /home, /root, /run/user, then rebind app dirs
+ProtectHome=tmpfs
+BindReadOnlyPaths=/home/$DEPLOY/app
+ReadWritePaths=/home/$DEPLOY/app/var /run/$DEPLOY
+NoExecPaths=/home/$DEPLOY/app/var
+UMask=0027
+
+### protection: privileges
+#
+NoNewPrivileges=yes
+PrivateDevices=yes
+ProtectClock=yes
+ProtectHostname=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectProc=invisible
+ProcSubset=pid
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictSUIDSGID=yes
+LockPersonality=yes
+KeyringMode=private
+RemoveIPC=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 
 [Install]
 WantedBy=multi-user.target
@@ -243,4 +276,8 @@ deploy_uninstall_run_dir() {
 deploy_install_git() {
 	git_keys_update $DEPLOY
 	git_config_user "mm@allegory.ro" "Many Machines"
+}
+
+deploy_uninstall_git() {
+	true
 }
