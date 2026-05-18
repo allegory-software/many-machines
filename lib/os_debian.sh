@@ -229,6 +229,8 @@ install_interfaces() {
 	local NAME; for NAME in $INTERFACES; do
 		local -n CONFIG=INTERFACE_${NAME^^}
 		save "$CONFIG" /etc/systemd/network/${NAME}.network
+		local -n LINK=LINK_${NAME^^}
+		[[ $LINK ]] && save "$LINK" /etc/systemd/network/10-${NAME}.link
 	done
 	networkctl reload
 }
