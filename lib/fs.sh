@@ -173,18 +173,31 @@ dir_lean_size() { # DIR
 	[[ $R1 ]] || R1=0
 }
 
-append() { # S FILE
-	local s=$1 file=$2
-	checkvars s- file
-	sayn "Appending ${#s} bytes to file $file ... "
-	debugn "MUST: append \"$s\" $file "
-	if [[ $DRY ]] || printf "%s" "$s" >> "$file"; then
-		debug "[$?]"
+_write_file() { # OP S FILE [USER] [MODE]
+	local op=$1 s=$2 file=$3 user=$4 mode=$5
+	checkvars op s- file
+	local action; [[ $op == save ]] && action=Saving || action=Appending
+	sayn "$action ${#s} bytes to file: '$file'${user:+ user=$user}${mode:+ mode=$mode} ... "
+	must dry mkdir -p "$(dirname "$file")"
+	debugn "MUST: $op \"$s\" $file"
+	if [[ $op == save ]]; then
+		[[ $DRY ]] || printf "%s" "$s" > "$file" || die "$op $file [$?]"
 	else
-		die "append $file [$?]"
+		[[ $DRY ]] || printf "%s" "$s" >> "$file" || die "$op $file [$?]"
 	fi
+	debug "[0]"
+	[[ $user ]] && {
+		checkvars user
+		must dry chown -h $user:$user $file
+	}
+	[[ $mode ]] && {
+		checkvars mode
+		must dry chmod $mode $file
+	}
 	say OK
 }
+save()   { _write_file save   "$@"; } # S FILE [USER] [MODE]
+append() { _write_file append "$@"; } # S FILE [USER] [MODE]
 
 remove_line() { # REGEX FILE
 	local regex=$1 file=$2
@@ -197,28 +210,6 @@ remove_line() { # REGEX FILE
 	else
 		say "none found."
 	fi
-}
-
-save() { # S FILE [USER] [MODE]
-	local s=$1 file=$2 user=$3 mode=$4
-	checkvars s- file
-	sayn "Saving ${#s} bytes to file: '$file'${user:+ user=$user}${mode:+ mode=$mode} ... "
-	must dry mkdir -p "$(dirname "$file")"
-	debugn "MUST: save \"$s\" $file "
-	if [[ $DRY ]] || printf "%s" "$s" > "$file"; then
-		debug "[$?]"
-	else
-		die "save $file [$?]"
-	fi
-	[[ $user ]] && {
-		checkvars user
-		must dry chown -h $user:$user $file
-	}
-	[[ $mode ]] && {
-		checkvars mode
-		must dry chmod $mode $file
-	}
-	say OK
 }
 
 replace_lines() { # REGEX REPL FILE

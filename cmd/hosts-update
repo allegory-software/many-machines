@@ -1,10 +1,5 @@
 #!/bin/bash
 # SSH HOSTS ;; update /etc/hosts and set up SSH for access to machines
-#
-# TODO: this doesn't work because:
-# 1. SSH's HostKeyAlgorithms != rsa-sha2-256 and SSH tries ECDSA only and gives up.
-# 2. StrictHostKeyChecking=yes, and we're connecting by hostname.
-#
 . mmlib
 
 remove_line '# added by mm' /etc/hosts
@@ -20,7 +15,11 @@ each_deploy  update_host
 update_known_hosts() {
 	ip_of $MACHINE; local IP=$R1
 	must catfile var/machines/$MACHINE/.ssh_hostkey
-	ssh-keygen -f $HOME/.ssh/known_hosts -R $IP
-	append "$R1"$'\n' $HOME/.ssh/known_hosts
+	local key=${R1#* } file=$HOME/.ssh/known_hosts
+	if [[ -f $file ]]; then
+		remove_line "^$MACHINE[ ,]" "$file"
+		remove_line "^${IP//./\\.}[ ,]" "$file"
+	fi
+	append "$MACHINE,$IP $key"$'\n' "$file" "${SUDO_USER:-$USER}" 600
 }
 each_machine update_known_hosts
