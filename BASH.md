@@ -77,7 +77,7 @@ ${var:-default}   - default if var is empty
 ${var:=default}   - same but also assigns var to default
 : ${var:=default} - set a default
 ${var:+repl}      - use repl if var is non-empty
-${var:?err}       - err and exit if var is empty
+: ${var:?err}     - err and exit if var is empty
 ```
 
 ## String ops
@@ -114,3 +114,9 @@ M[key]=val     - assign key
 "${!M[@]}"     - expand keys (random order)
 ${#map[@]}     - element count
 ```
+
+# The colon (aka the null command)
+
+: > file       - truncate file
+set -u         - error on unset variables
+: "$VAR1" ...  - with set -u, error if VAR1 is not set
