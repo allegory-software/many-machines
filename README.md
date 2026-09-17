@@ -1,4 +1,4 @@
-# :sunglasses: Many Machines
+# Many Machines
 
 Many Machines is a Linux sysadmin tool and application deployment tool
 written in Bash.
