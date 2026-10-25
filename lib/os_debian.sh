@@ -84,7 +84,7 @@ service_restart() {
 	must systemctl restart $SERVICE
 }
 
-service_disable() {
+service_disable_and_stop() {
 	local SERVICE=$1; checkvars SERVICE
 	if service_is_installed $SERVICE; then
 		say; say "Disabling $SERVICE ..."
@@ -94,7 +94,7 @@ service_disable() {
 	fi
 }
 
-service_enable() {
+service_enable_and_start() {
 	local SERVICE=$1; checkvars SERVICE
 	say; say "Enabling $SERVICE..."
 	must systemctl enable --now $SERVICE
@@ -124,30 +124,30 @@ install_libssl1() {
 }
 
 install_rpcbind() {
-	service_enable rpcbind
-	service_enable rpcbind.socket
+	service_enable_and_start rpcbind
+	service_enable_and_start rpcbind.socket
 }
 uninstall_rpcbind() {
-	service_disable rpcbind.socket
-	service_disable rpcbind
+	service_disable_and_stop rpcbind.socket
+	service_disable_and_stop rpcbind
 }
 
 install_avahi_daemon() {
-	service_enable avahi-daemon
-	service_enable avahi-daemon.socket
+	service_enable_and_start avahi-daemon
+	service_enable_and_start avahi-daemon.socket
 }
 uninstall_avahi_daemon() {
-	service_disable avahi-daemon.socket
-	service_disable avahi-daemon
+	service_disable_and_stop avahi-daemon.socket
+	service_disable_and_stop avahi-daemon
 	service_stop avahi-daemon.socket
 	service_stop avahi-daemon
 }
 
 install_iptables() {
-	service_enable netfilter-persistent
+	service_enable_and_start netfilter-persistent
 }
 uninstall_iptables() {
-	service_disable netfilter-persistent
+	service_disable_and_stop netfilter-persistent
 	iptables -F
 }
 
@@ -179,11 +179,11 @@ table inet filter {
 }
 " /etc/nftables.d/10-filter.conf
 	nft -f /etc/nftables.conf
-	service_enable nftables
+	service_enable_and_start nftables
 }
 uninstall_nftables() {
 	rm_file /etc/nftables.d/10-filter.conf
-	service_disable nftables
+	service_disable_and_stop nftables
 	nft flush ruleset
 }
 
@@ -201,7 +201,7 @@ uninstall_journald() {
 
 install_irqbalance() {
 	package_install irqbalance
-	service_enable irqbalance
+	service_enable_and_start irqbalance
 }
 
 uninstall_irqbalance() {
@@ -209,8 +209,8 @@ uninstall_irqbalance() {
 }
 
 install_networkd() {
-	service_enable systemd-networkd
-	service_disable networking
+	service_enable_and_start systemd-networkd
+	service_disable_and_stop networking
 	save "
 [Service]
 ExecStart=
@@ -220,8 +220,8 @@ ExecStart=/lib/systemd/systemd-networkd-wait-online --any --timeout=10
 }
 
 uninstall_networkd() {
-	service_enable networking
-	service_disable systemd-networkd
+	service_enable_and_start networking
+	service_disable_and_stop systemd-networkd
 }
 
 install_interfaces() {
@@ -260,7 +260,7 @@ NOTHIS=1 mm '$UPS_MACHINES' shutdown
 ' /etc/udev/rules.d/99-apcupsd-restart.rules root
 	udevadm control --reload-rules
 
-	service_enable apcupsd
+	service_enable_and_start apcupsd
 }
 
 uninstall_ups_apc() {

@@ -76,6 +76,7 @@ $servers}
 
 	local proxy_options="\
 		proxy_pass http://$DEPLOY;
+		proxy_http_version 1.1;
 $proxy_headers"
 
 	local proxy_nobuffer_options="\

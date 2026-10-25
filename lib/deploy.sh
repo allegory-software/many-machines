@@ -122,10 +122,10 @@ deploy_install_app_service() {
 		&& die "APP_PROCESSES > 1 requires HTTP_UNIX_SOCKET"
 	# single-process unit of earlier versions: remove it.
 	if [[ -f /etc/systemd/system/$DEPLOY.service ]]; then
-		service_disable $DEPLOY.service
+		service_disable_and_stop $DEPLOY.service
 		rm_file /etc/systemd/system/$DEPLOY.service
 	fi
-	LOADED=1 each_deploy_app_service service_disable
+	LOADED=1 each_deploy_app_service service_disable_and_stop
 	save "
 [Unit]
 Description=$DEPLOY %i
@@ -199,12 +199,11 @@ WantedBy=multi-user.target
 " /etc/systemd/system/$DEPLOY@.service
 
 	systemctl daemon-reload
-	each_deploy_app_service service_enable
 }
 
 deploy_uninstall_app_service() {
 	checkvars DEPLOY APP
-	LOADED=1 each_deploy_app_service service_disable
+	LOADED=1 each_deploy_app_service service_disable_and_stop
 	rm_file /etc/systemd/system/$DEPLOY@.service
 }
 
@@ -233,7 +232,7 @@ deploy_install_app() {
 		say "Installing $APP ..."
 		must app install forealz
 	}
-	deploy_start_app
+	each_deploy_app_service service_enable_and_start
 }
 
 deploy_install_app_fast() {
@@ -261,14 +260,14 @@ deploy_gen_conf() {
 --deploy vars
 deploy = '$DEPLOY'
 machine = '$MACHINE'
-app_instance = tonumber(env'APP_INSTANCE')
+app_instance = tonumber(getenv'APP_INSTANCE')
 ${ENV:+env = '$ENV'}
 ${APP_VERSION:+version = '$APP_VERSION'}
 
 --custom vars
 http_host = '*' --trust host header
 x_forwarded_headers = true
-${HTTP_UNIX_SOCKET:+http_unix_socket = env'HTTP_UNIX_SOCKET'}
+${HTTP_UNIX_SOCKET:+http_unix_socket = getenv'HTTP_UNIX_SOCKET'}
 ${HTTP_UNIX_SOCKET:+http_unix_socket_perms = '0660'}
 ${HTTP_UNIX_SOCKET:+http_compress = false}
 ${HTTP_PORT:+http_port = $HTTP_PORT}

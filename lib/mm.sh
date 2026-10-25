@@ -112,12 +112,12 @@ WantedBy=multi-user.target
 " /etc/systemd/system/mm-mon.service
 
 	systemctl daemon-reload
-	service_enable mm-mon.service
+	service_enable_and_start mm-mon.service
 	service_restart mm-mon.service
 }
 
 uninstall_mon() {
-	service_disable mm-mon.service
+	service_disable_and_stop mm-mon.service
 	rm_file /etc/systemd/system/mm-mon.service
 }
 
