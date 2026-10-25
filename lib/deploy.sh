@@ -261,18 +261,24 @@ deploy_gen_conf() {
 --deploy vars
 deploy = '$DEPLOY'
 machine = '$MACHINE'
+app_instance = tonumber(env'APP_INSTANCE')
 ${ENV:+env = '$ENV'}
 ${APP_VERSION:+version = '$APP_VERSION'}
 
 --custom vars
 http_host = '*' --trust host header
 x_forwarded_headers = true
+${HTTP_UNIX_SOCKET:+http_unix_socket = env'HTTP_UNIX_SOCKET'}
 ${HTTP_UNIX_SOCKET:+http_unix_socket_perms = '0660'}
 ${HTTP_UNIX_SOCKET:+http_compress = false}
 ${HTTP_PORT:+http_port = $HTTP_PORT}
 ${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
 ${SMTP_HOST:+smtp_user = '$SMTP_USER'}
 ${SMTP_HOST:+smtp_pass = '$SMTP_PASS'}
+${CLOUDFLARE_SFU_APP_ID:+cloudflare_sfu_app_id = '$CLOUDFLARE_SFU_APP_ID'}
+${CLOUDFLARE_SFU_API_TOKEN:+cloudflare_sfu_api_token = '$CLOUDFLARE_SFU_API_TOKEN'}
+${CLOUDFLARE_TURN_APP_ID:+cloudflare_turn_app_id = '$CLOUDFLARE_TURN_APP_ID'}
+${CLOUDFLARE_TURN_API_TOKEN:+cloudflare_turn_api_token = '$CLOUDFLARE_TURN_API_TOKEN'}
 ${NOREPLY_EMAIL:+noreply_email = '$NOREPLY_EMAIL'}
 ${DEV_EMAIL:+dev_email = '$DEV_EMAIL'}
 ${DEFAULT_COUNTRY:+default_country = '$DEFAULT_COUNTRY'}
