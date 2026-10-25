@@ -41,11 +41,11 @@ cat_all_varfiles() { # [PREFIX="local "] DIR
 	local DIR=$1
 	checkvars DIR
 	local -A R2 # init R2 as local map (even if already exists).
-	_add_varfiles $DIR
 	# go through all include dirs recursively with a single find command.
 	local INC; for INC in `find -L $DIR -maxdepth 10 -type d -name '.?*' | sort`; do
 		_add_varfiles $INC
 	done
+	_add_varfiles $DIR
 	R1=()
 	local VAR
 	for VAR in "${!R2[@]}"; do
