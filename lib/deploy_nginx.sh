@@ -41,15 +41,42 @@ worker-src  "${CSP_WORKER_SRC:-'self'};"
 	}
 "
 
-	local proxy_options="\
-		${HTTP_PORT:+proxy_pass http://127.0.0.1:$HTTP_PORT;}
-		${HTTP_UNIX_SOCKET:+proxy_pass http://unix:/run/$DEPLOY/http.sock;}
+	# one server per app process: see deploy_app_services.
+	deploy_app_services
+	local servers # upstream server lines
+	if [[ $HTTP_UNIX_SOCKET ]]; then
+		local i
+		for ((i = 1; i <= ${#R1[@]}; i++)); do
+			servers+="	server unix:/run/$DEPLOY/http-$i.sock;
+"
+		done
+	else
+		servers="	server 127.0.0.1:$HTTP_PORT;
+"
+	fi
+
+	local upstreams="\
+upstream $DEPLOY {
+$servers}
+
+# a call lives in one app process's memory: send every request for a call id
+# to the same process, and fail instead of trying another process.
+upstream $DEPLOY-call {
+	hash \$call_id;
+$servers}
+"
+
+	local proxy_headers="\
 		proxy_set_header Host              \$http_host;
 		proxy_set_header X-Forwarded-Host  \$http_host;
 		proxy_set_header X-Forwarded-For   \$remote_addr;
 		proxy_set_header X-Forwarded-Port  \$server_port;
 		proxy_set_header X-Forwarded-Proto \$scheme;
 "
+
+	local proxy_options="\
+		proxy_pass http://$DEPLOY;
+$proxy_headers"
 
 	local proxy_nobuffer_options="\
 		proxy_buffering off;
@@ -59,6 +86,16 @@ worker-src  "${CSP_WORKER_SRC:-'self'};"
 	local locations="\
 	location / {
 $proxy_options
+$proxy_nobuffer_options
+	}
+
+	location ~ ^/call_signal/(?<call_id>[0-9]+)$ {
+		proxy_pass http://$DEPLOY-call;
+$proxy_headers
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade           \$http_upgrade;
+		proxy_set_header Connection        \"upgrade\";
+		proxy_next_upstream off;
 $proxy_nobuffer_options
 	}
 
@@ -81,6 +118,7 @@ client_header_timeout 5s;
 # max idle time between body recv() calls, doesn't do much.
 client_body_timeout 5s;
 
+$upstreams
 server {
 	listen 80;
 	server_name $DOMAIN;

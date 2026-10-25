@@ -66,16 +66,61 @@ deploy_stop_app_daemon() {
 
 # app service as systemd service ---------------------------------------------
 
-deploy_is_running_app_service() { service_is_running $DEPLOY.service; }
-deploy_start_app_service()      { service_start      $DEPLOY.service; }
-deploy_stop_app_service()       { service_stop       $DEPLOY.service; }
-deploy_restart_app_service()    { service_restart    $DEPLOY.service; }
+# APP_PROCESSES instances of the $DEPLOY@.service template, numbered from 1.
+deploy_app_services() { # -> R1=(service ...)
+	local n=${APP_PROCESSES:-1} # app process count
+	[[ $n =~ ^[1-9][0-9]*$ ]] || die "APP_PROCESSES must be a positive integer"
+	R1=()
+	local i
+	for ((i = 1; i <= n; i++)); do
+		R1+=($DEPLOY@$i.service)
+	done
+}
+
+# run COMMAND ARGS... SERVICE for instances 1..APP_PROCESSES, or with LOADED=1
+# for every instance systemd has loaded, including ones beyond APP_PROCESSES.
+# stop at the first failure.
+each_deploy_app_service() { # [LOADED=1] COMMAND ARGS...
+	local -a services # instance service names
+	if [[ $LOADED ]]; then
+		services=($(systemctl list-units --all --plain --no-legend \
+			"$DEPLOY@*.service" | awk '{print $1}'))
+	else
+		deploy_app_services
+		services=("${R1[@]}")
+	fi
+	local service
+	for service in "${services[@]}"; do
+		"$@" $service || return
+	done
+}
+
+deploy_is_running_app_service() {
+	each_deploy_app_service service_is_running
+}
+deploy_start_app_service() {
+	each_deploy_app_service service_start
+}
+deploy_stop_app_service() {
+	LOADED=1 each_deploy_app_service service_stop
+}
+deploy_restart_app_service() {
+	each_deploy_app_service service_restart
+}
 
 deploy_install_app_service() {
 	checkvars DEPLOY APP
+	[[ $HTTP_PORT && ${APP_PROCESSES:-1} != 1 ]] \
+		&& die "APP_PROCESSES > 1 requires HTTP_UNIX_SOCKET"
+	# single-process unit of earlier versions: remove it.
+	if [[ -f /etc/systemd/system/$DEPLOY.service ]]; then
+		service_disable $DEPLOY.service
+		rm_file /etc/systemd/system/$DEPLOY.service
+	fi
+	LOADED=1 each_deploy_app_service service_disable
 	save "
 [Unit]
-Description=$DEPLOY
+Description=$DEPLOY %i
 After=multi-user.target
 After=network.target
 
@@ -91,6 +136,8 @@ User=$DEPLOY
 Group=$DEPLOY
 
 ExecStart=/home/$DEPLOY/app/$APP -q run
+Environment=APP_INSTANCE=%i
+${HTTP_UNIX_SOCKET:+Environment=HTTP_UNIX_SOCKET=/run/$DEPLOY/http-%i.sock}
 WorkingDirectory=/home/$DEPLOY/app
 StandardOutput=null
 # app runs in quiet mode so only fatal errors go to journal.
@@ -141,16 +188,16 @@ RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
 [Install]
 WantedBy=multi-user.target
 
-" /etc/systemd/system/$DEPLOY.service
+" /etc/systemd/system/$DEPLOY@.service
 
 	systemctl daemon-reload
-	service_enable $DEPLOY.service
+	each_deploy_app_service service_enable
 }
 
 deploy_uninstall_app_service() {
 	checkvars DEPLOY APP
-	service_disable $DEPLOY.service
-	rm_file /etc/systemd/system/$DEPLOY.service
+	LOADED=1 each_deploy_app_service service_disable
+	rm_file /etc/systemd/system/$DEPLOY@.service
 }
 
 # app service and module -----------------------------------------------------
@@ -207,10 +254,9 @@ ${APP_VERSION:+version = '$APP_VERSION'}
 --custom vars
 http_host = '*' --trust host header
 x_forwarded_headers = true
-${HTTP_UNIX_SOCKET:+http_unix_socket = '/run/$DEPLOY/http.sock'}
 ${HTTP_UNIX_SOCKET:+http_unix_socket_perms = '0660'}
 ${HTTP_UNIX_SOCKET:+http_compress = false}
-${HTTP_PORT:+http_port = $HTT_PORT}
+${HTTP_PORT:+http_port = $HTTP_PORT}
 ${SMTP_HOST:+smtp_host = '$SMTP_HOST'}
 ${SMTP_HOST:+smtp_user = '$SMTP_USER'}
 ${SMTP_HOST:+smtp_pass = '$SMTP_PASS'}
