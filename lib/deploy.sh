@@ -2,9 +2,12 @@
 
 # deploy app module ----------------------------------------------------------
 
+APP_SUBDIR=${APP_SUBDIR:-.} # app directory relative to checkout
+
 try_app() {
-	checkvars DEPLOY APP
-	VARS="DEBUG VERBOSE" run_as $DEPLOY /home/$DEPLOY/app/$APP "$@"; local ret=$?
+	checkvars DEPLOY APP APP_SUBDIR
+	VARS="DEBUG VERBOSE" run_as $DEPLOY \
+		/home/$DEPLOY/app/$APP_SUBDIR/$APP "$@"; local ret=$?
 	return $ret
 }
 
@@ -18,8 +21,12 @@ _deploy_version() {
 	popd
 }
 deploy_version_app() { _deploy_version app; }
-deploy_version_sdk() { _deploy_version app/sdk; }
-deploy_version_canvas_ui() { _deploy_version app/sdk/canvas-ui; }
+deploy_version_sdk() {
+	checkvars SDK_SUBDIR?
+	if [[ $SDK_SUBDIR ]]; then
+		_deploy_version app/$SDK_SUBDIR
+	fi
+}
 
 get_APP_WANT() {
 	checkvars REPO APP_VERSION
@@ -40,7 +47,8 @@ get_APP_LATEST() {
 # not used since it doesn't start automatically on reboot this way.
 
 deploy_is_running_app_daemon_fast() {
-	catfile /home/$DEPLOY/app/$APP.pid; local pid=$R1
+	catfile /home/$DEPLOY/app/$APP_SUBDIR/$APP.pid
+	local pid=$R1
 	[[ $pid ]] && kill -0 $pid 2>/dev/null || return 1
 	local cmdline; IFS=$'\0' mapfile -d '' -t cmdline < /proc/$pid/cmdline
 	[[ "${cmdline[0]}" == *luajit* ]] || return 1
@@ -48,8 +56,8 @@ deploy_is_running_app_daemon_fast() {
 	return 0
 }
 deploy_is_running_app_daemon() {
-	checkvars APP
-	[[ -d /home/$DEPLOY/app ]] || return
+	checkvars DEPLOY APP APP_SUBDIR
+	[[ -d /home/$DEPLOY/app/$APP_SUBDIR ]] || return
 	deploy_is_running_app_daemon_fast
 	#try_app running
 }
@@ -109,7 +117,7 @@ deploy_restart_app_service() {
 }
 
 deploy_install_app_service() {
-	checkvars DEPLOY APP
+	checkvars DEPLOY APP APP_SUBDIR
 	[[ $HTTP_PORT && ${APP_PROCESSES:-1} != 1 ]] \
 		&& die "APP_PROCESSES > 1 requires HTTP_UNIX_SOCKET"
 	# single-process unit of earlier versions: remove it.
@@ -135,10 +143,10 @@ Type=simple
 User=$DEPLOY
 Group=$DEPLOY
 
-ExecStart=/home/$DEPLOY/app/$APP -q run
+ExecStart=/home/$DEPLOY/app/$APP_SUBDIR/$APP -q run
 Environment=APP_INSTANCE=%i
 ${HTTP_UNIX_SOCKET:+Environment=HTTP_UNIX_SOCKET=/run/$DEPLOY/http-%i.sock}
-WorkingDirectory=/home/$DEPLOY/app
+WorkingDirectory=/home/$DEPLOY/app/$APP_SUBDIR
 StandardOutput=null
 # app runs in quiet mode so only fatal errors go to journal.
 StandardError=journal
@@ -157,8 +165,8 @@ PrivateTmp=yes
 # replace with empty tmpfs: /home, /root, /run/user, then rebind app dirs
 ProtectHome=tmpfs
 BindReadOnlyPaths=/home/$DEPLOY/app
-ReadWritePaths=/home/$DEPLOY/app/var /run/$DEPLOY
-NoExecPaths=/home/$DEPLOY/app/var
+ReadWritePaths=/home/$DEPLOY/app/$APP_SUBDIR/var /run/$DEPLOY
+NoExecPaths=/home/$DEPLOY/app/$APP_SUBDIR/var
 UMask=0027
 
 ### protection: privileges
@@ -214,9 +222,11 @@ get_APP_STATUS() {
 }
 
 deploy_install_app() {
-	checkvars DEPLOY REPO APP APP_VERSION
+	checkvars DEPLOY REPO APP APP_VERSION APP_SUBDIR SDK_SUBDIR?
 	(deploy_stop_app)
-	[[ $FAST ]] && local SUBMODULES=sdk
+	if [[ $FAST && $SDK_SUBDIR && $SDK_SUBDIR != . ]]; then
+		local SUBMODULES=$SDK_SUBDIR # SDK submodule path
+	fi
 	git_clone_for $DEPLOY $REPO /home/$DEPLOY/app "$APP_VERSION"
 	deploy_gen_conf
 	[[ ! $FAST ]] && {
@@ -241,9 +251,12 @@ deploy_rename_app() {
 }
 
 deploy_gen_conf() {
-	checkvars MACHINE DEPLOY APP
-	local conf=/home/$DEPLOY/app/${APP}.conf
+	checkvars MACHINE DEPLOY APP APP_SUBDIR
+	local conf # generated app configuration file
+	conf=/home/$DEPLOY/app/$APP_SUBDIR/var/${APP}.conf
 	local HOST=${DOMAIN:-$PUBLIC_IP}
+
+	must dry run_as $DEPLOY mkdir -p /home/$DEPLOY/app/$APP_SUBDIR/var
 	save "\
 --deploy vars
 deploy = '$DEPLOY'

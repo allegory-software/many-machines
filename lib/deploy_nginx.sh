@@ -174,7 +174,8 @@ $acme_location
 }
 
 deploy_nginx_copy_5xx_html() {
-	local src=/home/$DEPLOY/app/www/5xx.html
+	checkvars DEPLOY APP_SUBDIR
+	local src=/home/$DEPLOY/app/$APP_SUBDIR/www/5xx.html
 	local dst=/var/www/$DEPLOY/5xx.html
 	if [[ -f $src ]]; then
 		cp_file $src $dst
